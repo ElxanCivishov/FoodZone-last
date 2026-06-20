@@ -1,92 +1,102 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { post } from '@/services/api';
+import { useTranslation } from 'react-i18next';
 import { useSessionStore } from '@/stores/sessionStore';
-import { useSocketContext } from '@/services/socket';
 import { useUIStore } from '@/stores/uiStore';
-import { WAITER_REQUEST_TYPES } from '@/utils/constants';
-import { Bell, Droplets, ScrollText, Receipt, Sparkles, MessageCircle, Loader2 } from 'lucide-react';
+import { post } from '@/services/api';
+import { Bell, Droplets, ScrollText, Receipt, Sparkles, MessageCircle, ChevronLeft, Send, CheckCircle } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import toast from 'react-hot-toast';
 
-const iconMap: Record<string, React.FC<any>> = {
-  Bell, Droplets, ScrollText, Receipt, Sparkles, MessageCircle,
-};
+const requestTypes = [
+  { id: 'call', icon: Bell, label: 'waiter.call' },
+  { id: 'water', icon: Droplets, label: 'waiter.water' },
+  { id: 'napkin', icon: ScrollText, label: 'waiter.napkin' },
+  { id: 'bill', icon: Receipt, label: 'waiter.bill' },
+  { id: 'clean', icon: Sparkles, label: 'waiter.clean' },
+  { id: 'other', icon: MessageCircle, label: 'waiter.other' },
+] as const;
 
 export function CallWaiterScreen() {
-  const { session } = useSessionStore();
-  const { socket } = useSocketContext();
-  const { setScreen, addNotification } = useUIStore();
-  const [selectedType, setSelectedType] = useState('');
+  const { t } = useTranslation();
+  const setScreen = useUIStore((state) => state.setScreen);
+  const session = useSessionStore((state) => state.session);
+  const [selectedType, setSelectedType] = useState<string>('call');
   const [message, setMessage] = useState('');
+  const [sent, setSent] = useState(false);
 
-  const requestMutation = useMutation({
-    mutationFn: () => post('/waiter-requests', {
-      tableId: session!.tableId,
-      type: selectedType,
-      message: message || undefined,
-    }),
-    onSuccess: () => {
-      socket?.emit('waiter:new:request', {
-        tableId: session!.tableId,
+  const handleSend = async () => {
+    if (!session) return;
+    try {
+      await post('/waiter-requests', {
+        tableId: session.tableId,
         type: selectedType,
-        message,
+        message: message || undefined,
       });
-      addNotification({ type: 'success', message: 'Request sent!' });
-      setScreen('home');
-    },
-  });
+      setSent(true);
+      toast.success(t('waiter.sent'));
+      setTimeout(() => setSent(false), 3000);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-dark-900 text-white p-4">
-      <h1 className="text-2xl font-bold mb-2">Call Waiter</h1>
-      <p className="text-dark-400 mb-6">Select what you need</p>
-
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {WAITER_REQUEST_TYPES.map((type) => {
-          const Icon = iconMap[type.icon] || Bell;
-          const isSelected = selectedType === type.id;
-          return (
-            <button
-              key={type.id}
-              onClick={() => setSelectedType(type.id)}
-              className={`p-6 rounded-2xl border transition-all flex flex-col items-center gap-3 ${
-                isSelected ? 'bg-primary-500/20 border-primary-500 text-primary-400' : 'bg-dark-800 border-dark-700 text-dark-300'
-              }`}
-            >
-              <Icon className="w-6 h-6" />
-              <span className="capitalize text-sm font-medium">{type.id}</span>
-            </button>
-          );
-        })}
+    <div className="min-h-screen bg-surface">
+      <div className="sticky top-0 z-30 bg-surface/80 backdrop-blur-lg border-b border-border">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <button onClick={() => setScreen('home')} className="p-2 -ml-2 rounded-lg hover:bg-foreground-muted/5">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h1 className="font-bold text-lg">{t('waiter.title')}</h1>
+        </div>
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm text-dark-400 mb-2">Additional Message (optional)</label>
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Any specific request..."
-          className="w-full bg-dark-800 border border-dark-700 rounded-xl p-4 text-white placeholder-dark-400 focus:outline-none focus:border-primary-500"
-          rows={3}
-        />
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+        <div className="grid grid-cols-2 gap-3">
+          {requestTypes.map((type) => {
+            const Icon = type.icon;
+            return (
+              <button
+                key={type.id}
+                onClick={() => setSelectedType(type.id)}
+                className={cn(
+                  'flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all',
+                  selectedType === type.id
+                    ? 'border-primary-500 bg-primary-500/10 text-primary-500'
+                    : 'border-border bg-surface-elevated text-foreground-muted hover:text-foreground'
+                )}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-sm font-medium">{t(type.label)}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-2 block">{t('waiter.message')}</label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={t('waiter.message')}
+            className="w-full p-3 bg-surface-elevated border border-border rounded-xl text-sm focus:outline-none focus:border-primary-500 min-h-[100px] resize-none"
+          />
+        </div>
+
+        <button
+          onClick={handleSend}
+          disabled={sent}
+          className={cn(
+            'w-full py-4 rounded-2xl font-semibold text-lg transition-all flex items-center justify-center gap-2',
+            sent
+              ? 'bg-success-500/10 text-success-500 border border-success-500/20'
+              : 'bg-primary-500 text-white hover:bg-primary-600 active:scale-[0.98]'
+          )}
+        >
+          {sent ? <CheckCircle className="w-5 h-5" /> : <Send className="w-5 h-5" />}
+          {sent ? t('waiter.sent') : t('waiter.send')}
+        </button>
       </div>
-
-      <button
-        onClick={() => requestMutation.mutate()}
-        disabled={!selectedType || requestMutation.isPending}
-        className="w-full bg-primary-500 hover:bg-primary-600 disabled:opacity-50 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
-      >
-        {requestMutation.isPending ? (
-          <><Loader2 className="w-5 h-5 animate-spin" /> Sending...</>
-        ) : (
-          'Send Request'
-        )}
-      </button>
-
-      {requestMutation.isError && (
-        <p className="text-red-400 text-center mt-3 text-sm">
-          {requestMutation.error?.message || 'Failed to send request'}
-        </p>
-      )}
     </div>
   );
 }

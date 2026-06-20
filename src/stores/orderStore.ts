@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Order, OrderStatusUpdate } from '@/types';
+import { post } from '@/services/api';
 
 interface OrderState {
   currentOrder: Order | null;
@@ -18,22 +19,22 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   orders: [],
   isPlacingOrder: false,
   orderError: null,
+
   setCurrentOrder: (order) => set({ currentOrder: order }),
 
   placeOrder: async (orderData) => {
     set({ isPlacingOrder: true, orderError: null });
     try {
-      const { post } = await import('@/services/api');
-      const response: any = await post('/orders', orderData);
+      const response = await post<Order>('/orders', orderData);
       const order = response.data;
-      set({ 
-        currentOrder: order, 
-        isPlacingOrder: false, 
-        orders: [order, ...get().orders] 
+      set({
+        currentOrder: order,
+        isPlacingOrder: false,
+        orders: [order, ...get().orders],
       });
       return order;
     } catch (error: any) {
-      set({ orderError: error.message || 'Failed to place order', isPlacingOrder: false });
+      set({ orderError: error?.message || 'Failed to place order', isPlacingOrder: false });
       throw error;
     }
   },
@@ -43,7 +44,11 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     if (currentOrder && currentOrder.id === update.orderId) {
       set({ currentOrder: { ...currentOrder, status: update.status } });
     }
-    set({ orders: orders.map((o) => o.id === update.orderId ? { ...o, status: update.status } : o) });
+    set({
+      orders: orders.map((o) =>
+        o.id === update.orderId ? { ...o, status: update.status } : o
+      ),
+    });
   },
 
   addOrder: (order) => set({ orders: [order, ...get().orders] }),

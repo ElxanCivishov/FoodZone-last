@@ -1,138 +1,205 @@
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { get } from '@/services/api';
-import { useSocketContext } from '@/services/socket';
+import { useTranslation } from 'react-i18next';
 import { useWaiterStore } from '@/stores/waiterStore';
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@/utils/constants';
+import { useSocketContext } from '@/services/socket';
+import { useWaiterRequests } from '@/hooks/useDashboard';
+import { useOrders } from '@/hooks/useDashboard';
+import { useQueryClient } from '@tanstack/react-query';
+import { patch } from '@/services/api';
+import { UserCheck, Bell, CheckCircle, ClipboardList } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import toast from 'react-hot-toast';
 
 export function WaiterPanel() {
-  const { socket, joinRoom, isConnected } = useSocketContext();
-  const { data: readyOrdersData } = useQuery({
-    queryKey: ['waiter-orders'],
-    queryFn: () => get('/orders', { status: 'ready' }),
-    refetchInterval: 10000,
-  });
+  const { t } = useTranslation();
+  const { socket, isConnected } = useSocketContext();
+  const { activeTab, setActiveTab, setOrders, setRequests, addOrder, addRequest, updateRequest, removeOrder, removeRequest } = useWaiterStore();
+  const queryClient = useQueryClient();
 
-  const { data: requestsData } = useQuery({
-    queryKey: ['waiter-requests'],
-    queryFn: () => get('/waiter-requests', { status: 'pending,accepted' }),
-    refetchInterval: 5000,
-  });
-
-  const { orders, pendingRequests, acceptedRequests, activeTab, setActiveTab, serveOrder, acceptRequest, completeRequest, addOrder, addRequest } = useWaiterStore();
+  const { data: requestsData } = useWaiterRequests('pending');
+  const { data: ordersData } = useOrders({ status: 'ready' });
 
   useEffect(() => {
-    joinRoom('waiters', 'waiter');
+    if (requestsData?.data) setRequests(requestsData.data);
+  }, [requestsData, setRequests]);
 
-    socket?.on('waiter:new:order', (order) => addOrder(order));
-    socket?.on('waiter:new:request', (request) => addRequest(request));
+  useEffect(() => {
+    if (ordersData?.data) setOrders(ordersData.data);
+  }, [ordersData, setOrders]);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.emit('room:join', { room: 'waiters', role: 'waiter' });
+
+    const handleNewRequest = (data: any) => {
+      addRequest(data);
+      toast(`New request from Table ${data.tableNumber || data.tableId}`);
+    };
+
+    const handleNewOrder = (data: any) => {
+      addOrder(data);
+      toast(`Order ready for Table ${data.tableId}`);
+    };
+
+    socket.on('waiter:new:request', handleNewRequest);
+    socket.on('waiter:new:order', handleNewOrder);
 
     return () => {
-      socket?.off('waiter:new:order');
-      socket?.off('waiter:new:request');
+      socket.off('waiter:new:request', handleNewRequest);
+      socket.off('waiter:new:order', handleNewOrder);
+      socket.emit('room:leave', { room: 'waiters' });
     };
-  }, [socket, joinRoom, addOrder, addRequest]);
+  }, [socket, addRequest, addOrder, setOrders, setRequests]);
 
-  useEffect(() => {
-    if (readyOrdersData?.data) {
-      readyOrdersData.data.forEach((order: any) => addOrder(order));
+  const handleAcceptRequest = async (id: string) => {
+    try {
+      await patch(`/waiter-requests/${id}/status`, { status: 'accepted' });
+      updateRequest(id, 'accepted');
+      queryClient.invalidateQueries({ queryKey: ['waiter-requests'] });
+    } catch (err: any) {
+      toast.error(err?.message);
     }
-  }, [readyOrdersData, addOrder]);
+  };
 
-  useEffect(() => {
-    if (requestsData?.data) {
-      requestsData.data.forEach((req: any) => {
-        if (req.status === 'pending') addRequest(req);
-      });
+  const handleCompleteRequest = async (id: string) => {
+    try {
+      await patch(`/waiter-requests/${id}/status`, { status: 'done' });
+      removeRequest(id);
+      queryClient.invalidateQueries({ queryKey: ['waiter-requests'] });
+    } catch (err: any) {
+      toast.error(err?.message);
     }
-  }, [requestsData, addRequest]);
+  };
+
+  const handleServeOrder = async (orderId: string) => {
+    try {
+      await patch(`/orders/${orderId}/status`, { status: 'served' });
+      removeOrder(orderId);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    } catch (err: any) {
+      toast.error(err?.message);
+    }
+  };
 
   const tabs = [
-    { id: 'orders', label: 'Orders', count: orders.length },
-    { id: 'requests', label: 'Requests', count: pendingRequests.length + acceptedRequests.length },
+    { id: 'orders', label: t('waiterPanel.ordersToServe'), icon: ClipboardList },
+    { id: 'requests', label: t('waiterPanel.newRequests'), icon: Bell },
   ];
 
+  const store = useWaiterStore();
+  const items = activeTab === 'orders' ? store.orders : store.requests;
+
   return (
-    <div className="min-h-screen bg-dark-900 text-white p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">Waiter Panel</h1>
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className="text-sm">{isConnected ? 'Online' : 'Offline'}</span>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <header className="sticky top-0 z-30 bg-surface-elevated border-b border-border px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+            <UserCheck className="w-5 h-5 text-blue-500" />
+          </div>
+          <div>
+            <h1 className="font-bold text-lg">Waiter Panel</h1>
+            <p className="text-xs text-foreground-muted">Active requests & orders</p>
           </div>
         </div>
+        <div className={cn(
+          'px-3 py-1 rounded-full text-xs font-medium',
+          isConnected ? 'bg-success-500/10 text-success-500' : 'bg-danger-500/10 text-danger-500'
+        )}>
+          {isConnected ? 'Online' : 'Offline'}
+        </div>
+      </header>
 
-        <div className="flex gap-2 mb-6">
-          {tabs.map((tab) => (
+      <div className="flex border-b border-border">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab.id ? 'bg-primary-500 text-white' : 'bg-dark-800 text-dark-400'
-              }`}
+              className={cn(
+                'flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2',
+                activeTab === tab.id
+                  ? 'border-blue-500 text-blue-500'
+                  : 'border-transparent text-foreground-muted hover:text-foreground'
+              )}
             >
-              {tab.label} {tab.count > 0 && `(${tab.count})`}
+              <Icon className="w-4 h-4" />
+              {tab.label}
             </button>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
-        {activeTab === 'orders' && (
-          <div className="space-y-3">
-            {orders.length === 0 ? (
-              <p className="text-center text-dark-400 py-10">No orders ready to serve</p>
-            ) : (
-              orders.map((order) => (
-                <div key={order.id} className="bg-dark-800 rounded-xl border border-dark-700 p-4 flex items-center justify-between">
+      <div className="flex-1 overflow-auto p-4">
+        <div className="space-y-3 max-w-2xl mx-auto">
+          {items.length === 0 ? (
+            <div className="text-center py-12 text-foreground-muted">
+              <p className="text-lg mb-1">{activeTab === 'orders' ? t('waiterPanel.noOrders') : t('waiterPanel.noRequests')}</p>
+              <p className="text-sm">Items will appear here automatically</p>
+            </div>
+          ) : (
+            items.map((item: any) => (
+              <div key={item.id} className="bg-surface-elevated border border-border rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <p className="font-bold">Order #{order.orderNumber}</p>
-                    <p className="text-sm text-dark-400">Table {order.tableNumber}</p>
-                    <p className="text-sm text-primary-400">${order.total.toFixed(2)}</p>
+                    <p className="font-bold text-lg">Table {item.tableNumber || item.table?.number || '?'}</p>
+                    <p className="text-sm text-foreground-muted">
+                      {activeTab === 'orders' ? `#${item.orderNumber}` : item.type}
+                    </p>
                   </div>
-                  <button
-                    onClick={() => serveOrder(order.id, (event, data) => socket?.emit(event, data))}
-                    className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium"
-                  >
-                    Serve
-                  </button>
+                  <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-xs rounded-full font-medium">
+                    {item.status}
+                  </span>
                 </div>
-              ))
-            )}
-          </div>
-        )}
 
-        {activeTab === 'requests' && (
-          <div className="space-y-3">
-            {[...pendingRequests, ...acceptedRequests].length === 0 ? (
-              <p className="text-center text-dark-400 py-10">No pending requests</p>
-            ) : (
-              [...pendingRequests, ...acceptedRequests].map((request) => (
-                <div key={request.id} className="bg-dark-800 rounded-xl border border-dark-700 p-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-bold capitalize">{request.type}</p>
-                    <p className="text-sm text-dark-400">Table {request.tableNumber}</p>
-                    {request.message && <p className="text-sm text-dark-400">{request.message}</p>}
+                {activeTab === 'orders' && item.items && (
+                  <div className="space-y-1 mb-3">
+                    {item.items.slice(0, 3).map((it: any, i: number) => (
+                      <p key={i} className="text-sm text-foreground-muted">
+                        {it.quantity}x {it.productName || it.product?.name}
+                      </p>
+                    ))}
                   </div>
-                  {request.status === 'pending' ? (
+                )}
+
+                {item.message && (
+                  <p className="text-sm text-foreground-muted mb-3 bg-foreground-muted/5 p-2 rounded-lg">
+                    {item.message}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  {activeTab === 'requests' && item.status === 'pending' && (
                     <button
-                      onClick={() => acceptRequest(request.id, (event, data) => socket?.emit(event, data))}
-                      className="bg-primary-500 hover:bg-primary-600 px-4 py-2 rounded-lg text-sm font-medium"
+                      onClick={() => handleAcceptRequest(item.id)}
+                      className="flex-1 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-colors"
                     >
-                      Accept
+                      {t('waiterPanel.accept')}
                     </button>
-                  ) : (
+                  )}
+                  {activeTab === 'requests' && item.status === 'accepted' && (
                     <button
-                      onClick={() => completeRequest(request.id, (event, data) => socket?.emit(event, data))}
-                      className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium"
+                      onClick={() => handleCompleteRequest(item.id)}
+                      className="flex-1 py-2 bg-success-500 text-white rounded-xl text-sm font-medium hover:bg-success-600 transition-colors flex items-center justify-center gap-2"
                     >
-                      Complete
+                      <CheckCircle className="w-4 h-4" />
+                      {t('waiterPanel.complete')}
+                    </button>
+                  )}
+                  {activeTab === 'orders' && (
+                    <button
+                      onClick={() => handleServeOrder(item.id)}
+                      className="flex-1 py-2 bg-success-500 text-white rounded-xl text-sm font-medium hover:bg-success-600 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Mark Served
                     </button>
                   )}
                 </div>
-              ))
-            )}
-          </div>
-        )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

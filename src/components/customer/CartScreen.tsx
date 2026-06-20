@@ -1,88 +1,123 @@
-import { useCartStore } from '@/stores/cartStore';
+import { useTranslation } from 'react-i18next';
 import { useUIStore } from '@/stores/uiStore';
-import { Minus, Plus, Trash2 } from 'lucide-react';
-
+import { useCartStore } from '@/stores/cartStore';
+import { getLocalizedName } from '@/utils/i18nHelper';
+import { ChevronLeft, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 export function CartScreen() {
-  const { items, subtotal, serviceFee, discount, total, updateQuantity, removeItem, clearCart } = useCartStore();
-  const { setScreen } = useUIStore();
+  const { t } = useTranslation();
+  const setScreen = useUIStore((state) => state.setScreen);
+  const { items, subtotal, serviceFee, discount, total, updateQuantity, removeItem } = useCartStore();
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-dark-900 text-white flex flex-col items-center justify-center p-6">
-        <span className="text-5xl mb-4">🛒</span>
-        <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-        <p className="text-dark-400 mb-6">Add some delicious items!</p>
-        <button onClick={() => setScreen('home')} className="bg-primary-500 hover:bg-primary-600 px-6 py-3 rounded-xl font-medium">
-          Browse Menu
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6">
+        <div className="w-20 h-20 bg-foreground-muted/5 rounded-full flex items-center justify-center mb-4">
+          <ShoppingBag className="w-10 h-10 text-foreground-muted" />
+        </div>
+        <h2 className="text-xl font-bold mb-1">{t('cart.empty')}</h2>
+        <p className="text-foreground-muted mb-6">Add some delicious items!</p>
+        <button
+          onClick={() => setScreen('home')}
+          className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors"
+        >
+          {t('home.menu')}
         </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark-900 text-white p-4 pb-32">
-      <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
-
-      <div className="space-y-4 mb-6">
-        {items.map((item) => (
-          <div key={item.id} className="bg-dark-800 rounded-xl border border-dark-700 p-4">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <h3 className="font-medium">{item.product.name}</h3>
-                {item.selectedSize && <p className="text-sm text-dark-400">{item.selectedSize.name}</p>}
-                {item.selectedExtras.length > 0 && (
-                  <p className="text-sm text-dark-400">+ {item.selectedExtras.map(e => e.name).join(', ')}</p>
-                )}
-              </div>
-              <button onClick={() => removeItem(item.id)} className="text-red-400 p-1">
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 bg-dark-900 rounded-lg px-3 py-1">
-                <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-dark-400">
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="font-medium w-4 text-center">{item.quantity}</span>
-                <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-primary-400">
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-              <span className="font-bold">${item.totalPrice.toFixed(2)}</span>
-            </div>
-          </div>
-        ))}
+    <div className="min-h-screen bg-surface pb-40">
+      <div className="sticky top-0 z-30 bg-surface/80 backdrop-blur-lg border-b border-border">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <button onClick={() => setScreen('home')} className="p-2 -ml-2 rounded-lg hover:bg-foreground-muted/5">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h1 className="font-bold text-lg">{t('cart.title')}</h1>
+          <span className="text-sm text-foreground-muted">({t('cart.itemCount', { count: items.length })})</span>
+        </div>
       </div>
 
-      <div className="bg-dark-800 rounded-xl border border-dark-700 p-4 mb-4">
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between text-dark-400">
-            <span>Subtotal</span>
+      <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
+        {items.map((item) => (
+          <div key={item.id} className="flex gap-3 p-3 bg-surface-elevated border border-border rounded-2xl">
+            <div className="w-16 h-16 rounded-xl bg-foreground-muted/5 flex-shrink-0 overflow-hidden">
+              {item.product.image ? (
+                <img src={item.product.image} alt={getLocalizedName(item.product)} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ShoppingBag className="w-6 h-6 text-foreground-muted/20" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-sm truncate">{getLocalizedName(item.product)}</h3>
+              {item.selectedSize && (
+                <p className="text-xs text-foreground-muted">{getLocalizedName(item.selectedSize)}</p>
+              )}
+              {item.selectedExtras.length > 0 && (
+                <p className="text-xs text-foreground-muted truncate">
+                  + {item.selectedExtras.map((e) => getLocalizedName(e)).join(', ')}
+                </p>
+              )}
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="w-6 h-6 rounded bg-foreground-muted/10 flex items-center justify-center"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
+                  <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="w-6 h-6 rounded bg-foreground-muted/10 flex items-center justify-center"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+                <span className="font-semibold text-sm">${item.totalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => removeItem(item.id)}
+              className="p-2 text-foreground-muted hover:text-danger-500 self-start"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+
+        {/* Summary */}
+        <div className="p-4 bg-surface-elevated border border-border rounded-2xl space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-foreground-muted">{t('cart.subtotal')}</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-dark-400">
-            <span>Service Fee</span>
+          <div className="flex justify-between text-sm">
+            <span className="text-foreground-muted">{t('cart.serviceFee')}</span>
             <span>${serviceFee.toFixed(2)}</span>
           </div>
           {discount > 0 && (
-            <div className="flex justify-between text-green-400">
-              <span>Discount</span>
+            <div className="flex justify-between text-sm text-success-500">
+              <span>{t('cart.discount')}</span>
               <span>-${discount.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between font-bold text-lg pt-2 border-t border-dark-700">
-            <span>Total</span>
-            <span className="text-primary-400">${total.toFixed(2)}</span>
+          <div className="border-t border-border pt-2 flex justify-between font-bold text-lg">
+            <span>{t('cart.total')}</span>
+            <span className="text-primary-500">${total.toFixed(2)}</span>
           </div>
         </div>
       </div>
 
-      <div className="fixed bottom-20 left-4 right-4 flex gap-3">
-        <button onClick={clearCart} className="flex-1 bg-dark-800 hover:bg-dark-700 py-3 rounded-xl font-medium">
-          Clear
-        </button>
-        <button onClick={() => setScreen('checkout')} className="flex-[2] bg-primary-500 hover:bg-primary-600 py-3 rounded-xl font-bold">
-          Checkout ${total.toFixed(2)}
+      {/* Checkout Button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border p-4 safe-bottom z-40">
+        <button
+          onClick={() => setScreen('checkout')}
+          className="w-full max-w-lg mx-auto block py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors active:scale-[0.98]"
+        >
+          {t('cart.checkout')} — ${total.toFixed(2)}
         </button>
       </div>
     </div>

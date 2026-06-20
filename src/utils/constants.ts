@@ -18,7 +18,6 @@ export const WAITER_REQUEST_TYPES = [
 
 export const SERVICE_FEE_PERCENTAGE = 5;
 export const ORDER_STATUS_FLOW = ['pending', 'confirmed', 'preparing', 'ready', 'served'] as const;
-export type OrderStatus = typeof ORDER_STATUS_FLOW[number];
 
 export const STORAGE_KEYS = {
   SESSION: 'fz_session',
@@ -38,7 +37,10 @@ export const SOCKET_EVENTS = {
   ORDER_READY: 'order:ready',
   ORDER_SERVED: 'order:served',
   KITCHEN_NEW_ORDER: 'kitchen:new:order',
+  KITCHEN_ORDER_ACCEPTED: 'kitchen:order:accepted',
+  KITCHEN_ORDER_READY: 'kitchen:order:ready',
   WAITER_NEW_ORDER: 'waiter:new:order',
+  WAITER_ORDER_SERVED: 'waiter:order:served',
   WAITER_NEW_REQUEST: 'waiter:new:request',
   WAITER_REQUEST_ACCEPTED: 'waiter:request:accepted',
   WAITER_REQUEST_COMPLETED: 'waiter:request:completed',

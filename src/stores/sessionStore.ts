@@ -14,23 +14,30 @@ interface SessionState {
   updateLanguage: (language: string) => void;
 }
 
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 export const useSessionStore = create<SessionState>()(
   persist(
     (set, get) => ({
       session: null,
       isLoading: false,
       error: null,
+
       setSession: (session) => set({ session, error: null }),
+
       clearSession: () => {
         set({ session: null, error: null });
         localStorage.removeItem(STORAGE_KEYS.CART);
       },
+
       validateQR: async (qrData: string) => {
         set({ isLoading: true, error: null });
         try {
           let result: QRScanResult;
           try {
-            const response: any = await post('/qr/validate', { qrData });
+            const response = await post<QRScanResult>('/qr/validate', { qrData });
             result = response.data;
           } catch {
             const data = JSON.parse(qrData);
@@ -56,23 +63,25 @@ export const useSessionStore = create<SessionState>()(
             tableNumber: result.tableNumber,
             language: result.language || 'az',
             sessionId: generateId(),
+            restaurantName: result.restaurantName,
+            branchName: result.branchName,
           };
           set({ session, isLoading: false });
           return result;
         } catch (error: any) {
-          set({ error: error.message || 'Network error', isLoading: false });
+          set({ error: error?.message || 'Network error', isLoading: false });
           throw error;
         }
       },
+
       updateLanguage: (language: string) => {
         const session = get().session;
         if (session) set({ session: { ...session, language } });
       },
     }),
-    { name: STORAGE_KEYS.SESSION, partialize: (state) => ({ session: state.session }) }
+    {
+      name: STORAGE_KEYS.SESSION,
+      partialize: (state) => ({ session: state.session }),
+    }
   )
 );
-
-function generateId() {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}

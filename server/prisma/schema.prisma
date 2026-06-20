@@ -8,69 +8,66 @@ datasource db {
 }
 
 model Restaurant {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   name        String
   slug        String   @unique
   logo        String?
   description String?
   status      String   @default("active")
-  branches    Branch[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  branches    Branch[]
 }
 
 model Branch {
-  id            String     @id @default(uuid())
+  id            String         @id @default(cuid())
   restaurantId  String
-  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurant    Restaurant     @relation(fields: [restaurantId], references: [id])
   name          String
   address       String?
   phone         String?
   wifiName      String?
   wifiPassword  String?
-  status        String     @default("active")
+  status        String         @default("active")
   tables        Table[]
   categories    Category[]
-  products      Product[]
   orders        Order[]
-  createdAt     DateTime   @default(now())
+  createdAt     DateTime       @default(now())
 }
 
 model Table {
-  id        String          @id @default(uuid())
-  branchId  String
-  branch    Branch          @relation(fields: [branchId], references: [id])
-  number    String
-  qrCode    String          @unique
-  status    String          @default("active")
-  capacity  Int?
-  orders    Order[]
-  requests  WaiterRequest[]
-  createdAt DateTime        @default(now())
+  id         String          @id @default(cuid())
+  branchId   String
+  branch     Branch          @relation(fields: [branchId], references: [id])
+  number     String
+  qrCode     String          @unique
+  status     String          @default("active")
+  capacity   Int?
+  orders     Order[]
+  requests   WaiterRequest[]
+  createdAt  DateTime        @default(now())
 }
 
 model Category {
-  id        String    @id @default(uuid())
-  branchId  String
-  branch    Branch    @relation(fields: [branchId], references: [id])
-  name      String
-  nameAz    String
-  nameEn    String
-  nameRu    String
-  nameTr    String
-  icon      String?
-  sortOrder Int       @default(0)
-  status    String    @default("active")
-  products  Product[]
-  createdAt DateTime  @default(now())
+  id          String    @id @default(cuid())
+  branchId    String
+  branch      Branch    @relation(fields: [branchId], references: [id])
+  name        String
+  nameAz      String
+  nameEn      String
+  nameRu      String
+  nameTr      String
+  icon        String?
+  sortOrder   Int       @default(0)
+  status      String    @default("active")
+  products    Product[]
+  createdAt   DateTime  @default(now())
 }
 
 model Product {
-  id            String         @id @default(uuid())
+  id            String         @id @default(cuid())
   categoryId    String
   category      Category       @relation(fields: [categoryId], references: [id])
-  branchId      String?
-  branch        Branch?        @relation(fields: [branchId], references: [id])
   name          String
   nameAz        String
   nameEn        String
@@ -95,20 +92,20 @@ model Product {
 }
 
 model ProductSize {
-  id            String  @id @default(uuid())
+  id            String   @id @default(cuid())
   productId     String
-  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id])
   name          String
   nameAz        String
   nameEn        String
-  priceModifier Float   @default(0)
-  isDefault     Boolean @default(false)
+  priceModifier Float    @default(0)
+  isDefault     Boolean  @default(false)
 }
 
 model ProductExtra {
-  id        String  @id @default(uuid())
+  id        String   @id @default(cuid())
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
   name      String
   nameAz    String
   nameEn    String
@@ -116,53 +113,53 @@ model ProductExtra {
 }
 
 model Order {
-  id            String      @id @default(uuid())
-  orderNumber   String      @unique
-  tableId       String
-  table         Table       @relation(fields: [tableId], references: [id])
-  branchId      String
-  branch        Branch      @relation(fields: [branchId], references: [id])
-  items         OrderItem[]
-  subtotal      Float
-  serviceFee    Float
-  discount      Float       @default(0)
-  discountCode  String?
-  total         Float
-  status        String      @default("pending")
-  paymentMethod String
-  paymentStatus String      @default("pending")
-  specialRequest String?
-  estimatedTime Int?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  tableId         String
+  table           Table       @relation(fields: [tableId], references: [id])
+  branchId        String
+  branch          Branch      @relation(fields: [branchId], references: [id])
+  items           OrderItem[]
+  subtotal        Float
+  serviceFee      Float
+  discount        Float       @default(0)
+  discountCode    String?
+  total           Float
+  status          String      @default("pending")
+  paymentMethod   String      @default("cash")
+  paymentStatus   String      @default("pending")
+  specialRequest  String?
+  estimatedTime   Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model OrderItem {
-  id              String            @id @default(uuid())
+  id              String          @id @default(cuid())
   orderId         String
-  order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order           Order           @relation(fields: [orderId], references: [id])
   productId       String
-  product         Product           @relation(fields: [productId], references: [id])
+  product         Product         @relation(fields: [productId], references: [id])
   quantity        Int
   selectedSizeId  String?
   unitPrice       Float
   totalPrice      Float
   specialNote     String?
-  status          String            @default("pending")
+  status          String          @default("pending")
   extras          OrderItemExtra[]
 }
 
 model OrderItemExtra {
-  id          String    @id @default(uuid())
+  id          String    @id @default(cuid())
   orderItemId String
-  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
   extraId     String
   name        String
   price       Float
 }
 
 model WaiterRequest {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   tableId   String
   table     Table    @relation(fields: [tableId], references: [id])
   type      String
@@ -172,25 +169,27 @@ model WaiterRequest {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   email     String   @unique
   password  String
   name      String
-  role      String   @default("staff")
+  role      String   @default("waiter")
   status    String   @default("active")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Coupon {
-  id             String   @id @default(uuid())
-  code           String   @unique
-  discountType   String
-  discountValue  Float
-  minOrderAmount Float?
-  maxDiscount    Float?
-  validFrom      DateTime
-  validUntil     DateTime
-  usageLimit     Int?
-  usageCount     Int      @default(0)
-  status         String   @default("active")
+model Reward {
+  id              String   @id @default(cuid())
+  title           String
+  titleAz         String
+  titleEn         String
+  description     String
+  descriptionAz   String
+  descriptionEn   String
+  pointsRequired  Int
+  discountPercent Float?
+  discountAmount  Float?
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
 }

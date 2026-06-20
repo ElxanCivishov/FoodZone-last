@@ -18,7 +18,11 @@ i18n
     },
     fallbackLng: 'az',
     interpolation: { escapeValue: false },
-    detection: { order: ['localStorage', 'navigator'], caches: ['localStorage'] },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'fz_language',
+    },
   });
 
 export default i18n;

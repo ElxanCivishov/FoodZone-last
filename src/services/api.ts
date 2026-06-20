@@ -3,6 +3,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
+import { ApiResponse } from "@/types";
 
 const API_BASE = "/api";
 
@@ -12,7 +13,6 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// Request interceptor - attach token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem("token");
@@ -24,7 +24,6 @@ api.interceptors.request.use(
   (error: AxiosError) => Promise.reject(error),
 );
 
-// Response interceptor - standardized error handling
 api.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error: AxiosError) => {
@@ -35,30 +34,31 @@ api.interceptors.response.use(
 
     if (status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/admin/login";
+      if (!window.location.pathname.startsWith("/admin")) {
+        window.location.href = "/admin/login";
+      }
     }
 
     return Promise.reject(new Error(message));
   },
 );
 
-// ✅ Adi funksiyalar (generic arrow function yox, TSX xətası olmur)
-export function get<T = any>(
+export function get<T>(
   url: string,
   params?: Record<string, any>,
-): Promise<T> {
+): Promise<ApiResponse<T>> {
   return api.get(url, { params });
 }
 
-export function post<T = any>(url: string, data?: any): Promise<T> {
+export function post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
   return api.post(url, data);
 }
 
-export function patch<T = any>(url: string, data?: any): Promise<T> {
+export function patch<T>(url: string, data?: any): Promise<ApiResponse<T>> {
   return api.patch(url, data);
 }
 
-export function del<T = any>(url: string): Promise<T> {
+export function del<T>(url: string): Promise<ApiResponse<T>> {
   return api.delete(url);
 }
 
