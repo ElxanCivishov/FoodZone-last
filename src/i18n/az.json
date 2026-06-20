@@ -1,0 +1,14 @@
+{
+  "app": { "name": "FoodZone", "tagline": "Restoran menyusu və sifariş sistemi" },
+  "qr": { "title": "QR Kodu Skan Edin", "subtitle": "Masadakı QR kodu skan edin", "scanning": "Skan edilir...", "invalid": "Yanlış QR kod", "expired": "QR kodun vaxtı bitib" },
+  "language": { "title": "Dil Seçin", "subtitle": "Davam etmək üçün dil seçin" },
+  "welcome": { "title": "Xoş gəlmisiniz", "subtitle": "FoodZone-a", "start": "Menyuya keç" },
+  "home": { "search": "Axtar...", "categories": "Kateqoriyalar", "popular": "Populyar", "viewAll": "Hamısına bax" },
+  "product": { "addToCart": "Səbətə əlavə et", "size": "Ölçü", "extras": "Əlavələr", "specialNote": "Xüsusi qeyd", "quantity": "Miqdar" },
+  "cart": { "title": "Səbət", "empty": "Səbətiniz boşdur", "subtotal": "Məbləğ", "serviceFee": "Xidmət haqqı (5%)", "discount": "Endirim", "total": "Cəmi", "checkout": "Sifariş et", "coupon": "Kupon kodu" },
+  "checkout": { "title": "Sifariş təsdiqi", "paymentMethod": "Ödəniş üsulu", "cash": "Nağd", "card": "Kart", "online": "Onlayn", "placeOrder": "Sifarişi təsdiqlə", "specialRequest": "Xüsusi istək" },
+  "order": { "success": "Sifarişiniz qəbul edildi!", "number": "Sifariş nömrəsi", "tracking": "Sifarişi izlə", "status": { "pending": "Gözləmədə", "confirmed": "Təsdiqləndi", "preparing": "Hazırlanır", "ready": "Hazırdır", "served": "Təqdim edildi", "cancelled": "Ləğv edildi" } },
+  "waiter": { "title": "Ofisiant çağır", "call": "Ofisiant çağır", "water": "Su istəyirəm", "napkin": "Salfet", "bill": "Hesab", "clean": "Masa təmizlə", "other": "Digər", "message": "Əlavə məlumat", "send": "Göndər" },
+  "wifi": { "title": "Wi-Fi", "connect": "Qoşul", "password": "Şifrə" },
+  "common": { "back": "Geri", "close": "Bağla", "save": "Saxla", "cancel": "Ləğv et", "delete": "Sil", "edit": "Dəyiş", "loading": "Yüklənir...", "error": "Xəta baş verdi", "retry": "Yenidən cəhd et" }
+}

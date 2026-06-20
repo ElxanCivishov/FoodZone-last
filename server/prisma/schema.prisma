@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  logo        String?
+  description String?
+  status      String   @default("active")
+  branches    Branch[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Branch {
+  id            String          @id @default(uuid())
+  restaurantId  String
+  restaurant    Restaurant      @relation(fields: [restaurantId], references: [id])
+  name          String
+  address       String?
+  phone         String?
+  wifiName      String?
+  wifiPassword  String?
+  status        String          @default("active")
+  tables        Table[]
+  categories    Category[]
+  products      Product[]
+  orders        Order[]
+  createdAt     DateTime        @default(now())
+}
+
+model Table {
+  id        String          @id @default(uuid())
+  branchId  String
+  branch    Branch          @relation(fields: [branchId], references: [id])
+  number    String
+  qrCode    String          @unique
+  status    String          @default("active")
+  capacity  Int?
+  orders    Order[]
+  requests  WaiterRequest[]
+  createdAt DateTime        @default(now())
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  branchId  String
+  branch    Branch    @relation(fields: [branchId], references: [id])
+  name      String
+  nameAz    String
+  nameEn    String
+  nameRu    String
+  nameTr    String
+  icon      String?
+  sortOrder Int       @default(0)
+  status    String    @default("active")
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id            String         @id @default(uuid())
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id])
+  branchId      String?
+  branch        Branch?        @relation(fields: [branchId], references: [id])
+  name          String
+  nameAz        String
+  nameEn        String
+  nameRu        String
+  nameTr        String
+  description   String?
+  descriptionAz String?
+  descriptionEn String?
+  descriptionRu String?
+  descriptionTr String?
+  price         Float
+  image         String?
+  sortOrder     Int            @default(0)
+  status        String         @default("active")
+  isPopular     Boolean        @default(false)
+  hasExtras     Boolean        @default(false)
+  hasSizes      Boolean        @default(false)
+  sizes         ProductSize[]
+  extras        ProductExtra[]
+  orderItems    OrderItem[]
+  createdAt     DateTime       @default(now())
+}
+
+model ProductSize {
+  id            String   @id @default(uuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name          String
+  nameAz        String
+  nameEn        String
+  priceModifier Float    @default(0)
+  isDefault     Boolean  @default(false)
+}
+
+model ProductExtra {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  nameAz    String
+  nameEn    String
+  price     Float
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique
+  tableId       String
+  table         Table       @relation(fields: [tableId], references: [id])
+  branchId      String
+  branch        Branch      @relation(fields: [branchId], references: [id])
+  items         OrderItem[]
+  subtotal      Float
+  serviceFee    Float
+  discount      Float       @default(0)
+  discountCode  String?
+  total         Float
+  status        String      @default("pending")
+  paymentMethod String
+  paymentStatus String      @default("pending")
+  specialRequest String?
+  estimatedTime Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id             String   @id @default(uuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+  quantity       Int
+  selectedSizeId String?
+  unitPrice      Float
+  totalPrice     Float
+  specialNote    String?
+  status         String   @default("pending")
+}
+
+model WaiterRequest {
+  id        String   @id @default(uuid())
+  tableId   String
+  table     Table    @relation(fields: [tableId], references: [id])
+  type      String
+  status    String   @default("pending")
+  message   String?
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("staff")
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  discountType  String
+  discountValue Float
+  minOrderAmount Float?
+  maxDiscount   Float?
+  validFrom     DateTime
+  validUntil    DateTime
+  usageLimit    Int?
+  usageCount    Int      @default(0)
+  status        String   @default("active")
+}

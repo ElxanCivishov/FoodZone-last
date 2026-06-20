@@ -1,0 +1,14 @@
+{
+  "app": { "name": "FoodZone", "tagline": "Restoran menü ve sipariş sistemi" },
+  "qr": { "title": "QR Kodu Tara", "subtitle": "Masadaki QR kodu tarayın", "scanning": "Taranıyor...", "invalid": "Geçersiz QR kod", "expired": "QR kodun süresi doldu" },
+  "language": { "title": "Dil Seçin", "subtitle": "Devam etmek için dil seçin" },
+  "welcome": { "title": "Hoş geldiniz", "subtitle": "FoodZone'a", "start": "Menüye Git" },
+  "home": { "search": "Ara...", "categories": "Kategoriler", "popular": "Popüler", "viewAll": "Tümünü Gör" },
+  "product": { "addToCart": "Sepete Ekle", "size": "Boyut", "extras": "Ekstralar", "specialNote": "Özel not", "quantity": "Miktar" },
+  "cart": { "title": "Sepet", "empty": "Sepetiniz boş", "subtotal": "Ara Toplam", "serviceFee": "Hizmet Bedeli (%5)", "discount": "İndirim", "total": "Toplam", "checkout": "Sipariş Ver", "coupon": "Kupon kodu" },
+  "checkout": { "title": "Sipariş Onayı", "paymentMethod": "Ödeme Yöntemi", "cash": "Nakit", "card": "Kart", "online": "Online", "placeOrder": "Siparişi Onayla", "specialRequest": "Özel istek" },
+  "order": { "success": "Siparişiniz alındı!", "number": "Sipariş Numarası", "tracking": "Siparişi Takip Et", "status": { "pending": "Beklemede", "confirmed": "Onaylandı", "preparing": "Hazırlanıyor", "ready": "Hazır", "served": "Servis Edildi", "cancelled": "İptal Edildi" } },
+  "waiter": { "title": "Garson Çağır", "call": "Garson Çağır", "water": "Su", "napkin": "Peçete", "bill": "Hesap", "clean": "Masa Temizle", "other": "Diğer", "message": "Ek bilgi", "send": "Gönder" },
+  "wifi": { "title": "Wi-Fi", "connect": "Bağlan", "password": "Şifre" },
+  "common": { "back": "Geri", "close": "Kapat", "save": "Kaydet", "cancel": "İptal", "delete": "Sil", "edit": "Düzenle", "loading": "Yükleniyor...", "error": "Bir hata oluştu", "retry": "Tekrar Dene" }
+}

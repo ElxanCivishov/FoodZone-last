@@ -1,0 +1,14 @@
+{
+  "app": { "name": "FoodZone", "tagline": "Система меню и заказов ресторана" },
+  "qr": { "title": "Сканировать QR-код", "subtitle": "Отсканируйте QR-код на столе", "scanning": "Сканирование...", "invalid": "Неверный QR-код", "expired": "Срок действия истек" },
+  "language": { "title": "Выберите язык", "subtitle": "Выберите язык для продолжения" },
+  "welcome": { "title": "Добро пожаловать", "subtitle": "в FoodZone", "start": "Перейти в меню" },
+  "home": { "search": "Поиск...", "categories": "Категории", "popular": "Популярное", "viewAll": "Смотреть все" },
+  "product": { "addToCart": "Добавить в корзину", "size": "Размер", "extras": "Дополнения", "specialNote": "Особая пометка", "quantity": "Количество" },
+  "cart": { "title": "Корзина", "empty": "Ваша корзина пуста", "subtotal": "Сумма", "serviceFee": "Плата за обслуживание (5%)", "discount": "Скидка", "total": "Итого", "checkout": "Оформить заказ", "coupon": "Код купона" },
+  "checkout": { "title": "Подтверждение заказа", "paymentMethod": "Способ оплаты", "cash": "Наличные", "card": "Карта", "online": "Онлайн", "placeOrder": "Подтвердить заказ", "specialRequest": "Особый запрос" },
+  "order": { "success": "Ваш заказ принят!", "number": "Номер заказа", "tracking": "Отследить заказ", "status": { "pending": "В ожидании", "confirmed": "Подтвержден", "preparing": "Готовится", "ready": "Готов", "served": "Подано", "cancelled": "Отменен" } },
+  "waiter": { "title": "Вызвать официанта", "call": "Вызвать официанта", "water": "Вода", "napkin": "Салфетка", "bill": "Счет", "clean": "Убрать стол", "other": "Другое", "message": "Доп. информация", "send": "Отправить" },
+  "wifi": { "title": "Wi-Fi", "connect": "Подключиться", "password": "Пароль" },
+  "common": { "back": "Назад", "close": "Закрыть", "save": "Сохранить", "cancel": "Отмена", "delete": "Удалить", "edit": "Изменить", "loading": "Загрузка...", "error": "Произошла ошибка", "retry": "Повторить" }
+}
