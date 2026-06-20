@@ -1,34 +1,44 @@
 import { Router } from 'express';
+import { prisma } from '../lib/prisma';
+import { validate } from '../middleware/validate';
+import { QRValidateSchema } from '../lib/validation';
 
 const router = Router();
 
-router.post('/validate', (req, res) => {
-  const { qrData } = req.body;
-
+router.post('/validate', validate(QRValidateSchema), async (req, res, next) => {
   try {
+    const { qrData } = req.body;
     const data = JSON.parse(qrData);
 
-    if (!data.restaurantId || !data.branchId || !data.tableId) {
-      return res.json({ valid: false, message: 'Invalid QR code format' });
+    if (!data.tableId) {
+      return res.status(400).json({ success: false, valid: false, message: 'Invalid QR format' });
+    }
+
+    const table = await prisma.table.findUnique({
+      where: { id: data.tableId },
+      include: { branch: { include: { restaurant: true } } },
+    });
+
+    if (!table || table.status !== 'active') {
+      return res.json({ success: false, valid: false, message: 'Invalid or inactive table' });
     }
 
     if (data.timestamp && Date.now() - data.timestamp > 24 * 60 * 60 * 1000) {
-      return res.json({ valid: false, expired: true, message: 'QR code has expired' });
+      return res.json({ success: false, valid: false, expired: true, message: 'QR code has expired' });
     }
 
     res.json({
+      success: true,
       valid: true,
-      restaurantId: data.restaurantId,
-      branchId: data.branchId,
-      tableId: data.tableId,
-      tableNumber: data.tableNumber || '1',
-      restaurantName: 'FoodZone',
-      branchName: 'Sahil',
+      restaurantId: table.branch.restaurantId,
+      branchId: table.branchId,
+      tableId: table.id,
+      tableNumber: table.number,
+      restaurantName: table.branch.restaurant.name,
+      branchName: table.branch.name,
       language: data.language || 'az',
     });
-  } catch (error) {
-    res.json({ valid: false, message: 'Invalid QR code' });
-  }
+  } catch (err) { next(err); }
 });
 
 export { router as qrRoutes };

@@ -1,7 +1,7 @@
 {
   "name": "foodzone-complete",
-  "version": "1.0.0",
-  "description": "FoodZone - Complete Restaurant QR Menu & Ordering System",
+  "version": "2.0.0",
+  "description": "FoodZone - Complete Restaurant QR Menu & Ordering System (Refactored)",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run client:dev\" \"npm run server:dev\"",
@@ -15,6 +15,7 @@
     "db:push": "cd server && npx prisma db push",
     "db:migrate": "cd server && npx prisma migrate dev",
     "db:studio": "cd server && npx prisma studio",
+    "db:seed": "cd server && npx prisma db seed",
     "lint": "eslint . --ext ts,tsx",
     "setup": "npm install && cd server && npm install && npm run db:generate"
   },
@@ -25,6 +26,7 @@
     "framer-motion": "^11.2.0",
     "zustand": "^4.5.2",
     "@tanstack/react-query": "^5.40.0",
+    "axios": "^1.7.2",
     "react-hook-form": "^7.51.5",
     "zod": "^3.23.8",
     "@hookform/resolvers": "^3.6.0",

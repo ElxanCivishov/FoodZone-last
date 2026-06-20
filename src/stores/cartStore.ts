@@ -33,10 +33,10 @@ export const useCartStore = create<CartState>()(
         const items = get().items;
         const existingItem = items.find(
           (i) => i.productId === itemData.productId &&
-            i.selectedSize?.id === itemData.selectedSize?.id &&
-            JSON.stringify(i.selectedExtras.map((e) => e.id).sort()) ===
-              JSON.stringify(itemData.selectedExtras.map((e) => e.id).sort()) &&
-            i.specialNote === itemData.specialNote
+          i.selectedSize?.id === itemData.selectedSize?.id &&
+          JSON.stringify(i.selectedExtras.map((e) => e.id).sort()) ===
+          JSON.stringify(itemData.selectedExtras.map((e) => e.id).sort()) &&
+          i.specialNote === itemData.specialNote
         );
         if (existingItem) {
           get().updateQuantity(existingItem.id, existingItem.quantity + itemData.quantity);

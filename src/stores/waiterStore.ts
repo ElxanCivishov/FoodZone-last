@@ -5,8 +5,8 @@ interface WaiterState {
   orders: WaiterOrder[];
   pendingRequests: WaiterRequestItem[];
   acceptedRequests: WaiterRequestItem[];
-  activeTab: 'orders' | 'requests' | 'tables';
-  setActiveTab: (tab: 'orders' | 'requests' | 'tables') => void;
+  activeTab: 'orders' | 'requests';
+  setActiveTab: (tab: 'orders' | 'requests') => void;
   serveOrder: (orderId: string, emitEvent?: (event: string, data: unknown) => void) => void;
   acceptRequest: (requestId: string, emitEvent?: (event: string, data: unknown) => void) => void;
   completeRequest: (requestId: string, emitEvent?: (event: string, data: unknown) => void) => void;

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { SessionData, QRScanResult } from '@/types';
 import { STORAGE_KEYS } from '@/utils/constants';
+import { post } from '@/services/api';
 
 interface SessionState {
   session: SessionData | null;
@@ -29,12 +30,8 @@ export const useSessionStore = create<SessionState>()(
         try {
           let result: QRScanResult;
           try {
-            const response = await fetch(`/api/qr/validate`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ qrData }),
-            });
-            result = await response.json();
+            const response: any = await post('/qr/validate', { qrData });
+            result = response.data;
           } catch {
             const data = JSON.parse(qrData);
             result = {
@@ -62,8 +59,8 @@ export const useSessionStore = create<SessionState>()(
           };
           set({ session, isLoading: false });
           return result;
-        } catch (error) {
-          set({ error: 'Network error. Please try again.', isLoading: false });
+        } catch (error: any) {
+          set({ error: error.message || 'Network error', isLoading: false });
           throw error;
         }
       },

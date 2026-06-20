@@ -20,20 +20,20 @@ model Restaurant {
 }
 
 model Branch {
-  id            String          @id @default(uuid())
+  id            String     @id @default(uuid())
   restaurantId  String
-  restaurant    Restaurant      @relation(fields: [restaurantId], references: [id])
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
   name          String
   address       String?
   phone         String?
   wifiName      String?
   wifiPassword  String?
-  status        String          @default("active")
+  status        String     @default("active")
   tables        Table[]
   categories    Category[]
   products      Product[]
   orders        Order[]
-  createdAt     DateTime        @default(now())
+  createdAt     DateTime   @default(now())
 }
 
 model Table {
@@ -95,20 +95,20 @@ model Product {
 }
 
 model ProductSize {
-  id            String   @id @default(uuid())
+  id            String  @id @default(uuid())
   productId     String
-  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   name          String
   nameAz        String
   nameEn        String
-  priceModifier Float    @default(0)
-  isDefault     Boolean  @default(false)
+  priceModifier Float   @default(0)
+  isDefault     Boolean @default(false)
 }
 
 model ProductExtra {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   name      String
   nameAz    String
   nameEn    String
@@ -138,17 +138,27 @@ model Order {
 }
 
 model OrderItem {
-  id             String   @id @default(uuid())
-  orderId        String
-  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId      String
-  product        Product  @relation(fields: [productId], references: [id])
-  quantity       Int
-  selectedSizeId String?
-  unitPrice      Float
-  totalPrice     Float
-  specialNote    String?
-  status         String   @default("pending")
+  id              String            @id @default(uuid())
+  orderId         String
+  order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product           @relation(fields: [productId], references: [id])
+  quantity        Int
+  selectedSizeId  String?
+  unitPrice       Float
+  totalPrice      Float
+  specialNote     String?
+  status          String            @default("pending")
+  extras          OrderItemExtra[]
+}
+
+model OrderItemExtra {
+  id          String    @id @default(uuid())
+  orderItemId String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  extraId     String
+  name        String
+  price       Float
 }
 
 model WaiterRequest {
@@ -172,15 +182,15 @@ model User {
 }
 
 model Coupon {
-  id            String   @id @default(uuid())
-  code          String   @unique
-  discountType  String
-  discountValue Float
+  id             String   @id @default(uuid())
+  code           String   @unique
+  discountType   String
+  discountValue  Float
   minOrderAmount Float?
-  maxDiscount   Float?
-  validFrom     DateTime
-  validUntil    DateTime
-  usageLimit    Int?
-  usageCount    Int      @default(0)
-  status        String   @default("active")
+  maxDiscount    Float?
+  validFrom      DateTime
+  validUntil     DateTime
+  usageLimit     Int?
+  usageCount     Int      @default(0)
+  status         String   @default("active")
 }

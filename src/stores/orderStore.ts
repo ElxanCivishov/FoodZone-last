@@ -7,7 +7,7 @@ interface OrderState {
   isPlacingOrder: boolean;
   orderError: string | null;
   setCurrentOrder: (order: Order | null) => void;
-  placeOrder: (orderData: unknown, socketEmit?: (event: string, data: unknown) => void) => Promise<Order>;
+  placeOrder: (orderData: unknown) => Promise<Order>;
   updateOrderStatus: (update: OrderStatusUpdate) => void;
   addOrder: (order: Order) => void;
   clearCurrentOrder: () => void;
@@ -19,32 +19,25 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   isPlacingOrder: false,
   orderError: null,
   setCurrentOrder: (order) => set({ currentOrder: order }),
-  placeOrder: async (orderData, socketEmit) => {
+
+  placeOrder: async (orderData) => {
     set({ isPlacingOrder: true, orderError: null });
     try {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
+      const { post } = await import('@/services/api');
+      const response: any = await post('/orders', orderData);
+      const order = response.data;
+      set({ 
+        currentOrder: order, 
+        isPlacingOrder: false, 
+        orders: [order, ...get().orders] 
       });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to place order');
-      }
-      const order: Order = await response.json();
-      if (socketEmit) {
-        socketEmit('order:placed', {
-          orderId: order.id, tableId: order.tableId, branchId: order.branchId,
-          orderNumber: order.orderNumber, items: order.items, total: order.total, status: order.status,
-        });
-      }
-      set({ currentOrder: order, isPlacingOrder: false, orders: [order, ...get().orders] });
       return order;
-    } catch (error) {
-      set({ orderError: error instanceof Error ? error.message : 'Unknown error', isPlacingOrder: false });
+    } catch (error: any) {
+      set({ orderError: error.message || 'Failed to place order', isPlacingOrder: false });
       throw error;
     }
   },
+
   updateOrderStatus: (update) => {
     const { currentOrder, orders } = get();
     if (currentOrder && currentOrder.id === update.orderId) {
@@ -52,6 +45,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     }
     set({ orders: orders.map((o) => o.id === update.orderId ? { ...o, status: update.status } : o) });
   },
+
   addOrder: (order) => set({ orders: [order, ...get().orders] }),
   clearCurrentOrder: () => set({ currentOrder: null }),
 }));

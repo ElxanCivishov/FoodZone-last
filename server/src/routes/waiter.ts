@@ -1,36 +1,66 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { authenticate, authorize } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { WaiterRequestSchema, WaiterRequestStatusSchema } from '../lib/validation';
 
-const prisma = new PrismaClient();
 const router = Router();
 
-router.post('/', async (req, res) => {
+// Create waiter request (public - customer can call waiter)
+router.post('/', validate(WaiterRequestSchema), async (req, res, next) => {
   try {
     const { tableId, type, message } = req.body;
+
+    const table = await prisma.table.findUnique({ where: { id: tableId } });
+    if (!table) return res.status(404).json({ success: false, message: 'Table not found' });
+
     const request = await prisma.waiterRequest.create({
-      data: { tableId, type, message, status: 'pending' },
+      data: { tableId, type, message: message || null, status: 'pending' },
       include: { table: true },
     });
-    res.status(201).json(request);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create waiter request' });
-  }
+
+    req.io.to('waiters').emit('waiter:new:request', {
+      requestId: request.id,
+      tableId: request.tableId,
+      tableNumber: table.number,
+      type,
+      message: message || null,
+      status: 'pending',
+      createdAt: request.createdAt,
+    });
+    req.io.to('admin').emit('waiter:new:request', {
+      requestId: request.id,
+      tableId: request.tableId,
+      type,
+      status: 'pending',
+    });
+
+    res.status(201).json({ success: true, data: request });
+  } catch (err) { next(err); }
 });
 
-router.get('/', async (req, res) => {
+// Get all waiter requests (protected)
+router.get('/', authenticate, authorize(['admin', 'manager', 'waiter']), async (req, res, next) => {
   try {
+    const { status } = req.query;
+    const where: any = {};
+    if (status) {
+      where.status = { in: (status as string).split(',') };
+    } else {
+      where.status = { in: ['pending', 'accepted'] };
+    }
+
     const requests = await prisma.waiterRequest.findMany({
-      where: { status: { in: ['pending', 'accepted'] } },
+      where,
       include: { table: true },
       orderBy: { createdAt: 'desc' },
     });
-    res.json(requests);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch requests' });
-  }
+    res.json({ success: true, data: requests });
+  } catch (err) { next(err); }
 });
 
-router.patch('/:id/status', async (req, res) => {
+// Update request status (protected - waiter only)
+router.patch('/:id/status', authenticate, authorize(['admin', 'manager', 'waiter']), validate(WaiterRequestStatusSchema), async (req, res, next) => {
   try {
     const { status, waiterId } = req.body;
     const request = await prisma.waiterRequest.update({
@@ -38,18 +68,33 @@ router.patch('/:id/status', async (req, res) => {
       data: { status },
       include: { table: true },
     });
-    const io = (req as any).io;
-    if (io) {
-      io.to(`table:${request.tableId}`).emit('waiter:request:update', {
+
+    const eventData = {
+      requestId: request.id,
+      status,
+      tableId: request.tableId,
+      waiterId: waiterId || req.user?.id,
+    };
+
+    req.io.to(`table:${request.tableId}`).emit('waiter:request:update', eventData);
+
+    if (status === 'accepted') {
+      req.io.to(`table:${request.tableId}`).emit('customer:waiter:accepted', {
         requestId: request.id,
-        status,
-        waiterId,
+        status: 'accepted',
+        message: 'Waiter is on the way!',
       });
     }
-    res.json(request);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update request' });
-  }
+    if (status === 'done') {
+      req.io.to(`table:${request.tableId}`).emit('customer:waiter:accepted', {
+        requestId: request.id,
+        status: 'completed',
+        message: 'Request completed',
+      });
+    }
+
+    res.json({ success: true, data: request });
+  } catch (err) { next(err); }
 });
 
 export { router as waiterRoutes };

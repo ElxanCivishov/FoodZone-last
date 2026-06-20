@@ -1,13 +1,5 @@
 import { Server, Socket } from 'socket.io';
 
-const ROOMS = {
-  KITCHEN: 'kitchen',
-  WAITERS: 'waiters',
-  ADMIN: 'admin',
-  TABLE: (tableId: string) => `table:${tableId}`,
-  BRANCH: (branchId: string) => `branch:${branchId}`,
-};
-
 export const SOCKET_EVENTS = {
   CONNECT: 'connect',
   DISCONNECT: 'disconnect',
@@ -32,17 +24,25 @@ export const SOCKET_EVENTS = {
   CUSTOMER_WAITER_ACCEPTED: 'customer:waiter:accepted',
   CUSTOMER_ORDER_READY: 'customer:order:ready',
   NOTIFICATION: 'notification',
+} as const;
+
+const ROOMS = {
+  KITCHEN: 'kitchen',
+  WAITERS: 'waiters',
+  ADMIN: 'admin',
+  TABLE: (tableId: string) => `table:${tableId}`,
+  BRANCH: (branchId: string) => `branch:${branchId}`,
 };
 
 export function setupSocketEvents(io: Server) {
   io.on('connection', (socket: Socket) => {
-    console.log('Client connected:', socket.id);
+    console.log('[Socket] Client connected:', socket.id);
 
     socket.on(SOCKET_EVENTS.JOIN_ROOM, ({ room, userId, role }) => {
       socket.join(room);
       socket.data.userId = userId;
       socket.data.role = role;
-      console.log(`Socket ${socket.id} joined room ${room} as ${role}`);
+      console.log(`[Socket] ${socket.id} joined room "${room}" as ${role}`);
       socket.to(room).emit(SOCKET_EVENTS.NOTIFICATION, {
         type: 'info',
         message: `${role} connected`,
@@ -52,19 +52,19 @@ export function setupSocketEvents(io: Server) {
 
     socket.on(SOCKET_EVENTS.LEAVE_ROOM, ({ room }) => {
       socket.leave(room);
-      console.log(`Socket ${socket.id} left room ${room}`);
+      console.log(`[Socket] ${socket.id} left room "${room}"`);
     });
 
     socket.on(SOCKET_EVENTS.ORDER_PLACED, (orderData) => {
       const { tableId, branchId, orderId } = orderData;
       io.to(ROOMS.KITCHEN).emit(SOCKET_EVENTS.KITCHEN_NEW_ORDER, orderData);
       io.to(ROOMS.ADMIN).emit(SOCKET_EVENTS.KITCHEN_NEW_ORDER, orderData);
-      socket.emit(SOCKET_EVENTS.CUSTOMER_ORDER_UPDATE, {
+      io.to(ROOMS.TABLE(tableId)).emit(SOCKET_EVENTS.CUSTOMER_ORDER_UPDATE, {
         orderId,
         status: 'confirmed',
         message: 'Order confirmed and sent to kitchen',
       });
-      console.log(`Order ${orderId} placed for table ${tableId}`);
+      console.log(`[Socket] Order ${orderId} placed for table ${tableId}`);
     });
 
     socket.on(SOCKET_EVENTS.ORDER_ACCEPTED, (data) => {
@@ -80,7 +80,7 @@ export function setupSocketEvents(io: Server) {
         status: 'preparing',
         tableId,
       });
-      console.log(`Order ${orderId} accepted by kitchen`);
+      console.log(`[Socket] Order ${orderId} accepted by kitchen`);
     });
 
     socket.on(SOCKET_EVENTS.ORDER_ITEM_READY, (data) => {
@@ -111,7 +111,7 @@ export function setupSocketEvents(io: Server) {
         status: 'ready',
         tableId,
       });
-      console.log(`Order ${orderId} ready for table ${tableId}`);
+      console.log(`[Socket] Order ${orderId} ready for table ${tableId}`);
     });
 
     socket.on(SOCKET_EVENTS.ORDER_SERVED, (data) => {
@@ -127,7 +127,7 @@ export function setupSocketEvents(io: Server) {
         tableId,
         waiterId,
       });
-      console.log(`Order ${orderId} served by waiter ${waiterId}`);
+      console.log(`[Socket] Order ${orderId} served by waiter ${waiterId}`);
     });
 
     socket.on(SOCKET_EVENTS.WAITER_NEW_REQUEST, (data) => {
@@ -146,7 +146,7 @@ export function setupSocketEvents(io: Server) {
         type,
         status: 'pending',
       });
-      console.log(`Waiter request from table ${tableId}: ${type}`);
+      console.log(`[Socket] Waiter request from table ${tableId}: ${type}`);
     });
 
     socket.on(SOCKET_EVENTS.WAITER_REQUEST_ACCEPTED, (data) => {
@@ -156,7 +156,7 @@ export function setupSocketEvents(io: Server) {
         status: 'accepted',
         message: 'Waiter is on the way!',
       });
-      console.log(`Waiter ${waiterId} accepted request ${requestId}`);
+      console.log(`[Socket] Waiter ${waiterId} accepted request ${requestId}`);
     });
 
     socket.on(SOCKET_EVENTS.WAITER_REQUEST_COMPLETED, (data) => {
@@ -166,11 +166,11 @@ export function setupSocketEvents(io: Server) {
         status: 'completed',
         message: 'Request completed',
       });
-      console.log(`Request ${requestId} completed for table ${tableId}`);
+      console.log(`[Socket] Request ${requestId} completed for table ${tableId}`);
     });
 
     socket.on(SOCKET_EVENTS.DISCONNECT, () => {
-      console.log('Client disconnected:', socket.id);
+      console.log('[Socket] Client disconnected:', socket.id);
     });
   });
 }
