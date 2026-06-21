@@ -15,6 +15,7 @@ import { authRoutes } from "./routes/auth";
 import { dashboardRoutes } from "./routes/dashboard";
 import { uploadRoutes } from "./routes/upload";
 import { staffRoutes } from "./routes/staff";
+import { settingsRoutes } from "./routes/settings";
 import { setupSocketEvents } from "./events/socketEvents";
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -70,6 +71,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/staff", staffRoutes);
+app.use("/api/settings", settingsRoutes);
 
 setupSocketEvents(io);
 

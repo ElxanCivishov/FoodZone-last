@@ -20,7 +20,13 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const from = (location.state as any)?.from || null;
+  const rawFrom =
+    (location.state as any)?.from ||
+    new URLSearchParams(location.search).get('from');
+  const from =
+    rawFrom && rawFrom.startsWith('/') && !rawFrom.startsWith('//')
+      ? rawFrom
+      : null;
 
   useEffect(() => {
     if (isAuthenticated && user) {

@@ -4,7 +4,13 @@ declare global {
   namespace Express {
     interface Request {
       io: SocketIOServer;
-      user?: { id: string; email: string; role: string; name: string };
+      user?: {
+        id?: string;
+        userId?: string;
+        email?: string;
+        role: string;
+        name?: string;
+      };
     }
   }
 }

@@ -34,8 +34,10 @@ api.interceptors.response.use(
 
     if (status === 401) {
       localStorage.removeItem("token");
-      if (!window.location.pathname.startsWith("/admin")) {
-        window.location.href = "/admin/login";
+      localStorage.removeItem("fz_auth");
+      if (!window.location.pathname.startsWith("/login")) {
+        const from = `${window.location.pathname}${window.location.search}`;
+        window.location.href = `/login?from=${encodeURIComponent(from)}`;
       }
     }
 

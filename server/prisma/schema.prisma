@@ -20,54 +20,53 @@ model Restaurant {
 }
 
 model Branch {
-  id            String         @id @default(cuid())
-  restaurantId  String
-  restaurant    Restaurant     @relation(fields: [restaurantId], references: [id])
-  name          String
-  address       String?
-  phone         String?
-  wifiName      String?
-  wifiPassword  String?
-  status        String         @default("active")
-  tables        Table[]
-  categories    Category[]
-  orders        Order[]
-  createdAt     DateTime       @default(now())
+  id           String     @id @default(cuid())
+  restaurantId String
+  name         String
+  address      String?
+  phone        String?
+  wifiName     String?
+  wifiPassword String?
+  status       String     @default("active")
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  categories   Category[]
+  orders       Order[]
+  tables       Table[]
 }
 
 model Table {
-  id         String          @id @default(cuid())
-  branchId   String
-  branch     Branch          @relation(fields: [branchId], references: [id])
-  number     String
-  qrCode     String          @unique
-  status     String          @default("active")
-  capacity   Int?
-  orders     Order[]
-  requests   WaiterRequest[]
-  createdAt  DateTime        @default(now())
+  id        String          @id @default(cuid())
+  branchId  String
+  number    String
+  qrCode    String          @unique
+  status    String          @default("active")
+  capacity  Int?
+  createdAt DateTime        @default(now())
+  orders    Order[]
+  branch    Branch          @relation(fields: [branchId], references: [id])
+  requests  WaiterRequest[]
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  branchId    String
-  branch      Branch    @relation(fields: [branchId], references: [id])
-  name        String
-  nameAz      String
-  nameEn      String
-  nameRu      String
-  nameTr      String
-  icon        String?
-  sortOrder   Int       @default(0)
-  status      String    @default("active")
-  products    Product[]
-  createdAt   DateTime  @default(now())
+  id        String    @id @default(cuid())
+  branchId  String
+  name      String
+  nameAz    String
+  nameEn    String
+  nameRu    String
+  nameTr    String
+  icon      String?
+  sortOrder Int       @default(0)
+  status    String    @default("active")
+  createdAt DateTime  @default(now())
+  branch    Branch    @relation(fields: [branchId], references: [id])
+  products  Product[]
 }
 
 model Product {
   id            String         @id @default(cuid())
   categoryId    String
-  category      Category       @relation(fields: [categoryId], references: [id])
   name          String
   nameAz        String
   nameEn        String
@@ -85,98 +84,117 @@ model Product {
   isPopular     Boolean        @default(false)
   hasExtras     Boolean        @default(false)
   hasSizes      Boolean        @default(false)
-  sizes         ProductSize[]
-  extras        ProductExtra[]
-  orderItems    OrderItem[]
   createdAt     DateTime       @default(now())
+  orderItems    OrderItem[]
+  category      Category       @relation(fields: [categoryId], references: [id])
+  extras        ProductExtra[]
+  sizes         ProductSize[]
 }
 
 model ProductSize {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   productId     String
-  product       Product  @relation(fields: [productId], references: [id])
   name          String
   nameAz        String
   nameEn        String
-  priceModifier Float    @default(0)
-  isDefault     Boolean  @default(false)
+  priceModifier Float   @default(0)
+  isDefault     Boolean @default(false)
+  product       Product @relation(fields: [productId], references: [id])
 }
 
 model ProductExtra {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
   name      String
   nameAz    String
   nameEn    String
   price     Float
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
-  tableId         String
-  table           Table       @relation(fields: [tableId], references: [id])
-  branchId        String
-  branch          Branch      @relation(fields: [branchId], references: [id])
-  items           OrderItem[]
-  subtotal        Float
-  serviceFee      Float
-  discount        Float       @default(0)
-  discountCode    String?
-  total           Float
-  status          String      @default("pending")
-  paymentMethod   String      @default("cash")
-  paymentStatus   String      @default("pending")
-  specialRequest  String?
-  estimatedTime   Int?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                     String      @id @default(cuid())
+  orderNumber            String      @unique
+  tableId                String
+  branchId               String
+  subtotal               Float
+  serviceFee             Float
+  discount               Float       @default(0)
+  discountCode           String?
+  total                  Float
+  status                 String      @default("pending")
+  paymentMethod          String      @default("cash")
+  paymentStatus          String      @default("pending")
+  specialRequest         String?
+  estimatedTime          Int?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  cancelReason           String?
+  cancelledAt            DateTime?
+  cancelledById          String?
+  delayMinutes           Int?
+  preparationCompletedAt DateTime?
+  preparationDuration    Int?
+  preparationStartedAt   DateTime?
+  branch                 Branch      @relation(fields: [branchId], references: [id])
+  cancelledBy            User?       @relation("CancelledOrders", fields: [cancelledById], references: [id])
+  table                  Table       @relation(fields: [tableId], references: [id])
+  items                  OrderItem[]
 }
 
 model OrderItem {
-  id              String          @id @default(cuid())
-  orderId         String
-  order           Order           @relation(fields: [orderId], references: [id])
-  productId       String
-  product         Product         @relation(fields: [productId], references: [id])
-  quantity        Int
-  selectedSizeId  String?
-  unitPrice       Float
-  totalPrice      Float
-  specialNote     String?
-  status          String          @default("pending")
-  extras          OrderItemExtra[]
+  id             String           @id @default(cuid())
+  orderId        String
+  productId      String
+  quantity       Int
+  selectedSizeId String?
+  unitPrice      Float
+  totalPrice     Float
+  specialNote    String?
+  status         String           @default("pending")
+  order          Order            @relation(fields: [orderId], references: [id])
+  product        Product          @relation(fields: [productId], references: [id])
+  extras         OrderItemExtra[]
 }
 
 model OrderItemExtra {
   id          String    @id @default(cuid())
   orderItemId String
-  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
   extraId     String
   name        String
   price       Float
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
 }
 
 model WaiterRequest {
-  id        String   @id @default(cuid())
-  tableId   String
-  table     Table    @relation(fields: [tableId], references: [id])
-  type      String
-  status    String   @default("pending")
-  message   String?
-  createdAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  tableId        String
+  type           String
+  status         String    @default("pending")
+  message        String?
+  createdAt      DateTime  @default(now())
+  acceptedById   String?
+  acceptedAt     DateTime?
+  rejectedById   String?
+  rejectedAt     DateTime?
+  rejectionNote  String?
+  table          Table     @relation(fields: [tableId], references: [id])
+  acceptedBy     User?     @relation("AcceptedRequests", fields: [acceptedById], references: [id])
+  rejectedBy     User?     @relation("RejectedRequests", fields: [rejectedById], references: [id])
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("waiter")
-  status    String   @default("active")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  password        String
+  name            String
+  role            String   @default("waiter")
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  cancelledOrders  Order[]          @relation("CancelledOrders")
+  acceptedRequests WaiterRequest[]  @relation("AcceptedRequests")
+  rejectedRequests WaiterRequest[]  @relation("RejectedRequests")
 }
 
 model Reward {
@@ -192,4 +210,10 @@ model Reward {
   discountAmount  Float?
   status          String   @default("active")
   createdAt       DateTime @default(now())
+}
+
+model Settings {
+  id              String   @id @default("singleton")
+  defaultPrepTime Int      @default(15)
+  updatedAt       DateTime @updatedAt
 }

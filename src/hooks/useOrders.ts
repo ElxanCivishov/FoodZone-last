@@ -21,8 +21,22 @@ export function useTableOrders(tableId: string) {
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ orderId, status, estimatedTime }: { orderId: string; status: OrderStatus; estimatedTime?: number }) =>
-      patch<Order>(`/orders/${orderId}/status`, { status, estimatedTime }),
+    mutationFn: ({
+      orderId,
+      status,
+      estimatedTime,
+      cancelReason,
+    }: {
+      orderId: string;
+      status: OrderStatus;
+      estimatedTime?: number;
+      cancelReason?: string;
+    }) =>
+      patch<Order>(`/orders/${orderId}/status`, {
+        status,
+        estimatedTime,
+        cancelReason,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });

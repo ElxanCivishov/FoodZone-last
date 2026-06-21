@@ -20,6 +20,7 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.branch.deleteMany();
   await prisma.restaurant.deleteMany();
+  await prisma.settings.deleteMany();
 
   console.log("✅ Cleared existing data");
 
@@ -884,7 +885,19 @@ async function main() {
   console.log("🎁 Rewards created: 4 rewards");
 
   // ========== ORDERS (for Kitchen & Waiter panels) ==========
-  const orderData = [
+  type OrderSeedItem = {
+    tableId: string;
+    status: string;
+    items: { productId: string; quantity: number; unitPrice: number; totalPrice: number }[];
+    specialRequest?: string;
+    estimatedTime?: number;
+    preparationStartedAt?: Date;
+    preparationCompletedAt?: Date;
+    preparationDuration?: number;
+    delayMinutes?: number;
+    createdAt: Date;
+  };
+  const orderData: OrderSeedItem[] = [
     // PENDING orders (Kitchen "New" tab)
     {
       tableId: tablesSahil[0].id,
@@ -950,58 +963,34 @@ async function main() {
     {
       tableId: tablesSahil[3].id,
       status: "preparing",
+      estimatedTime: 20,
+      preparationStartedAt: new Date(Date.now() - 14 * 60000), // started 14min ago, 6min left
       items: [
-        {
-          productId: products[9].id,
-          quantity: 1,
-          unitPrice: 22.0,
-          totalPrice: 22.0,
-        }, // Double Burger
-        {
-          productId: products[14].id,
-          quantity: 1,
-          unitPrice: 11.0,
-          totalPrice: 11.0,
-        }, // Cheesecake
+        { productId: products[9].id, quantity: 1, unitPrice: 22.0, totalPrice: 22.0 }, // Double Burger
+        { productId: products[14].id, quantity: 1, unitPrice: 11.0, totalPrice: 11.0 }, // Cheesecake
       ],
       createdAt: new Date(Date.now() - 15 * 60000),
     },
     {
       tableId: tablesSahil[4].id,
       status: "preparing",
+      estimatedTime: 15,
+      preparationStartedAt: new Date(Date.now() - 16 * 60000), // started 16min ago → 1min overdue
       items: [
-        {
-          productId: products[11].id,
-          quantity: 1,
-          unitPrice: 15.0,
-          totalPrice: 15.0,
-        }, // Chicken Burger
-        {
-          productId: products[1].id,
-          quantity: 1,
-          unitPrice: 12.0,
-          totalPrice: 12.0,
-        }, // Wings
+        { productId: products[11].id, quantity: 1, unitPrice: 15.0, totalPrice: 15.0 }, // Chicken Burger
+        { productId: products[1].id, quantity: 1, unitPrice: 12.0, totalPrice: 12.0 }, // Wings
       ],
       specialRequest: "Wings extra crispy",
-      createdAt: new Date(Date.now() - 10 * 60000),
+      createdAt: new Date(Date.now() - 18 * 60000),
     },
     {
       tableId: tablesSahil[5].id,
       status: "preparing",
+      estimatedTime: 15,
+      preparationStartedAt: new Date(Date.now() - 7 * 60000), // started 7min ago, 8min left
       items: [
-        {
-          productId: products[6].id,
-          quantity: 1,
-          unitPrice: 35.0,
-          totalPrice: 35.0,
-        }, // Steak
-        {
-          productId: products[3].id,
-          quantity: 1,
-          unitPrice: 14.0,
-          totalPrice: 14.0,
-        }, // Caesar
+        { productId: products[6].id, quantity: 1, unitPrice: 35.0, totalPrice: 35.0 }, // Steak
+        { productId: products[3].id, quantity: 1, unitPrice: 14.0, totalPrice: 14.0 }, // Caesar
       ],
       createdAt: new Date(Date.now() - 8 * 60000),
     },
@@ -1010,38 +999,28 @@ async function main() {
     {
       tableId: tablesSahil[6].id,
       status: "ready",
+      estimatedTime: 20,
+      preparationStartedAt: new Date(Date.now() - 24 * 60000),
+      preparationCompletedAt: new Date(Date.now() - 5 * 60000),
+      preparationDuration: 19, // 19min actual (1min early)
+      delayMinutes: -1,
       items: [
-        {
-          productId: products[12].id,
-          quantity: 1,
-          unitPrice: 24.0,
-          totalPrice: 24.0,
-        }, // 4 Cheese
-        {
-          productId: products[16].id,
-          quantity: 2,
-          unitPrice: 7.0,
-          totalPrice: 14.0,
-        }, // Mojito
+        { productId: products[12].id, quantity: 1, unitPrice: 24.0, totalPrice: 24.0 }, // 4 Cheese
+        { productId: products[16].id, quantity: 2, unitPrice: 7.0, totalPrice: 14.0 }, // Mojito
       ],
       createdAt: new Date(Date.now() - 25 * 60000),
     },
     {
       tableId: tablesSahil[7].id,
       status: "ready",
+      estimatedTime: 15,
+      preparationStartedAt: new Date(Date.now() - 19 * 60000),
+      preparationCompletedAt: new Date(Date.now() - 4 * 60000),
+      preparationDuration: 15, // exactly on time
+      delayMinutes: 0,
       items: [
-        {
-          productId: products[7].id,
-          quantity: 1,
-          unitPrice: 18.0,
-          totalPrice: 18.0,
-        }, // Alfredo
-        {
-          productId: products[0].id,
-          quantity: 1,
-          unitPrice: 8.5,
-          totalPrice: 8.5,
-        }, // Bruschetta
+        { productId: products[7].id, quantity: 1, unitPrice: 18.0, totalPrice: 18.0 }, // Alfredo
+        { productId: products[0].id, quantity: 1, unitPrice: 8.5, totalPrice: 8.5 }, // Bruschetta
       ],
       createdAt: new Date(Date.now() - 20 * 60000),
     },
@@ -1050,38 +1029,28 @@ async function main() {
     {
       tableId: tablesNizami[0].id,
       status: "served",
+      estimatedTime: 20,
+      preparationStartedAt: new Date(Date.now() - 58 * 60000),
+      preparationCompletedAt: new Date(Date.now() - 40 * 60000),
+      preparationDuration: 18,
+      delayMinutes: -2,
       items: [
-        {
-          productId: products[10].id,
-          quantity: 2,
-          unitPrice: 18.0,
-          totalPrice: 36.0,
-        },
-        {
-          productId: products[15].id,
-          quantity: 3,
-          unitPrice: 5.0,
-          totalPrice: 15.0,
-        },
+        { productId: products[10].id, quantity: 2, unitPrice: 18.0, totalPrice: 36.0 },
+        { productId: products[15].id, quantity: 3, unitPrice: 5.0, totalPrice: 15.0 },
       ],
       createdAt: new Date(Date.now() - 60 * 60000),
     },
     {
       tableId: tablesNizami[1].id,
       status: "served",
+      estimatedTime: 20,
+      preparationStartedAt: new Date(Date.now() - 88 * 60000),
+      preparationCompletedAt: new Date(Date.now() - 65 * 60000),
+      preparationDuration: 23, // 3min late
+      delayMinutes: 3,
       items: [
-        {
-          productId: products[6].id,
-          quantity: 1,
-          unitPrice: 35.0,
-          totalPrice: 35.0,
-        },
-        {
-          productId: products[3].id,
-          quantity: 1,
-          unitPrice: 14.0,
-          totalPrice: 14.0,
-        },
+        { productId: products[6].id, quantity: 1, unitPrice: 35.0, totalPrice: 35.0 },
+        { productId: products[3].id, quantity: 1, unitPrice: 14.0, totalPrice: 14.0 },
       ],
       createdAt: new Date(Date.now() - 90 * 60000),
     },
@@ -1106,6 +1075,11 @@ async function main() {
         paymentMethod: "cash",
         paymentStatus: od.status === "served" ? "paid" : "pending",
         specialRequest: od.specialRequest || null,
+        estimatedTime: od.estimatedTime ?? null,
+        preparationStartedAt: od.preparationStartedAt ?? null,
+        preparationCompletedAt: od.preparationCompletedAt ?? null,
+        preparationDuration: od.preparationDuration ?? null,
+        delayMinutes: od.delayMinutes ?? null,
         createdAt: od.createdAt,
         items: { create: od.items },
       },
@@ -1170,6 +1144,12 @@ async function main() {
     ],
   });
   console.log("🔔 Waiter requests created: 7 requests");
+
+  // ========== SETTINGS ==========
+  await prisma.settings.create({
+    data: { id: "singleton", defaultPrepTime: 15 },
+  });
+  console.log("⚙️  Settings created: defaultPrepTime=15");
 
   console.log("\n✅ SEED COMPLETED SUCCESSFULLY!");
   console.log("\n📋 Login Credentials:");

@@ -24,6 +24,12 @@ const VALID_ORDER_STATUSES = [
   "cancelled",
 ];
 
+const orderInclude = {
+  table: true,
+  cancelledBy: { select: { id: true, name: true, email: true, role: true } },
+  items: { include: { product: true, extras: true } },
+};
+
 router.get(
   "/",
   authenticate,
@@ -44,7 +50,7 @@ router.get(
         where,
         take: parseInt(limit as string),
         skip: parseInt(offset as string),
-        include: { table: true, items: { include: { product: true } } },
+        include: orderInclude,
         orderBy: { createdAt: "desc" },
       });
       res.json({ success: true, data: orders });
@@ -58,7 +64,7 @@ router.get("/table/:tableId", async (req, res, next) => {
   try {
     const orders = await prisma.order.findMany({
       where: { tableId: req.params.tableId },
-      include: { items: { include: { product: true } } },
+      include: orderInclude,
       orderBy: { createdAt: "desc" },
     });
     res.json({ success: true, data: orders });
@@ -72,8 +78,7 @@ router.get("/:id", async (req, res, next) => {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
       include: {
-        table: true,
-        items: { include: { product: true, extras: true } },
+        ...orderInclude,
       },
     });
     if (!order)
@@ -180,7 +185,7 @@ router.post("/", validate(createOrderSchema), async (req, res, next) => {
           discountCode,
           items: { create: orderItemsData },
         },
-        include: { items: { include: { product: true } }, table: true },
+        include: orderInclude,
       });
     });
 
@@ -189,7 +194,7 @@ router.post("/", validate(createOrderSchema), async (req, res, next) => {
     io.to("admin").emit("kitchen:new:order", order);
     io.to(`table:${tableId}`).emit("customer:order:update", {
       orderId: order.id,
-      status: "confirmed",
+      status: order.status,
     });
     res.status(201).json({ success: true, data: order });
   } catch (err) {
@@ -204,11 +209,11 @@ router.patch(
   validate(updateOrderStatusSchema),
   async (req, res, next) => {
     try {
-      const { status, estimatedTime } = req.body;
+      const { status, estimatedTime, cancelReason } = req.body;
+      const cancelledById = req.user?.id ?? req.user?.userId;
 
       const existing = await prisma.order.findUnique({
         where: { id: req.params.id },
-        select: { status: true, tableId: true },
       });
       if (!existing)
         return res
@@ -223,10 +228,63 @@ router.patch(
         });
       }
 
+      let statusData: Record<string, unknown> = {};
+
+      if (status === "preparing") {
+        statusData = {
+          preparationStartedAt: new Date(),
+          preparationCompletedAt: null,
+          preparationDuration: null,
+          delayMinutes: null,
+        };
+      } else if (status === "ready" && existing.preparationStartedAt) {
+        const completedAt = new Date();
+        const durationMs =
+          completedAt.getTime() - existing.preparationStartedAt.getTime();
+        const durationMinutes = Math.round(durationMs / 60_000);
+        const estimated =
+          estimatedTime !== undefined
+            ? estimatedTime
+            : (existing.estimatedTime ?? 15);
+        statusData = {
+          preparationCompletedAt: completedAt,
+          preparationDuration: durationMinutes,
+          delayMinutes: durationMinutes - estimated,
+        };
+      } else if (status === "cancelled") {
+        let resolvedCancelledById: string | null = null;
+        if (cancelledById) {
+          const canceller = await prisma.user.findUnique({
+            where: { id: cancelledById },
+            select: { id: true },
+          });
+          resolvedCancelledById = canceller?.id ?? null;
+        }
+        statusData = {
+          cancelReason: cancelReason?.trim() || null,
+          cancelledAt: new Date(),
+          ...(resolvedCancelledById && { cancelledById: resolvedCancelledById }),
+        };
+      } else if (status === "pending") {
+        statusData = {
+          cancelReason: null,
+          cancelledAt: null,
+          cancelledById: null,
+          preparationStartedAt: null,
+          preparationCompletedAt: null,
+          preparationDuration: null,
+          delayMinutes: null,
+        };
+      }
+
       const order = await prisma.order.update({
         where: { id: req.params.id },
-        data: { status, ...(estimatedTime !== undefined && { estimatedTime }) },
-        include: { table: true, items: { include: { product: true } } },
+        data: {
+          status,
+          ...(estimatedTime !== undefined && { estimatedTime }),
+          ...statusData,
+        },
+        include: orderInclude,
       });
 
       const io = (req as any).io;

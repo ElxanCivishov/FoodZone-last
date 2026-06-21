@@ -40,6 +40,7 @@ export const updateOrderStatusSchema = z.object({
     "cancelled",
   ]),
   estimatedTime: z.number().int().min(1).optional(),
+  cancelReason: z.string().max(300).optional(),
 });
 
 export const waiterRequestSchema = z.object({
@@ -49,7 +50,8 @@ export const waiterRequestSchema = z.object({
 });
 
 export const waiterRequestStatusSchema = z.object({
-  status: z.enum(["pending", "accepted", "done"]),
+  status: z.enum(["pending", "accepted", "done", "rejected"]),
+  rejectionNote: z.string().max(300).optional(),
 });
 
 export const staffCreateSchema = z.object({

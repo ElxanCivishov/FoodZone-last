@@ -148,6 +148,7 @@ export default function App() {
 
         {/* Staff auth */}
         <Route path="/login" element={<LoginScreen />} />
+        <Route path="/admin/login" element={<Navigate to="/login" replace />} />
 
         {/* Staff panels */}
         <Route
@@ -172,6 +173,16 @@ export default function App() {
         />
         <Route
           path="/waiter"
+          element={
+            <AuthGuard roles={["admin", "manager", "waiter", "staff"]}>
+              <StaffPanel>
+                <WaiterPanel />
+              </StaffPanel>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/waiter-panel"
           element={
             <AuthGuard roles={["admin", "manager", "waiter", "staff"]}>
               <StaffPanel>

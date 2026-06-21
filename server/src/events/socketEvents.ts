@@ -20,6 +20,7 @@ export const SOCKET_EVENTS = {
   WAITER_NEW_REQUEST: 'waiter:new:request',
   WAITER_REQUEST_ACCEPTED: 'waiter:request:accepted',
   WAITER_REQUEST_COMPLETED: 'waiter:request:completed',
+  WAITER_REQUEST_REJECTED: 'waiter:request:rejected',
   CUSTOMER_ORDER_UPDATE: 'customer:order:update',
   CUSTOMER_WAITER_ACCEPTED: 'customer:waiter:accepted',
   CUSTOMER_ORDER_READY: 'customer:order:ready',

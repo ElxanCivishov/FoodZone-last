@@ -125,6 +125,14 @@ export interface Order {
   paymentStatus: 'pending' | 'paid' | 'failed';
   specialRequest?: string;
   estimatedTime?: number;
+  preparationStartedAt?: string;
+  preparationCompletedAt?: string;
+  preparationDuration?: number;
+  delayMinutes?: number;
+  cancelReason?: string;
+  cancelledAt?: string;
+  cancelledById?: string;
+  cancelledBy?: Pick<StaffMember, 'id' | 'name' | 'email' | 'role'>;
   createdAt: string;
   updatedAt: string;
 }
@@ -165,9 +173,16 @@ export interface WaiterRequest {
   tableId: string;
   table?: Table;
   type: 'call' | 'water' | 'napkin' | 'bill' | 'clean' | 'other';
-  status: 'pending' | 'accepted' | 'done';
+  status: 'pending' | 'accepted' | 'done' | 'rejected';
   message?: string;
   createdAt: string;
+  acceptedById?: string;
+  acceptedAt?: string;
+  acceptedBy?: { id: string; name: string };
+  rejectedById?: string;
+  rejectedAt?: string;
+  rejectedBy?: { id: string; name: string };
+  rejectionNote?: string;
 }
 
 export interface QRScanResult {
@@ -259,7 +274,7 @@ export interface WaiterRequestItem {
   tableId: string;
   tableNumber: string;
   type: string;
-  status: 'pending' | 'accepted' | 'done';
+  status: 'pending' | 'accepted' | 'done' | 'rejected';
   message?: string;
   createdAt: string;
 }
