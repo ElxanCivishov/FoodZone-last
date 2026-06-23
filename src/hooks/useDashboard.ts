@@ -20,7 +20,7 @@ export function useOrdersByStatus() {
 }
 
 export function useOrders(
-  params?: { status?: string; limit?: number; offset?: number },
+  params?: { status?: string; fulfillmentType?: string; limit?: number; offset?: number },
   options?: { refetchInterval?: number; staleTime?: number }
 ) {
   return useQuery({

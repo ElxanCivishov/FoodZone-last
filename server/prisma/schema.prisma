@@ -20,32 +20,55 @@ model Restaurant {
 }
 
 model Branch {
-  id           String     @id @default(cuid())
-  restaurantId String
-  name         String
-  address      String?
-  phone        String?
-  wifiName     String?
-  wifiPassword String?
-  status       String     @default("active")
-  createdAt    DateTime   @default(now())
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
-  categories   Category[]
-  orders       Order[]
-  tables       Table[]
+  id             String             @id @default(cuid())
+  restaurantId   String
+  name           String
+  address        String?
+  phone          String?
+  wifiName       String?
+  wifiPassword   String?
+  status         String             @default("active")
+  createdAt      DateTime           @default(now())
+  restaurant     Restaurant         @relation(fields: [restaurantId], references: [id])
+  categories     Category[]
+  orders         Order[]
+  tables         Table[]
+  cashDrawers    CashDrawer[]
+  shifts         Shift[]
+  notifications  Notification[]
+  promoCodes     PromoCode[]
+  customers      Customer[]
+  reservations   TableReservation[]
+  stockMovements   StockMovement[]
+  staffShifts      StaffShift[]
+  staffPerformance StaffPerformance[]
+  branchSettings   BranchSettings?
+  feedbacks        CustomerFeedback[]
+
+  @@index([restaurantId])
+  @@index([status])
 }
 
 model Table {
-  id        String          @id @default(cuid())
-  branchId  String
-  number    String
-  qrCode    String          @unique
-  status    String          @default("active")
-  capacity  Int?
-  createdAt DateTime        @default(now())
-  orders    Order[]
-  branch    Branch          @relation(fields: [branchId], references: [id])
-  requests  WaiterRequest[]
+  id           String             @id @default(cuid())
+  branchId     String
+  number       String
+  qrCode       String             @unique
+  status       String             @default("active")
+  capacity     Int?
+  section      String?
+  shape        String?            @default("square")
+  posX         Int?
+  posY         Int?
+  mergedWith   String?
+  createdAt    DateTime           @default(now())
+  orders       Order[]
+  branch       Branch             @relation(fields: [branchId], references: [id])
+  requests     WaiterRequest[]
+  reservations TableReservation[]
+
+  @@index([branchId])
+  @@index([branchId, status])
 }
 
 model Category {
@@ -62,33 +85,49 @@ model Category {
   createdAt DateTime  @default(now())
   branch    Branch    @relation(fields: [branchId], references: [id])
   products  Product[]
+
+  @@index([branchId])
+  @@index([branchId, status, sortOrder])
 }
 
 model Product {
-  id            String         @id @default(cuid())
-  categoryId    String
-  name          String
-  nameAz        String
-  nameEn        String
-  nameRu        String
-  nameTr        String
-  description   String?
-  descriptionAz String?
-  descriptionEn String?
-  descriptionRu String?
-  descriptionTr String?
-  price         Float
-  image         String?
-  sortOrder     Int            @default(0)
-  status        String         @default("active")
-  isPopular     Boolean        @default(false)
-  hasExtras     Boolean        @default(false)
-  hasSizes      Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  orderItems    OrderItem[]
-  category      Category       @relation(fields: [categoryId], references: [id])
-  extras        ProductExtra[]
-  sizes         ProductSize[]
+  id                String         @id @default(cuid())
+  categoryId        String
+  name              String
+  nameAz            String
+  nameEn            String
+  nameRu            String
+  nameTr            String
+  description       String?
+  descriptionAz     String?
+  descriptionEn     String?
+  descriptionRu     String?
+  descriptionTr     String?
+  price             Float
+  image             String?
+  sortOrder         Int            @default(0)
+  status            String         @default("active")
+  isPopular         Boolean        @default(false)
+  hasExtras         Boolean        @default(false)
+  hasSizes          Boolean        @default(false)
+  stockEnabled      Boolean        @default(false)
+  stockQuantity     Int?
+  lowStockThreshold Int?           @default(5)
+  unit              String?        @default("ədəd")
+  calories          Int?
+  allergens         String[]       @default([])
+  prepTime          Int?
+  createdAt         DateTime       @default(now())
+  orderItems        OrderItem[]
+  category          Category       @relation(fields: [categoryId], references: [id])
+  extras            ProductExtra[]
+  sizes             ProductSize[]
+  stockMovements    StockMovement[]
+  dailySpecials     DailySpecial[]
+
+  @@index([categoryId])
+  @@index([status, isPopular])
+  @@index([createdAt])
 }
 
 model ProductSize {
@@ -115,16 +154,30 @@ model ProductExtra {
 model Order {
   id                     String      @id @default(cuid())
   orderNumber            String      @unique
-  tableId                String
+  tableId                String?
   branchId               String
+  fulfillmentType        String      @default("dine_in")
+  customerName           String?
+  customerPhone          String?
+  deliveryAddress        String?
+  deliveryNote           String?
+  pickupTime             DateTime?
+  customerId             String?
+  cashDrawerId           String?
+  promoCodeId            String?
   subtotal               Float
   serviceFee             Float
   discount               Float       @default(0)
   discountCode           String?
+  promoDiscount          Float       @default(0)
+  tip                    Float       @default(0)
   total                  Float
   status                 String      @default("pending")
   paymentMethod          String      @default("cash")
   paymentStatus          String      @default("pending")
+  paidAt                 DateTime?
+  paidById               String?
+  receiptNumber          String?     @unique
   specialRequest         String?
   estimatedTime          Int?
   createdAt              DateTime    @default(now())
@@ -138,8 +191,22 @@ model Order {
   preparationStartedAt   DateTime?
   branch                 Branch      @relation(fields: [branchId], references: [id])
   cancelledBy            User?       @relation("CancelledOrders", fields: [cancelledById], references: [id])
-  table                  Table       @relation(fields: [tableId], references: [id])
+  paidBy                 User?       @relation("PaidOrders", fields: [paidById], references: [id])
+  table                  Table?      @relation(fields: [tableId], references: [id])
+  customer               Customer?   @relation(fields: [customerId], references: [id])
+  promoCode              PromoCode?  @relation(fields: [promoCodeId], references: [id])
+  cashDrawer             CashDrawer? @relation(fields: [cashDrawerId], references: [id])
   items                  OrderItem[]
+  feedback               CustomerFeedback?
+
+  @@index([branchId, createdAt])
+  @@index([branchId, fulfillmentType, createdAt])
+  @@index([branchId, status, createdAt])
+  @@index([status, updatedAt])
+  @@index([tableId, createdAt])
+  @@index([preparationDuration])
+  @@index([paymentMethod, paymentStatus])
+  @@index([customerId])
 }
 
 model OrderItem {
@@ -155,6 +222,9 @@ model OrderItem {
   order          Order            @relation(fields: [orderId], references: [id])
   product        Product          @relation(fields: [productId], references: [id])
   extras         OrderItemExtra[]
+
+  @@index([orderId, productId])
+  @@index([productId])
 }
 
 model OrderItemExtra {
@@ -167,34 +237,48 @@ model OrderItemExtra {
 }
 
 model WaiterRequest {
-  id             String    @id @default(cuid())
-  tableId        String
-  type           String
-  status         String    @default("pending")
-  message        String?
-  createdAt      DateTime  @default(now())
-  acceptedById   String?
-  acceptedAt     DateTime?
-  rejectedById   String?
-  rejectedAt     DateTime?
-  rejectionNote  String?
-  table          Table     @relation(fields: [tableId], references: [id])
-  acceptedBy     User?     @relation("AcceptedRequests", fields: [acceptedById], references: [id])
-  rejectedBy     User?     @relation("RejectedRequests", fields: [rejectedById], references: [id])
+  id            String    @id @default(cuid())
+  tableId       String
+  type          String
+  status        String    @default("pending")
+  message       String?
+  createdAt     DateTime  @default(now())
+  acceptedById  String?
+  acceptedAt    DateTime?
+  rejectedById  String?
+  rejectedAt    DateTime?
+  rejectionNote String?
+  table         Table     @relation(fields: [tableId], references: [id])
+  acceptedBy    User?     @relation("AcceptedRequests", fields: [acceptedById], references: [id])
+  rejectedBy    User?     @relation("RejectedRequests", fields: [rejectedById], references: [id])
+
+  @@index([tableId, createdAt])
+  @@index([status, createdAt])
 }
 
 model User {
-  id              String   @id @default(cuid())
-  email           String   @unique
-  password        String
-  name            String
-  role            String   @default("waiter")
-  status          String   @default("active")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  cancelledOrders  Order[]          @relation("CancelledOrders")
-  acceptedRequests WaiterRequest[]  @relation("AcceptedRequests")
-  rejectedRequests WaiterRequest[]  @relation("RejectedRequests")
+  id               String          @id @default(cuid())
+  email            String          @unique
+  password         String
+  name             String
+  role             String          @default("waiter")
+  status           String          @default("active")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  cancelledOrders  Order[]         @relation("CancelledOrders")
+  paidOrders       Order[]         @relation("PaidOrders")
+  acceptedRequests WaiterRequest[] @relation("AcceptedRequests")
+  rejectedRequests WaiterRequest[] @relation("RejectedRequests")
+  openedDrawers    CashDrawer[]    @relation("OpenedDrawers")
+  closedDrawers    CashDrawer[]    @relation("ClosedDrawers")
+  openedShifts     Shift[]         @relation("OpenedShifts")
+  closedShifts     Shift[]         @relation("ClosedShifts")
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  staffShifts      StaffShift[]
+  staffPerformance StaffPerformance[]
+
+  @@index([role, status])
 }
 
 model Reward {
@@ -213,7 +297,273 @@ model Reward {
 }
 
 model Settings {
-  id              String   @id @default("singleton")
-  defaultPrepTime Int      @default(15)
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default("singleton")
+  defaultPrepTime   Int      @default(15)
+  urgencyWarnMin    Int      @default(4)
+  urgencyDangerMin  Int      @default(8)
+  kitchenAutoPrint  Boolean  @default(false)
+  kitchenSoundOn    Boolean  @default(true)
+  waiterSoundOn     Boolean  @default(true)
+  serviceFeePercent Float    @default(0)
+  currency          String   @default("₼")
+  timezone          String   @default("Asia/Baku")
+  updatedAt         DateTime @updatedAt
+}
+
+model BranchSettings {
+  id                String   @id @default(cuid())
+  branchId          String   @unique
+  defaultPrepTime   Int?
+  urgencyWarnMin    Int?
+  urgencyDangerMin  Int?
+  kitchenAutoPrint  Boolean?
+  kitchenSoundOn    Boolean?
+  waiterSoundOn     Boolean?
+  serviceFeePercent Float?
+  currency          String?
+  timezone          String?
+  taxPercent        Float?
+  receiptFooter     String?
+  updatedAt         DateTime @updatedAt
+  branch            Branch   @relation(fields: [branchId], references: [id])
+}
+
+// ─── YENİ MODELLƏR ────────────────────────────────────────────────────────────
+
+model CashDrawer {
+  id           String    @id @default(cuid())
+  branchId     String
+  openedAt     DateTime  @default(now())
+  closedAt     DateTime?
+  openedById   String
+  closedById   String?
+  openingCash  Float
+  expectedCash Float?
+  actualCash   Float?
+  difference   Float?
+  totalCash    Float?
+  totalCard    Float?
+  totalOnline  Float?
+  totalTips    Float?
+  status       String    @default("open")
+  notes        String?
+  branch       Branch    @relation(fields: [branchId], references: [id])
+  openedBy     User      @relation("OpenedDrawers", fields: [openedById], references: [id])
+  closedBy     User?     @relation("ClosedDrawers", fields: [closedById], references: [id])
+  orders       Order[]
+
+  @@index([branchId, status])
+  @@index([openedAt])
+}
+
+model StockMovement {
+  id          String   @id @default(cuid())
+  productId   String
+  branchId    String
+  type        String
+  quantity    Float
+  unitCost    Float?
+  note        String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  product     Product  @relation(fields: [productId], references: [id])
+  branch      Branch   @relation(fields: [branchId], references: [id])
+
+  @@index([productId, createdAt])
+  @@index([branchId, createdAt])
+  @@index([type])
+}
+
+model Shift {
+  id              String    @id @default(cuid())
+  branchId        String
+  openedById      String
+  closedById      String?
+  openedAt        DateTime  @default(now())
+  closedAt        DateTime?
+  status          String    @default("open")
+  openingCash     Float     @default(0)
+  totalCash       Float?
+  totalCard       Float?
+  totalOnline     Float?
+  totalRevenue    Float?
+  totalTips       Float?
+  totalDiscount   Float?
+  cashDifference  Float?
+  totalOrders     Int?
+  cancelledOrders Int?
+  avgPrepTime     Int?
+  topProducts     Json?
+  hourlyBreakdown Json?
+  notes           String?
+  branch          Branch    @relation(fields: [branchId], references: [id])
+  openedBy        User      @relation("OpenedShifts", fields: [openedById], references: [id])
+  closedBy        User?     @relation("ClosedShifts", fields: [closedById], references: [id])
+
+  @@index([branchId, status])
+  @@index([openedAt])
+}
+
+model PromoCode {
+  id             String   @id @default(cuid())
+  branchId       String
+  code           String
+  description    String?
+  type           String
+  value          Float
+  minOrderAmount Float?
+  maxUses        Int?
+  usedCount      Int      @default(0)
+  validFrom      DateTime
+  validTo        DateTime
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+  branch         Branch   @relation(fields: [branchId], references: [id])
+  orders         Order[]
+
+  @@unique([branchId, code])
+  @@index([branchId, status])
+  @@index([validTo])
+}
+
+model Customer {
+  id          String             @id @default(cuid())
+  branchId    String
+  name        String
+  phone       String?
+  email       String?
+  totalOrders Int                @default(0)
+  totalSpent  Float              @default(0)
+  points      Int                @default(0)
+  notes       String?
+  tags        String[]           @default([])
+  birthDate   DateTime?
+  createdAt   DateTime           @default(now())
+  lastVisit   DateTime?
+  branch      Branch             @relation(fields: [branchId], references: [id])
+  orders      Order[]
+  feedbacks   CustomerFeedback[]
+
+  @@unique([branchId, phone])
+  @@index([branchId])
+  @@index([phone])
+}
+
+model CustomerFeedback {
+  id         String    @id @default(cuid())
+  branchId   String
+  customerId String?
+  orderId    String?   @unique
+  rating     Int
+  comment    String?
+  createdAt  DateTime  @default(now())
+  branch     Branch    @relation(fields: [branchId], references: [id])
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  order      Order?    @relation(fields: [orderId], references: [id])
+
+  @@index([branchId])
+  @@index([customerId])
+}
+
+model TableReservation {
+  id           String   @id @default(cuid())
+  branchId     String
+  tableId      String?
+  customerName String
+  phone        String
+  partySize    Int
+  dateTime     DateTime
+  duration     Int      @default(90)
+  status       String   @default("confirmed")
+  notes        String?
+  createdAt    DateTime @default(now())
+  branch       Branch   @relation(fields: [branchId], references: [id])
+  table        Table?   @relation(fields: [tableId], references: [id])
+
+  @@index([branchId, dateTime])
+  @@index([status])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  branchId  String?
+  userId    String?
+  type      String
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  branch    Branch?  @relation(fields: [branchId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([branchId, isRead])
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  oldValues  Json?
+  newValues  Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
+}
+
+model DailySpecial {
+  id           String   @id @default(cuid())
+  branchId     String
+  productId    String
+  date         DateTime @db.Date
+  specialPrice Float
+  note         String?
+  product      Product  @relation(fields: [productId], references: [id])
+
+  @@unique([branchId, productId, date])
+  @@index([branchId, date])
+}
+
+model StaffShift {
+  id          String            @id @default(cuid())
+  userId      String
+  branchId    String
+  date        DateTime          @db.Date
+  checkIn     DateTime?
+  checkOut    DateTime?
+  status      String            @default("scheduled")
+  notes       String?
+  createdAt   DateTime          @default(now())
+  user        User              @relation(fields: [userId], references: [id])
+  branch      Branch            @relation(fields: [branchId], references: [id])
+  performance StaffPerformance?
+
+  @@index([branchId, date])
+  @@index([userId, date])
+}
+
+model StaffPerformance {
+  id             String     @id @default(cuid())
+  userId         String
+  branchId       String
+  staffShiftId   String     @unique
+  ordersServed   Int        @default(0)
+  avgServiceTime Int?
+  tips           Float      @default(0)
+  rating         Float?
+  createdAt      DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id])
+  branch         Branch     @relation(fields: [branchId], references: [id])
+  staffShift     StaffShift @relation(fields: [staffShiftId], references: [id])
+
+  @@index([branchId, createdAt])
+  @@index([userId])
 }

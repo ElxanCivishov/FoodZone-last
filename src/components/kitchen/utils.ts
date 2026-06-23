@@ -1,4 +1,10 @@
 import { Order } from "@/types";
+import {
+  getOrderFulfillmentLabel,
+  getOrderFulfillmentType,
+  getOrderPrimaryLabel,
+  getOrderTableNumber,
+} from "@/utils/orderDisplay";
 
 const MIN_NOTIFICATION_SECONDS = 5;
 const MAX_PENDING_NEW_ORDER_SOUNDS = 1;
@@ -95,7 +101,11 @@ export function playNewOrderSound(seconds?: number) {
 }
 
 export function printOrder(order: Order) {
-  const tableNum = order.table?.number ?? order.tableId.slice(-4);
+  const fulfillmentType = getOrderFulfillmentType(order);
+  const contextLabel =
+    fulfillmentType === "dine_in"
+      ? getOrderPrimaryLabel(order, (key) => key)
+      : getOrderFulfillmentLabel(fulfillmentType, (key) => key);
   const win = window.open(
     "",
     "_blank",
@@ -113,7 +123,7 @@ hr{border:none;border-top:1px dashed #000;margin:6px 0}
 .sm{font-size:10px;color:#555;padding-left:8px;margin:2px 0}
 </style></head><body>
 <div class="c b" style="font-size:18px">FoodZone</div>
-<div class="c" style="margin:2px 0">Masa ${tableNum}</div>
+<div class="c" style="margin:2px 0">${contextLabel}</div>
 <div class="c b">#${order.orderNumber}</div>
 <div class="c sm">${new Date().toLocaleString()}</div>
 <hr/>
@@ -143,7 +153,11 @@ export function groupByProduct(orders: Order[]) {
     { name: string; qty: number; tables: string[]; notes: string[] }
   >();
   orders.forEach((order) => {
-    const tbl = String(order.table?.number ?? order.tableId.slice(-4));
+    const fulfillmentType = getOrderFulfillmentType(order);
+    const tbl =
+      fulfillmentType === "dine_in"
+        ? String(getOrderTableNumber(order))
+        : getOrderFulfillmentLabel(fulfillmentType, (key) => key);
     order.items.forEach((item) => {
       const existing = map.get(item.productId) ?? {
         name: item.product?.name ?? item.productId,

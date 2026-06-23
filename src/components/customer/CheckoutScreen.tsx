@@ -32,6 +32,7 @@ export function CheckoutScreen() {
       const orderData = {
         tableId: session.tableId,
         branchId: session.branchId,
+        fulfillmentType: 'dine_in',
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,

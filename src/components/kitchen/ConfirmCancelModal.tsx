@@ -8,6 +8,11 @@ import {
 } from "@headlessui/react";
 import { XCircle } from "lucide-react";
 import { Order } from "@/types";
+import {
+  getOrderFulfillmentLabel,
+  getOrderFulfillmentType,
+  getOrderPrimaryLabel,
+} from "@/utils/orderDisplay";
 
 export function ConfirmCancelModal({
   order,
@@ -20,7 +25,11 @@ export function ConfirmCancelModal({
   onClose: () => void;
   t: (k: string) => string;
 }) {
-  const tableNum = order.table?.number ?? order.tableId.slice(-4);
+  const fulfillmentType = getOrderFulfillmentType(order);
+  const orderLabel =
+    fulfillmentType === "dine_in"
+      ? getOrderPrimaryLabel(order, t)
+      : getOrderFulfillmentLabel(fulfillmentType, t);
   const [cancelReason, setCancelReason] = useState("");
   return (
     <Transition appear show as={Fragment}>
@@ -60,7 +69,7 @@ export function ConfirmCancelModal({
                     {t("kitchen.cancelOrder")}
                   </DialogTitle>
                   <p className="text-xs text-foreground-muted mt-0.5">
-                    {t("kitchen.table")} {tableNum} &mdash; #{order.orderNumber}
+                    {orderLabel} &mdash; #{order.orderNumber}
                   </p>
                 </div>
               </div>

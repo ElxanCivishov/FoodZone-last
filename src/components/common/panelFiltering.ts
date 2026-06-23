@@ -1,9 +1,15 @@
 import { Order } from "@/types";
 import { PanelFilterState } from "./PanelFilters";
+import {
+  getOrderFulfillmentLabel,
+  getOrderFulfillmentType,
+  getOrderSearchText,
+  getOrderTableNumber,
+} from "@/utils/orderDisplay";
 
 type TableLike = {
   table?: { number?: string | number | null } | null;
-  tableId: string;
+  tableId?: string | null;
 };
 
 export function normalizePanelValue(value?: string | null) {
@@ -11,7 +17,7 @@ export function normalizePanelValue(value?: string | null) {
 }
 
 export function panelTableNumber(item: TableLike) {
-  return item.table?.number ?? item.tableId.slice(-4);
+  return item.table?.number ?? item.tableId?.slice(-4) ?? "-";
 }
 
 export function orderMatchesPanelFilters(
@@ -19,13 +25,14 @@ export function orderMatchesPanelFilters(
   filters: PanelFilterState,
   options: { includeCancelReason?: boolean } = {},
 ) {
-  const table = String(panelTableNumber(order));
+  const table = String(getOrderTableNumber(order));
   const query = normalizePanelValue(filters.query);
   const tableQuery = normalizePanelValue(filters.table);
+  const fulfillmentType = getOrderFulfillmentType(order);
   const searchable = normalizePanelValue(
     [
-      order.orderNumber,
-      table,
+      getOrderSearchText(order, (key) => key),
+      getOrderFulfillmentLabel(fulfillmentType, (key) => key),
       order.specialRequest,
       options.includeCancelReason ? order.cancelReason : undefined,
       ...order.items.flatMap((item) => [
@@ -48,6 +55,7 @@ export function orderMatchesPanelFilters(
   return (
     (!query || searchable.includes(query)) &&
     (!tableQuery || normalizePanelValue(table).includes(tableQuery)) &&
+    (filters.type === "all" || filters.type === fulfillmentType) &&
     (!filters.notesOnly || hasNote)
   );
 }

@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import { Order, OrderStatus } from "@/types";
 import { cn } from "@/utils/cn";
+import {
+  getOrderFulfillmentType,
+  getOrderPrimaryLabel,
+} from "@/utils/orderDisplay";
 import { ETA_OPTIONS } from "./constants";
 import { printOrder } from "./utils";
 
@@ -206,7 +210,11 @@ export function OrderCard({
     [isServed],
   );
 
-  const tableNum = order.table?.number ?? order.tableId.slice(-4);
+  const fulfillmentType = getOrderFulfillmentType(order);
+  const primaryLabel =
+    fulfillmentType === "dine_in"
+      ? getOrderPrimaryLabel(order, t)
+      : t("kitchen.order");
   const now = Date.now();
 
   // ── Elapsed since order was placed (for pending/confirmed urgency)
@@ -294,7 +302,7 @@ export function OrderCard({
               #{order.orderNumber}
             </p>
             <h3 className="font-bold text-base leading-tight truncate">
-              {t("kitchen.table")} {tableNum}
+              {primaryLabel}
             </h3>
           </div>
         </div>

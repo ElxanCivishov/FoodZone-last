@@ -16,6 +16,15 @@ import { dashboardRoutes } from "./routes/dashboard";
 import { uploadRoutes } from "./routes/upload";
 import { staffRoutes } from "./routes/staff";
 import { settingsRoutes } from "./routes/settings";
+import { cashRoutes } from "./routes/cash";
+import { inventoryRoutes } from "./routes/inventory";
+import { shiftRoutes } from "./routes/shifts";
+import { promoRoutes } from "./routes/promo";
+import { notificationRoutes } from "./routes/notifications";
+import { customerRoutes } from "./routes/customers";
+import { reservationRoutes } from "./routes/reservations";
+import { auditRoutes } from "./routes/audit";
+import { feedbackRoutes } from "./routes/feedback";
 import { setupSocketEvents } from "./events/socketEvents";
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -49,10 +58,7 @@ const authLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many login attempts, please try again later",
-  },
+  message: { success: false, message: "Too many login attempts, please try again later" },
 });
 app.use("/api/auth", authLimiter);
 
@@ -63,6 +69,7 @@ app.use((req: any, res, next) => {
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+// Mövcud route-lar
 app.use("/api/qr", qrRoutes);
 app.use("/api/branches", menuRoutes);
 app.use("/api/orders", orderRoutes);
@@ -73,23 +80,26 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/settings", settingsRoutes);
 
+// Yeni route-lar
+app.use("/api/cash", cashRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/shifts", shiftRoutes);
+app.use("/api/promo", promoRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/reservations", reservationRoutes);
+app.use("/api/audit", auditRoutes);
+app.use("/api/feedback", feedbackRoutes);
+
 setupSocketEvents(io);
 
 app.get("/health", async (req, res) => {
   try {
     const { prisma } = await import("./lib/prisma");
     await prisma.$queryRaw`SELECT 1`;
-    res.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      database: "connected",
-    });
+    res.json({ status: "ok", timestamp: new Date().toISOString(), database: "connected" });
   } catch {
-    res.status(503).json({
-      status: "error",
-      timestamp: new Date().toISOString(),
-      database: "disconnected",
-    });
+    res.status(503).json({ status: "error", timestamp: new Date().toISOString(), database: "disconnected" });
   }
 });
 

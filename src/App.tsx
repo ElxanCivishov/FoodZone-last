@@ -152,7 +152,7 @@ export default function App() {
 
         {/* Staff panels */}
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <AuthGuard roles={["admin", "manager"]}>
               <StaffPanel>

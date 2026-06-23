@@ -9,6 +9,258 @@ export interface Restaurant {
   updatedAt: string;
 }
 
+// ─── YENİ TIPLƏR ──────────────────────────────────────────────────────────────
+
+export interface StaffShift {
+  id: string;
+  userId: string;
+  user?: { id: string; name: string; role: string };
+  branchId: string;
+  date: string;
+  checkIn?: string;
+  checkOut?: string;
+  status: 'scheduled' | 'present' | 'absent' | 'completed';
+  notes?: string;
+  createdAt: string;
+  performance?: StaffPerformance;
+}
+
+export interface StaffPerformance {
+  id: string;
+  userId: string;
+  user?: { id: string; name: string; role: string };
+  branchId: string;
+  staffShiftId: string;
+  ordersServed: number;
+  avgServiceTime?: number;
+  tips: number;
+  rating?: number;
+  createdAt: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  user: { id: string; name: string; role: string };
+  ordersServed: number;
+  tips: number;
+  avgRating?: number;
+  avgServiceTime?: number;
+  shiftsWorked: number;
+}
+
+export interface CashDrawer {
+  id: string;
+  branchId: string;
+  openedAt: string;
+  closedAt?: string;
+  openedById: string;
+  openedBy?: { id: string; name: string };
+  closedById?: string;
+  closedBy?: { id: string; name: string };
+  openingCash: number;
+  expectedCash?: number;
+  actualCash?: number;
+  difference?: number;
+  totalCash?: number;
+  totalCard?: number;
+  totalOnline?: number;
+  totalTips?: number;
+  status: 'open' | 'closed';
+  notes?: string;
+}
+
+export interface StockMovement {
+  id: string;
+  productId: string;
+  product?: { id: string; nameAz: string; unit?: string };
+  branchId: string;
+  type: 'purchase' | 'sale' | 'waste' | 'adjustment' | 'return';
+  quantity: number;
+  unitCost?: number;
+  note?: string;
+  createdById?: string;
+  createdAt: string;
+}
+
+export interface Shift {
+  id: string;
+  branchId: string;
+  openedById: string;
+  openedBy?: { id: string; name: string };
+  closedById?: string;
+  closedBy?: { id: string; name: string };
+  openedAt: string;
+  closedAt?: string;
+  status: 'open' | 'closed';
+  openingCash: number;
+  totalCash?: number;
+  totalCard?: number;
+  totalOnline?: number;
+  totalRevenue?: number;
+  totalTips?: number;
+  totalDiscount?: number;
+  cashDifference?: number;
+  totalOrders?: number;
+  cancelledOrders?: number;
+  avgPrepTime?: number;
+  topProducts?: { productId: string; name: string; count: number; revenue: number }[];
+  hourlyBreakdown?: Record<string, number>;
+  notes?: string;
+}
+
+export interface PromoCode {
+  id: string;
+  branchId: string;
+  code: string;
+  description?: string;
+  type: 'percent' | 'fixed' | 'free_delivery';
+  value: number;
+  minOrderAmount?: number;
+  maxUses?: number;
+  usedCount: number;
+  validFrom: string;
+  validTo: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  isExpired?: boolean;
+  isMaxed?: boolean;
+}
+
+export interface Customer {
+  id: string;
+  branchId: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  totalOrders: number;
+  totalSpent: number;
+  points: number;
+  notes?: string;
+  tags: string[];
+  birthDate?: string;
+  createdAt: string;
+  lastVisit?: string;
+  orders?: Array<{
+    id: string;
+    orderNumber: string;
+    total: number;
+    paymentMethod: string;
+    status: string;
+    createdAt: string;
+  }>;
+}
+
+export interface CustomerFeedback {
+  id: string;
+  branchId: string;
+  customerId?: string;
+  customer?: { id: string; name: string; phone?: string };
+  orderId?: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}
+
+export interface CustomerFavorite {
+  id: string;
+  name: string;
+  nameAz?: string;
+  image?: string;
+  price: number;
+  orderCount: number;
+  totalSpent: number;
+}
+
+export interface CustomerStats {
+  total: number;
+  vipCount: number;
+  totalSpent: number;
+  avgSpend: number;
+  totalPoints: number;
+  birthdayToday: number;
+}
+
+export interface TableReservation {
+  id: string;
+  branchId: string;
+  tableId?: string;
+  table?: { id: string; number: string; capacity?: number; section?: string };
+  customerName: string;
+  phone: string;
+  partySize: number;
+  dateTime: string;
+  duration: number;
+  status: 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no_show';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface Notification {
+  id: string;
+  branchId?: string;
+  userId?: string;
+  type: 'low_stock' | 'shift_end' | 'new_order' | 'payment_received' | 'reservation' | string;
+  title: string;
+  message: string;
+  data?: Record<string, any>;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  userId?: string;
+  user?: { id: string; name: string; role: string };
+  action: string;
+  entityType: string;
+  entityId: string;
+  oldValues?: Record<string, any>;
+  newValues?: Record<string, any>;
+  ip?: string;
+  createdAt: string;
+}
+
+export interface RevenueBreakdown {
+  date: string;
+  revenue: number;
+  orders: number;
+}
+
+export interface HourlyBreakdown {
+  hour: number;
+  orders: number;
+  revenue: number;
+}
+
+export interface StockSummary {
+  total: number;
+  outOfStock: number;
+  lowStock: number;
+  healthy: number;
+}
+
+export interface ShiftReport {
+  shift: Shift;
+  orders: Order[];
+}
+
+export interface RangeReport {
+  period: { from: string; to: string };
+  summary: {
+    totalOrders: number;
+    cancelledOrders: number;
+    totalRevenue: number;
+    totalCash: number;
+    totalCard: number;
+    totalOnline: number;
+    totalDiscount: number;
+    avgOrderValue: number;
+  };
+  topProducts: { productId: string; name: string; count: number; revenue: number }[];
+  dailyBreakdown: Record<string, { orders: number; revenue: number }>;
+  shifts: Shift[];
+}
+
 export interface Branch {
   id: string;
   restaurantId: string;
@@ -31,7 +283,24 @@ export interface Table {
   qrCode: string;
   status: 'active' | 'inactive' | 'occupied';
   capacity?: number;
+  section?: string;
+  shape?: 'square' | 'round' | 'rectangle';
+  posX?: number;
+  posY?: number;
+  mergedWith?: string;
   createdAt: string;
+}
+
+export interface TableStats {
+  tableId: string;
+  number: string;
+  section?: string;
+  status: string;
+  capacity?: number;
+  mergedWith?: string;
+  totalOrders: number;
+  avgDurationMin: number;
+  avgRevenue: number;
 }
 
 export interface Category {
@@ -65,14 +334,22 @@ export interface Product {
   price: number;
   image?: string;
   sortOrder: number;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'out_of_stock';
   isPopular: boolean;
   hasExtras: boolean;
   hasSizes: boolean;
+  stockEnabled: boolean;
+  stockQuantity?: number | null;
+  lowStockThreshold?: number | null;
+  unit?: string;
+  calories?: number;
+  allergens?: string[];
+  prepTime?: number;
   sizes?: ProductSize[];
   extras?: ProductExtra[];
   category?: Category;
   createdAt: string;
+  stockStatus?: 'ok' | 'low' | 'out';
 }
 
 export interface ProductSize {
@@ -107,22 +384,42 @@ export interface CartItem {
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'cancelled';
+export type OrderFulfillmentType = 'delivery' | 'takeaway' | 'dine_in';
+export type PaymentMethod = 'cash' | 'card' | 'online';
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 export interface Order {
   id: string;
   orderNumber: string;
-  tableId: string;
-  table?: Table;
+  receiptNumber?: string;
+  tableId?: string | null;
+  table?: Table | null;
   branchId: string;
+  fulfillmentType: OrderFulfillmentType;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  deliveryAddress?: string | null;
+  deliveryNote?: string | null;
+  pickupTime?: string | null;
+  customerId?: string;
+  customer?: Pick<Customer, 'id' | 'name' | 'phone' | 'points'>;
+  cashDrawerId?: string;
+  promoCodeId?: string;
+  promoCode?: Pick<PromoCode, 'id' | 'code' | 'type' | 'value'>;
   items: OrderItem[];
   subtotal: number;
   serviceFee: number;
   discount: number;
   discountCode?: string;
+  promoDiscount: number;
+  tip: number;
   total: number;
   status: OrderStatus;
-  paymentMethod: 'cash' | 'card' | 'online';
-  paymentStatus: 'pending' | 'paid' | 'failed';
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paidAt?: string;
+  paidById?: string;
+  paidBy?: Pick<StaffMember, 'id' | 'name'>;
   specialRequest?: string;
   estimatedTime?: number;
   preparationStartedAt?: string;
@@ -232,8 +529,14 @@ export type AppScreen =
 export interface KitchenOrder {
   id: string;
   orderNumber: string;
-  tableId: string;
+  tableId?: string | null;
   tableNumber: string;
+  fulfillmentType?: OrderFulfillmentType;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  deliveryAddress?: string | null;
+  deliveryNote?: string | null;
+  pickupTime?: string | null;
   items: KitchenOrderItem[];
   status: OrderStatus;
   priority: 'normal' | 'high' | 'urgent';
@@ -258,8 +561,13 @@ export interface KitchenOrderItem {
 export interface WaiterOrder {
   id: string;
   orderNumber: string;
-  tableId: string;
+  tableId?: string | null;
   tableNumber: string;
+  fulfillmentType?: OrderFulfillmentType;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  deliveryAddress?: string | null;
+  pickupTime?: string | null;
   items: { productName: string; quantity: number; selectedSize?: string; selectedExtras: string[] }[];
   total: number;
   paymentMethod: string;
@@ -291,6 +599,11 @@ export interface DashboardStats {
   readyOrders: number;
   popularProducts: PopularProduct[];
   recentOrders: Order[];
+  paymentBreakdown: { cash: number; card: number; online: number };
+  todayPaymentBreakdown: { cash: number; card: number; online: number };
+  stockAlerts: { lowStock: number; outOfStock: number };
+  activeShift?: Shift | null;
+  unreadNotifications: number;
 }
 
 export interface PopularProduct {
@@ -298,17 +611,51 @@ export interface PopularProduct {
   name: string;
   nameAz: string;
   nameEn: string;
-  category?: { name: string };
+  nameRu?: string;
+  nameTr?: string;
+  category?: Pick<Category, 'name' | 'nameAz' | 'nameEn' | 'nameRu' | 'nameTr'>;
   orderCount: number;
+  revenue?: number;
 }
 
 export interface StaffMember {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'manager' | 'kitchen' | 'waiter';
+  role: 'super_admin' | 'admin' | 'manager' | 'kitchen' | 'waiter';
   status: 'active' | 'inactive';
   lastActive?: string;
+}
+
+export interface BranchStat {
+  branchId: string;
+  branchName: string;
+  restaurantName: string;
+  today: { orders: number; revenue: number };
+  month: { orders: number; revenue: number };
+  activeOrders: number;
+  occupiedTables: number;
+  totalTables: number;
+  tableOccupancyPct: number;
+  lowStockAlerts: number;
+  shiftOpen: boolean;
+  shiftOpenedAt?: string;
+}
+
+export interface BranchSettings {
+  branchId: string;
+  isCustomized: boolean;
+  defaultPrepTime?: number;
+  urgencyWarnMin?: number;
+  urgencyDangerMin?: number;
+  kitchenAutoPrint?: boolean;
+  kitchenSoundOn?: boolean;
+  waiterSoundOn?: boolean;
+  serviceFeePercent?: number;
+  currency?: string;
+  timezone?: string;
+  taxPercent?: number;
+  receiptFooter?: string;
 }
 
 export interface Reward {

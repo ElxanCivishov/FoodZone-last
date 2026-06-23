@@ -1,11 +1,35 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { get, post, patch, del } from '@/services/api';
-import { StaffMember } from '@/types';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { del, get, patch, post } from '@/services/api';
+import type { PaginatedResponse, StaffMember } from '@/types';
 
-export function useStaff() {
+export function useAllStaff() {
   return useQuery({
-    queryKey: ['staff'],
-    queryFn: () => get<StaffMember[]>('/staff'),
+    queryKey: ['staff', 'all'],
+    queryFn: () => get<StaffMember[]>('/staff/all'),
+  });
+}
+
+export interface StaffParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+  status?: string;
+}
+
+export function useStaff(params: StaffParams = {}) {
+  const { page = 1, limit = 10, search, role, status } = params;
+  return useQuery({
+    queryKey: ['staff', { page, limit, search, role, status }],
+    queryFn: () =>
+      get<PaginatedResponse<StaffMember>>('/staff', {
+        page,
+        limit,
+        ...(search ? { search } : {}),
+        ...(role && role !== 'all' ? { role } : {}),
+        ...(status && status !== 'all' ? { status } : {}),
+      }),
+    placeholderData: keepPreviousData,
   });
 }
 

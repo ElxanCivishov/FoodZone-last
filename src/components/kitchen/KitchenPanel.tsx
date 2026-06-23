@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   ChefHat,
+  ChevronDown,
   CheckCircle2,
   Flame,
   LayoutGrid,
@@ -17,17 +18,27 @@ import {
   Play,
   Printer,
   RefreshCw,
+  ShoppingBag,
   Soup,
+  Truck,
+  Utensils,
   UtensilsCrossed,
   XCircle,
 } from "lucide-react";
+import { DEFAULT_SETTINGS, useAppSettings } from "@/hooks/useAppSettings";
 import { useKitchenStore } from "@/stores/kitchenStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useSocketContext } from "@/services/socket";
 import { useOrders } from "@/hooks/useDashboard";
 import { useUpdateOrderStatus } from "@/hooks/useOrders";
-import { Order, OrderStatus } from "@/types";
+import { Order, OrderFulfillmentType, OrderStatus } from "@/types";
 import { cn } from "@/utils/cn";
+import {
+  getOrderFulfillmentLabel,
+  getOrderFulfillmentTone,
+  getOrderFulfillmentType,
+  orderFulfillmentTypes,
+} from "@/utils/orderDisplay";
 import {
   COLUMN_DROP_STATUS,
   VALID_DRAG_TRANSITIONS,
@@ -70,6 +81,8 @@ export function KitchenPanel() {
   const { resolvedTheme, toggleTheme } = useThemeStore();
   const isDark = resolvedTheme === "dark";
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
+  const { data: settingsData } = useAppSettings();
+  const panelSettings = settingsData?.data ?? DEFAULT_SETTINGS;
   const {
     orders,
     setOrders,
@@ -85,6 +98,15 @@ export function KitchenPanel() {
   const [mobileTab, setMobileTab] = useState<ColumnId>("new");
   const [dragOrderId, setDragOrderId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+  const [activeFulfillment, setActiveFulfillment] =
+    useState<OrderFulfillmentType>(() => {
+      const stored = localStorage.getItem("kitchen-fulfillment-tab");
+      return orderFulfillmentTypes.includes(stored as OrderFulfillmentType)
+        ? (stored as OrderFulfillmentType)
+        : "dine_in";
+    });
+  const [fulfillmentSwitcherOpen, setFulfillmentSwitcherOpen] =
+    useState(false);
   const [panelFilters, setPanelFilters] =
     useState<PanelFilterState>(DEFAULT_PANEL_FILTERS);
   const {
@@ -97,14 +119,19 @@ export function KitchenPanel() {
   } = useSoundSettings("kitchen");
 
   const [viewMode, setViewMode] = useState<"cards" | "products">("cards");
-  const [autoPrint, setAutoPrint] = useState(
-    () => localStorage.getItem("kitchen-autoprint") === "on",
-  );
+  const [autoPrint, setAutoPrint] = useState(() => {
+    const stored = localStorage.getItem("kitchen-autoprint");
+    return stored !== null ? stored === "on" : panelSettings.kitchenAutoPrint;
+  });
   const autoPrintRef = useRef(autoPrint);
   useEffect(() => {
     autoPrintRef.current = autoPrint;
     localStorage.setItem("kitchen-autoprint", autoPrint ? "on" : "off");
   }, [autoPrint]);
+
+  useEffect(() => {
+    localStorage.setItem("kitchen-fulfillment-tab", activeFulfillment);
+  }, [activeFulfillment]);
 
   useTick(30_000);
 
@@ -207,6 +234,15 @@ export function KitchenPanel() {
         playNewOrderSound(soundDurationRef.current);
       }
       if (autoPrintRef.current) printOrder(order);
+      const type = getOrderFulfillmentType(order);
+      const orderLabel =
+        type === "dine_in"
+          ? `${t("kitchen.table")} ${order.table?.number ?? order.tableId?.slice(-4) ?? "-"}`
+          : getOrderFulfillmentLabel(type, t);
+      if (!hasKitchenTable(order)) {
+        toast.success(`${orderLabel} - ${t("kitchen.newOrders")}`);
+        return;
+      }
       toast.success(
         `${t("kitchen.table")} ${order.table?.number ?? order.tableId.slice(-4)} — ${t("kitchen.newOrders")}`,
       );
@@ -315,25 +351,31 @@ export function KitchenPanel() {
       }),
     [panelFilters],
   );
+  const matchesFulfillment = useCallback(
+    (order: Order) => getOrderFulfillmentType(order) === activeFulfillment,
+    [activeFulfillment],
+  );
 
   const counts = useMemo(
     () => ({
-      new: columns[0].orders.filter(matchesKitchenFilters).length,
-      preparing: columns[1].orders.filter(matchesKitchenFilters).length,
-      ready: columns[2].orders.filter(matchesKitchenFilters).length,
-      served: columns[3].orders.filter(matchesKitchenFilters).length,
-      cancelled: columns[4].orders.filter(matchesKitchenFilters).length,
+      new: columns[0].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
+      preparing: columns[1].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
+      ready: columns[2].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
+      served: columns[3].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
+      cancelled: columns[4].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
     }),
-    [columns, matchesKitchenFilters],
+    [columns, matchesFulfillment, matchesKitchenFilters],
   );
 
   const filteredColumns = useMemo<ColDef[]>(
     () =>
       columns.map((col) => ({
         ...col,
-        orders: col.orders.filter(matchesKitchenFilters),
+        orders: col.orders.filter(
+          (order) => matchesFulfillment(order) && matchesKitchenFilters(order),
+        ),
       })),
-    [columns, matchesKitchenFilters],
+    [columns, matchesFulfillment, matchesKitchenFilters],
   );
 
   const busyOrderId = updateStatus.isPending
@@ -441,6 +483,8 @@ export function KitchenPanel() {
             iconWrapClassName="bg-primary-500/10"
             iconClassName="text-primary-500"
           />
+
+          <ActiveFulfillmentBadge active={activeFulfillment} t={t} />
 
           {/* Controls — scrollable on mobile so nothing wraps or clips */}
           <PanelControlScroller>
@@ -664,6 +708,119 @@ export function KitchenPanel() {
           t={t}
         />
       )}
+
+      <FulfillmentSwitcher
+        active={activeFulfillment}
+        open={fulfillmentSwitcherOpen}
+        onToggle={() => setFulfillmentSwitcherOpen((value) => !value)}
+        onChange={(type) => {
+          setActiveFulfillment(type);
+          setFulfillmentSwitcherOpen(false);
+        }}
+        t={t}
+      />
+    </div>
+  );
+}
+
+function hasKitchenTable(order: Order): order is Order & { tableId: string } {
+  return !!order.table?.number || !!order.tableId;
+}
+
+function ActiveFulfillmentBadge({
+  active,
+  t,
+}: {
+  active: OrderFulfillmentType;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  const Icon =
+    active === "delivery"
+      ? Truck
+      : active === "takeaway"
+        ? ShoppingBag
+        : Utensils;
+
+  return (
+    <div
+      className={cn(
+        "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-border px-2 text-xs font-bold sm:px-3",
+        getOrderFulfillmentTone(active),
+      )}
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="hidden max-w-24 truncate sm:inline">
+        {getOrderFulfillmentLabel(active, t)}
+      </span>
+    </div>
+  );
+}
+
+function FulfillmentSwitcher({
+  active,
+  open,
+  onToggle,
+  onChange,
+  t,
+}: {
+  active: OrderFulfillmentType;
+  open: boolean;
+  onToggle: () => void;
+  onChange: (type: OrderFulfillmentType) => void;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  const tabs: Array<{ value: OrderFulfillmentType; Icon: typeof Truck }> = [
+    { value: "delivery", Icon: Truck },
+    { value: "takeaway", Icon: ShoppingBag },
+    { value: "dine_in", Icon: Utensils },
+  ];
+  const activeTab = tabs.find((tab) => tab.value === active) ?? tabs[2];
+  const ActiveIcon = activeTab.Icon;
+
+  return (
+    <div className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2 sm:bottom-5 sm:right-5">
+      {open && (
+        <div className="w-48 rounded-2xl border border-border bg-surface-elevated p-1.5 shadow-2xl">
+          {tabs.map(({ value, Icon }) => {
+            const selected = value === active;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => onChange(value)}
+                className={cn(
+                  "flex h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm font-semibold transition-colors",
+                  selected
+                    ? cn(getOrderFulfillmentTone(value), "bg-opacity-100")
+                    : "text-foreground-muted hover:bg-foreground-muted/10 hover:text-foreground",
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="truncate">
+                  {getOrderFulfillmentLabel(value, t)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onToggle}
+        className={cn(
+          "flex h-12 min-w-40 items-center justify-between gap-3 rounded-2xl border border-border bg-surface-elevated px-4 text-sm font-bold shadow-2xl transition-colors hover:border-primary-500/40",
+          getOrderFulfillmentTone(active),
+        )}
+      >
+        <span className="flex items-center gap-2">
+          <ActiveIcon className="h-4 w-4" />
+          {getOrderFulfillmentLabel(active, t)}
+        </span>
+        <ChevronDown
+          className={cn("h-4 w-4 transition-transform", open && "rotate-180")}
+        />
+      </button>
     </div>
   );
 }

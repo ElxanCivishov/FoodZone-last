@@ -36,9 +36,15 @@ export function authorize(roles: string[]) {
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
+    // super_admin bypasses all role checks
+    if (req.user.role === 'super_admin') return next();
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ success: false, message: 'Insufficient permissions' });
     }
     next();
   };
+}
+
+export function isSuperAdmin(req: AuthRequest) {
+  return req.user?.role === 'super_admin';
 }

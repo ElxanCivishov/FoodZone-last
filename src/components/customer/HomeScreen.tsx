@@ -6,6 +6,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { useBranch, useCategories, useProducts, usePopularProducts } from '@/hooks/useMenu';
 import { getLocalizedName, getLocalizedDescription } from '@/utils/i18nHelper';
 import { Search, ChevronRight, Star, ShoppingBag, Flame } from 'lucide-react';
+import { CategoryIcon } from '@/components/common/CategoryIcon';
 import { Skeleton } from '@/components/common/LoadingSpinner';
 import { cn } from '@/utils/cn';
 
@@ -111,12 +112,20 @@ export function HomeScreen() {
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
                     className={cn(
-                      "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                      "flex-shrink-0 px-3 py-2 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-2",
                       selectedCategory === cat.id
                         ? "bg-primary-500 text-white"
                         : "bg-surface-elevated border border-border text-foreground-muted hover:text-foreground"
                     )}
                   >
+                    <CategoryIcon
+                      value={cat.icon}
+                      className={cn(
+                        'h-5 w-5 rounded-md bg-transparent',
+                        selectedCategory === cat.id ? 'text-white' : 'text-primary-500',
+                      )}
+                      iconClassName="h-3.5 w-3.5"
+                    />
                     {getLocalizedName(cat)}
                   </button>
                 ))}

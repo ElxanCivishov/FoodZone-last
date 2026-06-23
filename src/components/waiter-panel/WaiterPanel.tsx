@@ -63,6 +63,7 @@ import {
   PanelSoundToggle,
   PanelThemeToggle,
 } from "@/components/common/PanelControls";
+import { DEFAULT_SETTINGS, useAppSettings } from "@/hooks/useAppSettings";
 import { useSoundSettings } from "@/hooks/useSoundSettings";
 import { playReadyOrderSound, playWaiterRequestSound } from "./sounds";
 
@@ -352,12 +353,16 @@ function ReadyOrderCard({
   busy,
   onServe,
   onCancel,
+  warnMin,
+  dangerMin,
   t,
 }: {
   order: Order;
   busy: boolean;
   onServe: (order: Order) => void;
   onCancel: (order: Order) => void;
+  warnMin: number;
+  dangerMin: number;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
   const [expanded, setExpanded] = useState(true);
@@ -411,9 +416,9 @@ function ReadyOrderCard({
           <span
             className={cn(
               "inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg shrink-0 tabular-nums",
-              readyFor >= 8
+              readyFor >= dangerMin
                 ? "bg-danger-500/15 text-danger-500"
-                : readyFor >= 4
+                : readyFor >= warnMin
                   ? "bg-yellow-500/15 text-yellow-500"
                   : "bg-success-500/15 text-success-500",
             )}
@@ -446,9 +451,9 @@ function ReadyOrderCard({
                 icon={<Clock className="w-3.5 h-3.5" />}
                 label={`${readyFor}m`}
                 tone={
-                  readyFor >= 8
+                  readyFor >= dangerMin
                     ? "text-danger-500"
-                    : readyFor >= 4
+                    : readyFor >= warnMin
                       ? "text-yellow-500"
                       : "text-success-500"
                 }
@@ -561,6 +566,8 @@ function RequestCard({
   onAccept,
   onComplete,
   onReject,
+  warnMin,
+  dangerMin,
   t,
 }: {
   request: WaiterRequest;
@@ -568,6 +575,8 @@ function RequestCard({
   onAccept: (id: string) => void;
   onComplete: (id: string) => void;
   onReject: (id: string) => void;
+  warnMin: number;
+  dangerMin: number;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
   const [expanded, setExpanded] = useState(request.status !== "rejected");
@@ -666,9 +675,9 @@ function RequestCard({
           <span
             className={cn(
               "text-xs font-semibold tabular-nums shrink-0",
-              elapsed >= 8
+              elapsed >= dangerMin
                 ? "text-danger-500"
-                : elapsed >= 4
+                : elapsed >= warnMin
                   ? "text-yellow-500"
                   : "text-foreground-muted/60",
             )}
@@ -704,9 +713,9 @@ function RequestCard({
                 <span
                   className={cn(
                     "text-xs font-semibold tabular-nums",
-                    elapsed >= 8
+                    elapsed >= dangerMin
                       ? "text-danger-500"
-                      : elapsed >= 4
+                      : elapsed >= warnMin
                         ? "text-yellow-500"
                         : "text-foreground-muted",
                   )}
@@ -849,6 +858,10 @@ export function WaiterPanel() {
   const { resolvedTheme, toggleTheme } = useThemeStore();
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
   const isDark = resolvedTheme === "dark";
+  const { data: settingsData } = useAppSettings();
+  const panelSettings = settingsData?.data ?? DEFAULT_SETTINGS;
+  const warnMin = panelSettings.urgencyWarnMin;
+  const dangerMin = panelSettings.urgencyDangerMin;
   const {
     soundEnabled,
     setSoundEnabled,
@@ -1285,6 +1298,8 @@ export function WaiterPanel() {
                     busy={busyOrderId === order.id}
                     onServe={handleServeOrder}
                     onCancel={handleCancelOrder}
+                    warnMin={warnMin}
+                    dangerMin={dangerMin}
                     t={t}
                   />
                 </div>
@@ -1312,6 +1327,8 @@ export function WaiterPanel() {
                   onAccept={(id) => updateRequestStatus(id, "accepted")}
                   onComplete={(id) => updateRequestStatus(id, "done")}
                   onReject={handleReject}
+                  warnMin={warnMin}
+                  dangerMin={dangerMin}
                   t={t}
                 />
               </div>
