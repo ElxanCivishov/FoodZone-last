@@ -44,6 +44,8 @@ model Branch {
   staffPerformance StaffPerformance[]
   branchSettings   BranchSettings?
   feedbacks        CustomerFeedback[]
+  rawMaterials     RawMaterial[]
+  stocktakes       Stocktake[]
 
   @@index([restaurantId])
   @@index([status])
@@ -124,6 +126,7 @@ model Product {
   sizes             ProductSize[]
   stockMovements    StockMovement[]
   dailySpecials     DailySpecial[]
+  recipe            Recipe?
 
   @@index([categoryId])
   @@index([status, isPopular])
@@ -257,26 +260,27 @@ model WaiterRequest {
 }
 
 model User {
-  id               String          @id @default(cuid())
-  email            String          @unique
+  id               String             @id @default(cuid())
+  email            String             @unique
   password         String
   name             String
-  role             String          @default("waiter")
-  status           String          @default("active")
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  cancelledOrders  Order[]         @relation("CancelledOrders")
-  paidOrders       Order[]         @relation("PaidOrders")
-  acceptedRequests WaiterRequest[] @relation("AcceptedRequests")
-  rejectedRequests WaiterRequest[] @relation("RejectedRequests")
-  openedDrawers    CashDrawer[]    @relation("OpenedDrawers")
-  closedDrawers    CashDrawer[]    @relation("ClosedDrawers")
-  openedShifts     Shift[]         @relation("OpenedShifts")
-  closedShifts     Shift[]         @relation("ClosedShifts")
+  role             String             @default("waiter")
+  status           String             @default("active")
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  cancelledOrders  Order[]            @relation("CancelledOrders")
+  paidOrders       Order[]            @relation("PaidOrders")
+  acceptedRequests WaiterRequest[]    @relation("AcceptedRequests")
+  rejectedRequests WaiterRequest[]    @relation("RejectedRequests")
+  openedDrawers    CashDrawer[]       @relation("OpenedDrawers")
+  closedDrawers    CashDrawer[]       @relation("ClosedDrawers")
+  openedShifts     Shift[]            @relation("OpenedShifts")
+  closedShifts     Shift[]            @relation("ClosedShifts")
   auditLogs        AuditLog[]
   notifications    Notification[]
   staffShifts      StaffShift[]
   staffPerformance StaffPerformance[]
+  pushSubscriptions PushSubscription[]
 
   @@index([role, status])
 }
@@ -405,25 +409,32 @@ model Shift {
 }
 
 model PromoCode {
-  id             String   @id @default(cuid())
-  branchId       String
-  code           String
-  description    String?
-  type           String
-  value          Float
-  minOrderAmount Float?
-  maxUses        Int?
-  usedCount      Int      @default(0)
-  validFrom      DateTime
-  validTo        DateTime
-  status         String   @default("active")
-  createdAt      DateTime @default(now())
-  branch         Branch   @relation(fields: [branchId], references: [id])
-  orders         Order[]
+  id              String    @id @default(cuid())
+  branchId        String
+  code            String
+  description     String?
+  type            String
+  value           Float
+  minOrderAmount  Float?
+  maxUses         Int?
+  usedCount       Int       @default(0)
+  validFrom       DateTime
+  validTo         DateTime
+  status          String    @default("active")
+  customerId      String?
+  applicableItems String[]  @default([])
+  happyHourStart  String?
+  happyHourEnd    String?
+  daysOfWeek      Int[]     @default([])
+  createdAt       DateTime  @default(now())
+  branch          Branch    @relation(fields: [branchId], references: [id])
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  orders          Order[]
 
   @@unique([branchId, code])
   @@index([branchId, status])
   @@index([validTo])
+  @@index([customerId])
 }
 
 model Customer {
@@ -443,6 +454,7 @@ model Customer {
   branch      Branch             @relation(fields: [branchId], references: [id])
   orders      Order[]
   feedbacks   CustomerFeedback[]
+  promoCodes  PromoCode[]
 
   @@unique([branchId, phone])
   @@index([branchId])
@@ -566,4 +578,111 @@ model StaffPerformance {
 
   @@index([branchId, createdAt])
   @@index([userId])
+}
+
+// ── Xammal sistemi ────────────────────────────────────────────────────────────
+
+model RawMaterial {
+  id           String        @id @default(cuid())
+  branchId     String
+  name         String
+  nameAz       String
+  nameEn       String        @default("")
+  unit         String
+  currentStock Float         @default(0)
+  minStock     Float         @default(0)
+  costPerUnit  Float?
+  category     String?
+  status       String        @default("active")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  branch       Branch        @relation(fields: [branchId], references: [id])
+  ingredients  Ingredient[]
+  rawMovements RawMovement[]
+
+  @@index([branchId])
+  @@index([branchId, status])
+}
+
+model Recipe {
+  id          String       @id @default(cuid())
+  productId   String       @unique
+  yield       Float        @default(1)
+  note        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  product     Product      @relation(fields: [productId], references: [id])
+  ingredients Ingredient[]
+}
+
+model Ingredient {
+  id            String      @id @default(cuid())
+  recipeId      String
+  rawMaterialId String
+  quantity      Float
+  unit          String
+  recipe        Recipe      @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id])
+
+  @@index([recipeId])
+  @@index([rawMaterialId])
+}
+
+model RawMovement {
+  id            String      @id @default(cuid())
+  rawMaterialId String
+  branchId      String
+  type          String
+  quantity      Float
+  unitCost      Float?
+  note          String?
+  orderId       String?
+  createdById   String?
+  createdAt     DateTime    @default(now())
+  rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id])
+
+  @@index([rawMaterialId, createdAt])
+  @@index([branchId, createdAt])
+  @@index([type])
+}
+
+model Stocktake {
+  id         String          @id @default(cuid())
+  branchId   String
+  status     String          @default("open")
+  note       String?
+  openedById String?
+  closedById String?
+  openedAt   DateTime        @default(now())
+  closedAt   DateTime?
+  items      StocktakeItem[]
+  branch     Branch          @relation(fields: [branchId], references: [id])
+
+  @@index([branchId, status])
+}
+
+model StocktakeItem {
+  id            String    @id @default(cuid())
+  stocktakeId   String
+  rawMaterialId String
+  expected      Float
+  actual        Float?
+  difference    Float?
+  stocktake     Stocktake @relation(fields: [stocktakeId], references: [id])
+
+  @@index([stocktakeId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String?
+  branchId  String?
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([branchId])
 }

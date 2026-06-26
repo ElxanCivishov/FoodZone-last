@@ -1,10 +1,20 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSocketContext } from '@/services/socket';
+import { useNotificationsStore, type NotificationType } from '@/stores/notificationsStore';
+
+function mapBackendType(type: string): NotificationType {
+  if (type === 'low_stock') return 'alert';
+  if (type === 'payment_received') return 'star';
+  if (type === 'order_cancelled') return 'alert';
+  if (type === 'sla_breach') return 'system';
+  return 'system';
+}
 
 export function useAdminRealtime() {
   const { socket, isConnected } = useSocketContext();
   const queryClient = useQueryClient();
+  const addSocketNotification = useNotificationsStore((s) => s.addSocketNotification);
 
   useEffect(() => {
     if (!socket) return;
@@ -30,6 +40,18 @@ export function useAdminRealtime() {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     };
 
+    const handleNotification = (raw: any) => {
+      addSocketNotification({
+        id: raw.id,
+        title: raw.title,
+        description: raw.message,
+        time: new Date(raw.createdAt),
+        type: mapBackendType(raw.type),
+        backendType: raw.type,
+        read: raw.isRead ?? false,
+      });
+    };
+
     socket.on('kitchen:new:order', refreshOps);
     socket.on('order:status:changed', refreshOps);
     socket.on('waiter:new:request', refreshOps);
@@ -37,6 +59,7 @@ export function useAdminRealtime() {
     socket.on('waiter:request:completed', refreshOps);
     socket.on('menu:changed', refreshMenu);
     socket.on('qr:changed', refreshQr);
+    socket.on('notification', handleNotification);
 
     return () => {
       socket.off('kitchen:new:order', refreshOps);
@@ -46,9 +69,10 @@ export function useAdminRealtime() {
       socket.off('waiter:request:completed', refreshOps);
       socket.off('menu:changed', refreshMenu);
       socket.off('qr:changed', refreshQr);
+      socket.off('notification', handleNotification);
       socket.emit('room:leave', { room: 'admin' });
     };
-  }, [socket, queryClient]);
+  }, [socket, queryClient, addSocketNotification]);
 
   return isConnected;
 }

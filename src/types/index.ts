@@ -113,7 +113,7 @@ export interface PromoCode {
   branchId: string;
   code: string;
   description?: string;
-  type: 'percent' | 'fixed' | 'free_delivery';
+  type: 'percent' | 'fixed';
   value: number;
   minOrderAmount?: number;
   maxUses?: number;
@@ -121,9 +121,25 @@ export interface PromoCode {
   validFrom: string;
   validTo: string;
   status: 'active' | 'inactive';
+  customerId?: string | null;
+  customer?: { id: string; name: string; phone?: string } | null;
+  applicableItems: string[];
+  happyHourStart?: string | null;
+  happyHourEnd?: string | null;
+  daysOfWeek: number[];
   createdAt: string;
   isExpired?: boolean;
   isMaxed?: boolean;
+}
+
+export interface PromoStats {
+  totalDiscountGiven: number;
+  totalOrdersWithPromo: number;
+  monthDiscountGiven: number;
+  monthOrdersWithPromo: number;
+  activeCount: number;
+  expiredCount: number;
+  topCodes: { id: string; code: string; type: string; value: number; usedCount: number; description?: string }[];
 }
 
 export interface Customer {
@@ -522,6 +538,7 @@ export type AppScreen =
   | 'wifi-connect'
   | 'call-waiter'
   | 'rewards'
+  | 'feedback'
   | 'admin'
   | 'kitchen'
   | 'waiter';

@@ -119,7 +119,26 @@
     "available": "Available offers",
     "redeem": "Redeem",
     "noRewards": "No rewards yet",
-    "earnPoints": "Earn points by ordering"
+    "earnPoints": "Earn points by ordering",
+    "tier": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "nextTier": "{{count}} more points to {{next}}",
+    "redeemPoints": "Use points",
+    "availablePoints": "{{count}} points available",
+    "pointsUsed": "{{count}} points used"
+  },
+  "feedback": {
+    "title": "How was your experience?",
+    "subtitle": "Your feedback matters to us",
+    "thankYou": "Thank you!",
+    "recorded": "Your feedback has been recorded",
+    "submit": "Submit",
+    "skip": "Skip",
+    "commentPlaceholder": "Any additional comments? (optional)"
   },
   "common": {
     "back": "Back",
@@ -165,9 +184,11 @@
     "branches": "Branches",
     "analytics": "Analytics",
     "settings": "Settings",
+    "notifications": "Notifications",
     "inventory": "Inventory",
     "cashier": "Cashier & Shifts",
     "customers": "Customers",
+    "reservations": "Reservations",
     "promo": "Promo Codes",
     "reports": "Reports",
     "totalOrders": "Total Orders",
@@ -190,11 +211,21 @@
     "serviceFee": "Service fee (%)",
     "currency": "Currency",
     "language": "Language",
-    "profile": "Profile",
     "workspace": "Admin workspace",
     "sidebar": {
       "collapse": "Collapse sidebar",
-      "expand": "Expand sidebar"
+      "expand": "Expand sidebar",
+      "mainBranch": "Main branch",
+      "sections": {
+        "overview": "Overview",
+        "operations": "Operations",
+        "business": "Business",
+        "system": "System"
+      },
+      "userMenu": {
+        "account": "Account",
+        "signOut": "Sign out"
+      }
     },
     "roles": {
       "admin": "Admin",
@@ -277,6 +308,20 @@
     },
     "dashboardView": {
       "liveRequests": "Live Requests",
+      "liveTables": "Live Tables",
+      "comparison": "Comparison",
+      "tabs": {
+        "overview": "Overview",
+        "operations": "Operations",
+        "tables": "Tables",
+        "analytics": "Analytics",
+        "actions": "Actions"
+      },
+      "tabDetails": {
+        "overview": "Key daily metrics and management shortcuts",
+        "operations": "Order flow, alerts, and live table requests",
+        "tables": "Live table map and QR health"
+      },
       "todayCount": "+{{count}} today",
       "todayRevenue": "+${{amount}} today",
       "pendingCount": "{{count}} pending",
@@ -299,7 +344,9 @@
         "orderData": "No order data yet",
         "liveActivity": "No live activity yet",
         "activeRequests": "No active waiter requests",
-        "popularItems": "No popular items yet"
+        "popularItems": "No popular items yet",
+        "liveTables": "No live table data yet",
+        "comparison": "No comparison data yet"
       },
       "alerts": {
         "delayedPending": "{{count}} delayed pending order",
@@ -409,6 +456,12 @@
   "kitchen": {
     "title": "Kitchen Panel",
     "order": "Order",
+    "fulfillmentOrders": "{{type}} orders",
+    "emptyFulfillment": {
+      "delivery": "No delivery orders right now",
+      "takeaway": "No takeaway orders right now",
+      "dine_in": "No dine-in orders right now"
+    },
     "newOrders": "New Orders",
     "preparing": "Preparing",
     "ready": "Ready",
@@ -446,6 +499,7 @@
     "estimatedTime": "Estimated prep time",
     "items": "items",
     "productView": "Product Summary",
+    "productOrderCount": "{{count}} orders",
     "cardView": "Card View",
     "autoPrint": "Auto Print",
     "print": "Print",

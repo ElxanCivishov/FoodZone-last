@@ -1,10 +1,85 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
+import { notify } from "../lib/notify";
 import { createOrderSchema, updateOrderStatusSchema } from "../lib/validation";
 import { authenticate, authorize } from "../middleware/auth";
 import { validate } from "../middleware/validate";
 
 const router = Router();
+
+async function deductStockForOrder(orderId: string, branchId: string, orderNumber: string, io: any) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: {
+          product: {
+            include: { recipe: { include: { ingredients: true } } },
+          },
+        },
+      },
+    },
+  });
+  if (!order) return;
+
+  for (const item of order.items) {
+    const product = item.product;
+
+    // 1. Məhsulun öz stoku
+    if (product.stockEnabled && product.stockQuantity !== null) {
+      const newQty = Math.max(0, product.stockQuantity - item.quantity);
+      await prisma.product.update({
+        where: { id: product.id },
+        data: {
+          stockQuantity: newQty,
+          status: newQty === 0 ? 'out_of_stock' : (product.status === 'out_of_stock' ? 'active' : product.status),
+        },
+      });
+      await prisma.stockMovement.create({
+        data: {
+          productId: product.id,
+          branchId,
+          type: 'sale',
+          quantity: item.quantity,
+          note: `Sifariş #${orderNumber} (confirmed)`,
+        },
+      });
+    }
+
+    // 2. Resept varsa xammalları azalt
+    if (product.recipe) {
+      for (const ing of product.recipe.ingredients) {
+        const consumeQty = (ing.quantity * item.quantity) / product.recipe.yield;
+        const updated = await prisma.rawMaterial.update({
+          where: { id: ing.rawMaterialId },
+          data: { currentStock: { decrement: consumeQty } },
+        });
+        await prisma.rawMovement.create({
+          data: {
+            rawMaterialId: ing.rawMaterialId,
+            branchId,
+            type: 'consumption',
+            quantity: -consumeQty,
+            orderId,
+            note: `Sifariş #${orderNumber}`,
+          },
+        });
+
+        if (updated.currentStock <= updated.minStock) {
+          const { notify } = await import('../lib/notify');
+          await notify({
+            io,
+            branchId,
+            type: 'low_stock',
+            title: 'Xammal azalır',
+            message: `${updated.nameAz}: ${updated.currentStock.toFixed(2)} ${updated.unit}`,
+            data: { rawMaterialId: updated.id },
+          }).catch(() => {});
+        }
+      }
+    }
+  }
+}
 
 const ORDER_STATUS_TRANSITIONS: Record<string, string[]> = {
   pending: ["confirmed", "preparing", "cancelled"],
@@ -82,6 +157,7 @@ router.post("/", validate(createOrderSchema), async (req, res, next) => {
       customerName, customerPhone, deliveryAddress, deliveryNote, pickupTime,
       items, paymentMethod, specialRequest, discountCode,
       promoCode: promoCodeStr, customerId, cashDrawerId,
+      redeemPoints = 0,
     } = req.body;
 
     const branch = await prisma.branch.findUnique({ where: { id: branchId }, select: { id: true } });
@@ -171,7 +247,17 @@ router.post("/", validate(createOrderSchema), async (req, res, next) => {
         promoDiscount = Math.min(promoDiscount, subtotal);
       }
 
-      const total = Math.max(0, subtotal + serviceFee - promoDiscount);
+      // Loyalty points redemption: 100 points = 1 AZN
+      let pointsDiscount = 0;
+      if (redeemPoints > 0 && customerId) {
+        const cust = await tx.customer.findUnique({ where: { id: customerId }, select: { points: true } });
+        if (cust && cust.points >= redeemPoints) {
+          pointsDiscount = redeemPoints * 0.01;
+          await tx.customer.update({ where: { id: customerId }, data: { points: { decrement: redeemPoints } } });
+        }
+      }
+
+      const total = Math.max(0, subtotal + serviceFee - promoDiscount - pointsDiscount);
       const orderNumber = `FZ-${Date.now().toString(36).toUpperCase()}`;
       const receiptNumber = `RCP-${Date.now().toString(36).toUpperCase()}`;
 
@@ -237,6 +323,8 @@ router.post("/:id/pay", authenticate, authorize(["admin", "manager", "waiter"]),
     if (!existing) return res.status(404).json({ success: false, message: "Sifariş tapılmadı" });
     if (existing.paymentStatus === 'paid') return res.status(400).json({ success: false, message: "Sifariş artıq ödənilib" });
 
+    const payIo = (req as any).io;
+
     const order = await prisma.order.update({
       where: { id: req.params.id },
       data: {
@@ -277,14 +365,13 @@ router.post("/:id/pay", authenticate, authorize(["admin", "manager", "waiter"]),
         const updated = await prisma.product.findUnique({ where: { id: item.productId } });
         if (updated?.stockEnabled && updated.stockQuantity !== null && updated.lowStockThreshold !== null
           && updated.stockQuantity <= updated.lowStockThreshold) {
-          await prisma.notification.create({
-            data: {
-              branchId: existing.branchId,
-              type: 'low_stock',
-              title: 'Stok azalır',
-              message: `"${updated.nameAz}" — yalnız ${updated.stockQuantity} ${updated.unit ?? 'ədəd'} qalıb`,
-              data: { productId: item.productId },
-            },
+          notify({
+            io: payIo,
+            branchId: existing.branchId,
+            type: 'low_stock',
+            title: 'Stok azalır',
+            message: `"${updated.nameAz}" — yalnız ${updated.stockQuantity} ${updated.unit ?? 'ədəd'} qalıb`,
+            data: { productId: item.productId },
           }).catch(() => {});
         }
       }
@@ -303,18 +390,18 @@ router.post("/:id/pay", authenticate, authorize(["admin", "manager", "waiter"]),
       }).catch(() => {});
     }
 
-    // Bildiriş
-    await prisma.notification.create({
-      data: {
-        branchId: existing.branchId,
-        type: 'payment_received',
-        title: 'Ödəniş qəbul edildi',
-        message: `#${existing.orderNumber} — ${order.total.toFixed(2)} ₼ (${paymentMethod || existing.paymentMethod})`,
-        data: { orderId: existing.id },
-      },
+    const io = (req as any).io;
+
+    // Ödəniş bildirişi
+    notify({
+      io,
+      branchId: existing.branchId,
+      type: 'payment_received',
+      title: 'Ödəniş qəbul edildi',
+      message: `#${existing.orderNumber} — ${order.total.toFixed(2)} ₼ (${paymentMethod || existing.paymentMethod})`,
+      data: { orderId: existing.id },
     }).catch(() => {});
 
-    const io = (req as any).io;
     io.to("admin").emit("order:paid", { orderId: order.id, order });
 
     res.json({ success: true, data: order });
@@ -345,30 +432,7 @@ router.patch(
       let statusData: Record<string, unknown> = {};
 
       if (status === "confirmed") {
-        // Stok azaltma confirmed zamanı
-        const items = await prisma.orderItem.findMany({ where: { orderId: existing.id } });
-        for (const item of items) {
-          const product = await prisma.product.findUnique({ where: { id: item.productId } });
-          if (product?.stockEnabled && product.stockQuantity !== null) {
-            const newQty = Math.max(0, product.stockQuantity - item.quantity);
-            await prisma.product.update({
-              where: { id: item.productId },
-              data: {
-                stockQuantity: newQty,
-                status: newQty === 0 ? 'out_of_stock' : (product.status === 'out_of_stock' ? 'active' : product.status),
-              },
-            });
-            await prisma.stockMovement.create({
-              data: {
-                productId: item.productId,
-                branchId: existing.branchId,
-                type: 'sale',
-                quantity: item.quantity,
-                note: `Sifariş #${existing.orderNumber} (confirmed)`,
-              },
-            });
-          }
-        }
+        deductStockForOrder(existing.id, existing.branchId, existing.orderNumber, (req as any).io).catch(() => {});
       } else if (status === "preparing") {
         statusData = {
           preparationStartedAt: new Date(),
@@ -412,18 +476,69 @@ router.patch(
       });
 
       const io = (req as any).io;
+
+      // Ləğv bildirişi
+      if (status === 'cancelled') {
+        notify({
+          io,
+          branchId: existing.branchId,
+          type: 'order_cancelled',
+          title: 'Sifariş ləğv edildi',
+          message: `#${existing.orderNumber}${existing.cancelReason ? ` — ${cancelReason}` : ''}`,
+          data: { orderId: existing.id },
+        }).catch(() => {});
+      }
+
       io.to("kitchen").emit("order:status:changed", { orderId: order.id, status, tableId: order.tableId, order });
       io.to("admin").emit("order:status:changed", { orderId: order.id, status, tableId: order.tableId, order });
       if (order.tableId) {
         io.to(`table:${order.tableId}`).emit("customer:order:update", { orderId: order.id, status });
       }
       if (status === "ready") {
-        if (order.fulfillmentType === "dine_in" && order.tableId) {
+        const fulfillmentType = order.fulfillmentType ?? "dine_in";
+        if (fulfillmentType === "dine_in" && order.tableId) {
           io.to("waiters").emit("waiter:new:order", order);
           io.to(`table:${order.tableId}`).emit("customer:order:ready", { orderId: order.id, status: "ready" });
         }
       }
       res.json({ success: true, data: order });
+    } catch (err) { next(err); }
+  }
+);
+
+// Item-level status — KDS item tick
+router.patch(
+  '/:orderId/items/:itemId/status',
+  authenticate,
+  authorize(['admin', 'manager', 'kitchen']),
+  async (req, res, next) => {
+    try {
+      const { status } = req.body;
+      if (!['pending', 'preparing', 'ready'].includes(status)) {
+        return res.status(400).json({ success: false, message: 'Invalid item status' });
+      }
+
+      const item = await prisma.orderItem.update({
+        where: { id: req.params.itemId },
+        data: { status },
+      });
+
+      // If all items are ready, auto-promote order to ready
+      const allItems = await prisma.orderItem.findMany({
+        where: { orderId: req.params.orderId },
+      });
+      if (allItems.every(i => i.status === 'ready')) {
+        const order = await prisma.order.update({
+          where: { id: req.params.orderId },
+          data: { status: 'ready' },
+          include: orderInclude,
+        });
+        const io = (req as any).io;
+        io.to('kitchen').emit('order:status:changed', { orderId: order.id, status: 'ready', order });
+        io.to('admin').emit('order:status:changed', { orderId: order.id, status: 'ready', order });
+      }
+
+      res.json({ success: true, data: item });
     } catch (err) { next(err); }
   }
 );

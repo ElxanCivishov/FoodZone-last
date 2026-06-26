@@ -25,7 +25,11 @@ import { customerRoutes } from "./routes/customers";
 import { reservationRoutes } from "./routes/reservations";
 import { auditRoutes } from "./routes/audit";
 import { feedbackRoutes } from "./routes/feedback";
+import { rawMaterialRoutes } from "./routes/rawMaterials";
+import { recipeRoutes } from "./routes/recipes";
+import { pushSubscriptionRoutes } from "./routes/pushSubscriptions";
 import { setupSocketEvents } from "./events/socketEvents";
+import { startScheduler } from "./jobs/scheduler";
 import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
@@ -90,8 +94,12 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/audit", auditRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/raw-materials", rawMaterialRoutes);
+app.use("/api/recipes", recipeRoutes);
+app.use("/api/push", pushSubscriptionRoutes);
 
 setupSocketEvents(io);
+startScheduler(io);
 
 app.get("/health", async (req, res) => {
   try {

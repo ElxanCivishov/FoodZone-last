@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useWaiterStore } from "@/stores/waiterStore";
 import { useThemeStore } from "@/stores/themeStore";
+import { useNotificationsStore } from "@/stores/notificationsStore";
 import { useSocketContext } from "@/services/socket";
 import { useWaiterRequests, useOrders } from "@/hooks/useDashboard";
 import { useUpdateOrderStatus } from "@/hooks/useOrders";
@@ -38,6 +39,7 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { patch } from "@/services/api";
 import { Order, WaiterRequest } from "@/types";
 import { cn } from "@/utils/cn";
+import { getOrderFulfillmentType } from "@/utils/orderDisplay";
 import { Tooltip } from "@/components/common/Tooltip";
 import { InfoChip, StatusBadge } from "@/components/common/OrderUi";
 import {
@@ -77,6 +79,14 @@ const requestTypeIcon: Record<WaiterRequest["type"], React.ElementType> = {
   clean: Sparkles,
   other: HelpCircle,
 };
+
+function isDineInReadyOrder(order: Order) {
+  return (
+    order.status === "ready" &&
+    getOrderFulfillmentType(order) === "dine_in" &&
+    Boolean(order.tableId || order.table?.id || order.table?.number)
+  );
+}
 
 const requestTone: Record<WaiterRequest["type"], string> = {
   call: "text-primary-500",
@@ -902,7 +912,7 @@ export function WaiterPanel() {
     refetch,
     isFetching,
   } = useOrders(
-    { status: "ready", limit: 100 },
+    { status: "ready", fulfillmentType: "dine_in", limit: 100 },
     { refetchInterval: 10_000, staleTime: 5_000 },
   );
 
@@ -915,7 +925,9 @@ export function WaiterPanel() {
   }, [requestsData, setRequests]);
 
   useEffect(() => {
-    if (ordersData?.data) setOrders(ordersData.data);
+    if (ordersData?.data) {
+      setOrders(ordersData.data.filter(isDineInReadyOrder));
+    }
   }, [ordersData, setOrders]);
 
   useEffect(() => {
@@ -934,32 +946,42 @@ export function WaiterPanel() {
       invalidate();
       if (!announcedRequestIdsRef.current.has(data.id)) {
         announcedRequestIdsRef.current.add(data.id);
-        if (soundEnabledRef.current) {
-          playWaiterRequestSound(soundDurationRef.current);
+        const prefs = useNotificationsStore.getState().prefs;
+        if (prefs.waiter_new_request) {
+          if (soundEnabledRef.current && prefs.waiter_sound) {
+            playWaiterRequestSound(soundDurationRef.current);
+          }
+          toast(
+            t("waiterPanel.newRequestToast", {
+              table:
+                data.table?.number ?? data.tableNumber ?? data.tableId.slice(-4),
+            }),
+          );
         }
-        toast(
-          t("waiterPanel.newRequestToast", {
-            table:
-              data.table?.number ?? data.tableNumber ?? data.tableId.slice(-4),
-          }),
-        );
       }
     };
 
     const handleReadyOrder = (order: Order) => {
+      if (!isDineInReadyOrder(order)) {
+        removeOrder(order.id);
+        return;
+      }
       addOrder(order);
       invalidate();
       if (!announcedReadyIdsRef.current.has(order.id)) {
         announcedReadyIdsRef.current.add(order.id);
-        if (soundEnabledRef.current) {
-          playReadyOrderSound(soundDurationRef.current);
+        const prefs = useNotificationsStore.getState().prefs;
+        if (prefs.waiter_order_ready) {
+          if (soundEnabledRef.current && prefs.waiter_sound) {
+            playReadyOrderSound(soundDurationRef.current);
+          }
+          toast.success(
+            t("waiterPanel.readyToast", {
+              orderNumber: order.orderNumber,
+              table: tableNumber(order),
+            }),
+          );
         }
-        toast.success(
-          t("waiterPanel.readyToast", {
-            orderNumber: order.orderNumber,
-            table: tableNumber(order),
-          }),
-        );
       }
     };
 
@@ -972,7 +994,10 @@ export function WaiterPanel() {
       const orderId = payload.orderId ?? order?.id;
       const status = payload.status ?? order?.status;
       if (!orderId || !status) return;
-      if (status === "ready" && order) handleReadyOrder(order);
+      if (status === "ready" && order) {
+        handleReadyOrder(order);
+        return;
+      }
       if (
         status === "served" ||
         status === "cancelled" ||

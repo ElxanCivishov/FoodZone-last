@@ -35,6 +35,10 @@ export const createOrderSchema = z
     paymentMethod: z.enum(["cash", "card", "online"]),
     specialRequest: z.string().max(500).optional(),
     discountCode: z.string().optional(),
+    redeemPoints: z.number().int().min(0).optional(),
+    customerId: z.string().optional(),
+    cashDrawerId: z.string().optional(),
+    promoCode: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.fulfillmentType === "dine_in" && !data.tableId) {

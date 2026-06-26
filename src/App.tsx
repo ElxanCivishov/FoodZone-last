@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -6,7 +6,9 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { WifiOff } from "lucide-react";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -29,10 +31,51 @@ import { MyOrdersScreen } from "@/components/customer/MyOrdersScreen";
 import { CallWaiterScreen } from "@/components/customer/CallWaiterScreen";
 import { WifiConnectScreen } from "@/components/customer/WifiConnectScreen";
 import { RewardsScreen } from "@/components/customer/RewardsScreen";
-import { AdminApp } from "@/components/admin/AdminApp";
-import { KitchenPanel } from "@/components/kitchen/KitchenPanel";
-import { WaiterPanel } from "@/components/waiter-panel/WaiterPanel";
+import { FeedbackScreen } from "@/components/customer/FeedbackScreen";
 import { cn } from "@/utils/cn";
+
+// Heavy staff panels — lazy loaded to keep initial bundle small
+const AdminApp     = lazy(() => import("@/components/admin/AdminApp").then(m => ({ default: m.AdminApp })));
+const KitchenPanel = lazy(() => import("@/components/kitchen/KitchenPanel").then(m => ({ default: m.KitchenPanel })));
+const WaiterPanel  = lazy(() => import("@/components/waiter-panel/WaiterPanel").then(m => ({ default: m.WaiterPanel })));
+
+function StaffFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner size={40} />
+    </div>
+  );
+}
+
+// ─── Offline banner ───────────────────────────────────────────────────────────
+function OfflineBanner() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const online  = () => setIsOnline(true);
+    const offline = () => setIsOnline(false);
+    window.addEventListener("online",  online);
+    window.addEventListener("offline", offline);
+    return () => {
+      window.removeEventListener("online",  online);
+      window.removeEventListener("offline", offline);
+    };
+  }, []);
+
+  if (isOnline) return null;
+
+  return (
+    <motion.div
+      initial={{ y: -40 }}
+      animate={{ y: 0 }}
+      exit={{ y: -40 }}
+      className="fixed top-0 left-0 right-0 z-[100] bg-red-500 text-white text-center text-xs py-2 font-medium flex items-center justify-center gap-2"
+    >
+      <WifiOff className="w-3.5 h-3.5" />
+      İnternet bağlantısı yoxdur — oflayn rejimdə işləyirsiniz
+    </motion.div>
+  );
+}
 
 // ─── Customer screen map ──────────────────────────────────────────────────────
 const customerScreens: Record<string, React.FC> = {
@@ -49,9 +92,19 @@ const customerScreens: Record<string, React.FC> = {
   "call-waiter": CallWaiterScreen,
   "wifi-connect": WifiConnectScreen,
   rewards: RewardsScreen,
+  feedback: FeedbackScreen,
 };
 
 const screensWithNav = ["home", "my-orders", "rewards", "order-tracking"];
+
+const screenVariants = {
+  initial: { opacity: 0, y: 18, scale: 0.99 },
+  animate: {
+    opacity: 1, y: 0, scale: 1,
+    transition: { type: "spring" as const, stiffness: 380, damping: 30 },
+  },
+  exit: { opacity: 0, y: -10, scale: 0.99, transition: { duration: 0.18 } },
+};
 
 // ─── Customer flow ────────────────────────────────────────────────────────────
 function CustomerFlow() {
@@ -83,7 +136,17 @@ function CustomerFlow() {
       )}
 
       <main className={cn("max-w-lg mx-auto relative", showNav && "pb-20")}>
-        <ScreenComponent />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentScreen}
+            variants={screenVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <ScreenComponent />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {showNav && <BottomNav />}
@@ -142,6 +205,7 @@ function StaffPanel({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <OfflineBanner />
       <Routes>
         {/* Customer QR flow */}
         <Route path="/" element={<CustomerFlow />} />
@@ -150,13 +214,15 @@ export default function App() {
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/admin/login" element={<Navigate to="/login" replace />} />
 
-        {/* Staff panels */}
+        {/* Staff panels — lazy loaded */}
         <Route
           path="/admin/*"
           element={
             <AuthGuard roles={["admin", "manager"]}>
               <StaffPanel>
-                <AdminApp />
+                <Suspense fallback={<StaffFallback />}>
+                  <AdminApp />
+                </Suspense>
               </StaffPanel>
             </AuthGuard>
           }
@@ -166,7 +232,9 @@ export default function App() {
           element={
             <AuthGuard roles={["admin", "manager", "kitchen"]}>
               <StaffPanel>
-                <KitchenPanel />
+                <Suspense fallback={<StaffFallback />}>
+                  <KitchenPanel />
+                </Suspense>
               </StaffPanel>
             </AuthGuard>
           }
@@ -176,7 +244,9 @@ export default function App() {
           element={
             <AuthGuard roles={["admin", "manager", "waiter", "staff"]}>
               <StaffPanel>
-                <WaiterPanel />
+                <Suspense fallback={<StaffFallback />}>
+                  <WaiterPanel />
+                </Suspense>
               </StaffPanel>
             </AuthGuard>
           }
@@ -186,7 +256,9 @@ export default function App() {
           element={
             <AuthGuard roles={["admin", "manager", "waiter", "staff"]}>
               <StaffPanel>
-                <WaiterPanel />
+                <Suspense fallback={<StaffFallback />}>
+                  <WaiterPanel />
+                </Suspense>
               </StaffPanel>
             </AuthGuard>
           }

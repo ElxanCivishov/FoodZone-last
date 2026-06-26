@@ -1,5 +1,5 @@
 import { Component, ReactNode, ErrorInfo } from 'react';
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -30,18 +30,18 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         this.props.fallback || (
           <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-surface-elevated border border-border rounded-2xl p-8 text-center">
-              <AlertTriangle className="w-12 h-12 text-danger-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
-              <p className="text-foreground-muted mb-6 text-sm">
-                {this.state.error?.message || 'An unexpected error occurred'}
+            <div className="max-w-md w-full bg-surface-elevated border border-border rounded-2xl p-8 text-center space-y-4">
+              <div className="text-5xl">⚠️</div>
+              <h2 className="text-xl font-bold">Xəta baş verdi</h2>
+              <p className="text-foreground-muted text-sm">
+                {this.state.error?.message || 'Tətbiq gözlənilməz bir xətayla qarşılaşdı'}
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-2xl font-semibold hover:bg-primary-600 transition-colors"
               >
                 <RotateCcw className="w-4 h-4" />
-                Reload
+                Yenidən cəhd et
               </button>
             </div>
           </div>

@@ -1,29 +1,36 @@
 import { AlertCircle } from "lucide-react";
-import { Order } from "@/types";
+import { Order, OrderFulfillmentType } from "@/types";
 import { cn } from "@/utils/cn";
 import { groupByProduct } from "./utils";
 import { ColumnId } from "./constants";
 
 export function ProductSummaryView({
   orders,
+  fulfillmentType,
   t,
 }: {
   orders: Order[];
-  t: (k: string) => string;
+  fulfillmentType?: OrderFulfillmentType;
+  t: (k: string, options?: Record<string, unknown>) => string;
 }) {
   const groups = groupByProduct(orders);
   if (groups.length === 0) {
     return (
       <div className="py-12 flex flex-col items-center gap-2 text-foreground-muted">
         <AlertCircle className="w-8 h-8 opacity-25" />
-        <p className="text-sm font-medium">{t("kitchen.noOrders")}</p>
+        <p className="text-sm font-medium">
+          {fulfillmentType
+            ? t(`kitchen.emptyFulfillment.${fulfillmentType}`)
+            : t("kitchen.noOrders")}
+        </p>
       </div>
     );
   }
   return (
     <div className="space-y-2">
       <p className="text-[11px] text-foreground-muted font-medium px-0.5">
-        {t("kitchen.productView")} — {orders.length} sifariş
+        {t("kitchen.productView")} -{" "}
+        {t("kitchen.productOrderCount", { count: orders.length })}
       </p>
       {groups.map((g) => (
         <div
@@ -55,13 +62,17 @@ export function ProductSummaryView({
 
 export function EmptyState({
   columnId,
+  fulfillmentType,
   t,
 }: {
   columnId: ColumnId;
+  fulfillmentType?: OrderFulfillmentType;
   t: (k: string) => string;
 }) {
   const msg =
-    columnId === "served"
+    fulfillmentType
+      ? t(`kitchen.emptyFulfillment.${fulfillmentType}`)
+      : columnId === "served"
       ? t("kitchen.noServedToday")
       : columnId === "cancelled"
         ? t("kitchen.noCancelledToday")

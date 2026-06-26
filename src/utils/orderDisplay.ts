@@ -62,6 +62,30 @@ export function getOrderFulfillmentTone(type: OrderFulfillmentType) {
   return tones[type];
 }
 
+export function getOrderFulfillmentAccent(type: OrderFulfillmentType) {
+  const accents: Record<
+    OrderFulfillmentType,
+    { bar: string; border: string; ring: string }
+  > = {
+    delivery: {
+      bar: "bg-sky-500",
+      border: "border-sky-500/35",
+      ring: "ring-sky-500/20",
+    },
+    takeaway: {
+      bar: "bg-violet-500",
+      border: "border-violet-500/35",
+      ring: "ring-violet-500/20",
+    },
+    dine_in: {
+      bar: "bg-emerald-500",
+      border: "border-emerald-500/35",
+      ring: "ring-emerald-500/20",
+    },
+  };
+  return accents[type];
+}
+
 export function getOrderSearchText(order: Order, t: TFn) {
   return [
     order.orderNumber,

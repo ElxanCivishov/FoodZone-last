@@ -1,58 +1,3 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import {
-  ChefHat,
-  ChevronDown,
-  CheckCircle2,
-  Flame,
-  LayoutGrid,
-  List,
-  Play,
-  Printer,
-  RefreshCw,
-  ShoppingBag,
-  Soup,
-  Truck,
-  Utensils,
-  UtensilsCrossed,
-  XCircle,
-} from "lucide-react";
-import { DEFAULT_SETTINGS, useAppSettings } from "@/hooks/useAppSettings";
-import { useKitchenStore } from "@/stores/kitchenStore";
-import { useThemeStore } from "@/stores/themeStore";
-import { useSocketContext } from "@/services/socket";
-import { useOrders } from "@/hooks/useDashboard";
-import { useUpdateOrderStatus } from "@/hooks/useOrders";
-import { Order, OrderFulfillmentType, OrderStatus } from "@/types";
-import { cn } from "@/utils/cn";
-import {
-  getOrderFulfillmentLabel,
-  getOrderFulfillmentTone,
-  getOrderFulfillmentType,
-  orderFulfillmentTypes,
-} from "@/utils/orderDisplay";
-import {
-  COLUMN_DROP_STATUS,
-  VALID_DRAG_TRANSITIONS,
-  ColumnId,
-  ColDef,
-} from "./constants";
-import { useTick } from "./hooks";
-import { useFullscreen } from "@/hooks/useFullscreen";
-import { playNewOrderSound, printOrder } from "./utils";
-import { KanbanColumn } from "./KanbanColumn";
-import { OrderCard } from "./OrderCard";
-import { EmptyState } from "./ProductSummaryView";
-import { ConfirmCancelModal } from "./ConfirmCancelModal";
-import { Tooltip } from "@/components/common/Tooltip";
 import {
   PanelConnectionBadge,
   PanelControlScroller,
@@ -71,8 +16,64 @@ import {
   PanelFilters,
   countPanelFilters,
 } from "@/components/common/PanelFilters";
+import { Tooltip } from "@/components/common/Tooltip";
 import { orderMatchesPanelFilters } from "@/components/common/panelFiltering";
+import { DEFAULT_SETTINGS, useAppSettings } from "@/hooks/useAppSettings";
+import { useOrders } from "@/hooks/useDashboard";
+import { useFullscreen } from "@/hooks/useFullscreen";
+import { useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useSoundSettings } from "@/hooks/useSoundSettings";
+import { useSocketContext } from "@/services/socket";
+import { useKitchenStore } from "@/stores/kitchenStore";
+import { useThemeStore } from "@/stores/themeStore";
+import { Order, OrderFulfillmentType, OrderStatus } from "@/types";
+import { cn } from "@/utils/cn";
+import {
+  getOrderFulfillmentAccent,
+  getOrderFulfillmentLabel,
+  getOrderFulfillmentTone,
+  getOrderFulfillmentType,
+  orderFulfillmentTypes,
+} from "@/utils/orderDisplay";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  CheckCircle2,
+  ChefHat,
+  ChevronDown,
+  Flame,
+  LayoutGrid,
+  List,
+  Play,
+  Printer,
+  RefreshCw,
+  ShoppingBag,
+  Soup,
+  Truck,
+  Utensils,
+  UtensilsCrossed,
+  XCircle,
+} from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
+import { ConfirmCancelModal } from "./ConfirmCancelModal";
+import { KanbanColumn } from "./KanbanColumn";
+import { OrderCard } from "./OrderCard";
+import { EmptyState } from "./ProductSummaryView";
+import {
+  COLUMN_DROP_STATUS,
+  ColDef,
+  ColumnId,
+  VALID_DRAG_TRANSITIONS,
+} from "./constants";
+import { useTick } from "./hooks";
+import { playNewOrderSound, printOrder } from "./utils";
 
 export function KitchenPanel() {
   const { t, i18n } = useTranslation();
@@ -105,10 +106,10 @@ export function KitchenPanel() {
         ? (stored as OrderFulfillmentType)
         : "dine_in";
     });
-  const [fulfillmentSwitcherOpen, setFulfillmentSwitcherOpen] =
-    useState(false);
-  const [panelFilters, setPanelFilters] =
-    useState<PanelFilterState>(DEFAULT_PANEL_FILTERS);
+  const [fulfillmentSwitcherOpen, setFulfillmentSwitcherOpen] = useState(false);
+  const [panelFilters, setPanelFilters] = useState<PanelFilterState>(
+    DEFAULT_PANEL_FILTERS,
+  );
   const {
     soundEnabled,
     setSoundEnabled,
@@ -216,6 +217,7 @@ export function KitchenPanel() {
   }, []);
 
   const [cancelConfirm, setCancelConfirm] = React.useState<Order | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   // Socket
   useEffect(() => {
@@ -243,9 +245,8 @@ export function KitchenPanel() {
         toast.success(`${orderLabel} - ${t("kitchen.newOrders")}`);
         return;
       }
-      toast.success(
-        `${t("kitchen.table")} ${order.table?.number ?? order.tableId.slice(-4)} — ${t("kitchen.newOrders")}`,
-      );
+      toast.success(`${orderLabel} - ${t("kitchen.newOrders")}`);
+      return;
     };
 
     const onStatusChanged = (payload: any) => {
@@ -355,14 +356,43 @@ export function KitchenPanel() {
     (order: Order) => getOrderFulfillmentType(order) === activeFulfillment,
     [activeFulfillment],
   );
+  const fulfillmentCounts = useMemo(() => {
+    const result: Record<OrderFulfillmentType, number> = {
+      delivery: 0,
+      takeaway: 0,
+      dine_in: 0,
+    };
+    const seen = new Set<string>();
+
+    columns.forEach((column) => {
+      column.orders.forEach((order) => {
+        if (seen.has(order.id) || !matchesKitchenFilters(order)) return;
+        result[getOrderFulfillmentType(order)] += 1;
+        seen.add(order.id);
+      });
+    });
+
+    return result;
+  }, [columns, matchesKitchenFilters]);
+  const activeFulfillmentCount = fulfillmentCounts[activeFulfillment];
 
   const counts = useMemo(
     () => ({
-      new: columns[0].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
-      preparing: columns[1].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
-      ready: columns[2].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
-      served: columns[3].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
-      cancelled: columns[4].orders.filter((order) => matchesFulfillment(order) && matchesKitchenFilters(order)).length,
+      new: columns[0].orders.filter(
+        (order) => matchesFulfillment(order) && matchesKitchenFilters(order),
+      ).length,
+      preparing: columns[1].orders.filter(
+        (order) => matchesFulfillment(order) && matchesKitchenFilters(order),
+      ).length,
+      ready: columns[2].orders.filter(
+        (order) => matchesFulfillment(order) && matchesKitchenFilters(order),
+      ).length,
+      served: columns[3].orders.filter(
+        (order) => matchesFulfillment(order) && matchesKitchenFilters(order),
+      ).length,
+      cancelled: columns[4].orders.filter(
+        (order) => matchesFulfillment(order) && matchesKitchenFilters(order),
+      ).length,
     }),
     [columns, matchesFulfillment, matchesKitchenFilters],
   );
@@ -432,6 +462,62 @@ export function KitchenPanel() {
     ],
   );
 
+  // ── Keyboard bump-bar shortcuts ───────────────────────────────────────────
+  const activeOrders = useMemo(
+    () =>
+      orders.filter(
+        (o) =>
+          o.status === "pending" ||
+          o.status === "confirmed" ||
+          o.status === "preparing",
+      ),
+    [orders],
+  );
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedOrderId((prev) => {
+          if (!activeOrders.length) return null;
+          const idx = activeOrders.findIndex((o) => o.id === prev);
+          return activeOrders[(idx + 1) % activeOrders.length]?.id ?? null;
+        });
+      }
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedOrderId((prev) => {
+          if (!activeOrders.length) return null;
+          const idx = activeOrders.findIndex((o) => o.id === prev);
+          const newIdx = idx <= 0 ? activeOrders.length - 1 : idx - 1;
+          return activeOrders[newIdx]?.id ?? null;
+        });
+      }
+
+      if (e.key === " " && selectedOrderId) {
+        e.preventDefault();
+        const order = orders.find((o) => o.id === selectedOrderId);
+        if (!order) return;
+        if (order.status === "pending" || order.status === "confirmed")
+          doUpdate(order, "preparing");
+        else if (order.status === "preparing") doUpdate(order, "ready");
+      }
+
+      if ((e.key === "b" || e.key === "B") && selectedOrderId) {
+        e.preventDefault();
+        const order = orders.find((o) => o.id === selectedOrderId);
+        if (order?.status === "ready") doUpdate(order, "served");
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [selectedOrderId, orders, activeOrders, doUpdate]);
+
   const onDragStart = useCallback((e: React.DragEvent, orderId: string) => {
     e.dataTransfer.setData("orderId", orderId);
     e.dataTransfer.effectAllowed = "move";
@@ -484,7 +570,11 @@ export function KitchenPanel() {
             iconClassName="text-primary-500"
           />
 
-          <ActiveFulfillmentBadge active={activeFulfillment} t={t} />
+          <ActiveFulfillmentBadge
+            active={activeFulfillment}
+            count={activeFulfillmentCount}
+            t={t}
+          />
 
           {/* Controls — scrollable on mobile so nothing wraps or clips */}
           <PanelControlScroller>
@@ -593,6 +683,13 @@ export function KitchenPanel() {
           </PanelControlScroller>
         </div>
 
+        <div
+          className={cn(
+            "h-1 w-full transition-colors",
+            getOrderFulfillmentAccent(activeFulfillment).bar,
+          )}
+        />
+
         {/* Metrics strip */}
         <div className="px-4 lg:px-6 py-3 flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5">
           {filteredColumns.map((col) => (
@@ -662,6 +759,7 @@ export function KitchenPanel() {
                   draggingId={dragOrderId}
                   busyId={busyOrderId}
                   viewMode={viewMode}
+                  fulfillmentType={activeFulfillment}
                   onDragOver={(e) => onDragOver(e, col.id)}
                   onDragLeave={() => setDragOverCol(null)}
                   onDrop={(e) => onDrop(e, col.id)}
@@ -677,7 +775,11 @@ export function KitchenPanel() {
             {/* Mobile: Single column */}
             <div className="lg:hidden p-4 space-y-3">
               {mobileOrders.length === 0 ? (
-                <EmptyState columnId={mobileTab} t={t} />
+                <EmptyState
+                  columnId={mobileTab}
+                  fulfillmentType={activeFulfillment}
+                  t={t}
+                />
               ) : (
                 mobileOrders.map((order) => (
                   <OrderCard
@@ -711,6 +813,7 @@ export function KitchenPanel() {
 
       <FulfillmentSwitcher
         active={activeFulfillment}
+        counts={fulfillmentCounts}
         open={fulfillmentSwitcherOpen}
         onToggle={() => setFulfillmentSwitcherOpen((value) => !value)}
         onChange={(type) => {
@@ -729,9 +832,11 @@ function hasKitchenTable(order: Order): order is Order & { tableId: string } {
 
 function ActiveFulfillmentBadge({
   active,
+  count,
   t,
 }: {
   active: OrderFulfillmentType;
+  count: number;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
   const Icon =
@@ -744,13 +849,20 @@ function ActiveFulfillmentBadge({
   return (
     <div
       className={cn(
-        "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-border px-2 text-xs font-bold sm:px-3",
+        "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border px-2 text-xs font-bold ring-1 sm:px-3",
+        getOrderFulfillmentAccent(active).border,
+        getOrderFulfillmentAccent(active).ring,
         getOrderFulfillmentTone(active),
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
-      <span className="hidden max-w-24 truncate sm:inline">
-        {getOrderFulfillmentLabel(active, t)}
+      <span className="hidden max-w-36 truncate sm:inline">
+        {t("kitchen.fulfillmentOrders", {
+          type: getOrderFulfillmentLabel(active, t),
+        })}
+      </span>
+      <span className="min-w-5 rounded-full bg-current/10 px-1.5 text-center text-[11px] tabular-nums">
+        {count}
       </span>
     </div>
   );
@@ -758,12 +870,14 @@ function ActiveFulfillmentBadge({
 
 function FulfillmentSwitcher({
   active,
+  counts,
   open,
   onToggle,
   onChange,
   t,
 }: {
   active: OrderFulfillmentType;
+  counts: Record<OrderFulfillmentType, number>;
   open: boolean;
   onToggle: () => void;
   onChange: (type: OrderFulfillmentType) => void;
@@ -791,13 +905,20 @@ function FulfillmentSwitcher({
                 className={cn(
                   "flex h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm font-semibold transition-colors",
                   selected
-                    ? cn(getOrderFulfillmentTone(value), "bg-opacity-100")
+                    ? cn(
+                        getOrderFulfillmentTone(value),
+                        getOrderFulfillmentAccent(value).border,
+                        "border",
+                      )
                     : "text-foreground-muted hover:bg-foreground-muted/10 hover:text-foreground",
                 )}
               >
                 <Icon className="h-4 w-4" />
-                <span className="truncate">
+                <span className="min-w-0 flex-1 truncate">
                   {getOrderFulfillmentLabel(value, t)}
+                </span>
+                <span className="min-w-6 rounded-full bg-current/10 px-1.5 text-center text-[11px] tabular-nums">
+                  {counts[value]}
                 </span>
               </button>
             );
@@ -816,6 +937,9 @@ function FulfillmentSwitcher({
         <span className="flex items-center gap-2">
           <ActiveIcon className="h-4 w-4" />
           {getOrderFulfillmentLabel(active, t)}
+          <span className="min-w-6 rounded-full bg-current/10 px-1.5 text-center text-[11px] tabular-nums">
+            {counts[active]}
+          </span>
         </span>
         <ChevronDown
           className={cn("h-4 w-4 transition-transform", open && "rotate-180")}

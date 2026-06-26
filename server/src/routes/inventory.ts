@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
+import { notify } from '../lib/notify';
 import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
@@ -115,14 +116,14 @@ router.post('/adjust', authenticate, authorize(['admin', 'manager']), async (req
       updatedProduct.lowStockThreshold !== null &&
       updatedProduct.stockQuantity <= updatedProduct.lowStockThreshold
     ) {
-      await prisma.notification.create({
-        data: {
-          branchId,
-          type: 'low_stock',
-          title: 'Stok azalır',
-          message: `"${updatedProduct.nameAz}" məhsulundan yalnız ${updatedProduct.stockQuantity} ${updatedProduct.unit ?? 'ədəd'} qalıb`,
-          data: { productId, stockQuantity: updatedProduct.stockQuantity },
-        },
+      const io = (req as any).io;
+      notify({
+        io,
+        branchId,
+        type: 'low_stock',
+        title: 'Stok azalır',
+        message: `"${updatedProduct.nameAz}" məhsulundan yalnız ${updatedProduct.stockQuantity} ${updatedProduct.unit ?? 'ədəd'} qalıb`,
+        data: { productId, stockQuantity: updatedProduct.stockQuantity },
       }).catch(() => {});
     }
 
@@ -222,6 +223,121 @@ router.get('/summary', authenticate, authorize(['admin', 'manager']), async (req
     const healthy = total - outOfStock - lowStock;
 
     res.json({ success: true, data: { total, outOfStock, lowStock, healthy } });
+  } catch (err) { next(err); }
+});
+
+// ── İnventar Sayım Sessiyası ─────────────────────────────────────────────────
+
+// Yeni sayım başlat
+router.post('/stocktake', authenticate, authorize(['admin', 'manager']), async (req, res, next) => {
+  try {
+    const { branchId, openedById } = req.body;
+    if (!branchId) return res.status(400).json({ success: false, message: 'branchId tələb olunur' });
+
+    // Açıq sayımı ləğv et
+    await prisma.stocktake.updateMany({
+      where: { branchId, status: 'open' },
+      data: { status: 'cancelled' },
+    });
+
+    const materials = await prisma.rawMaterial.findMany({
+      where: { branchId, status: 'active' },
+    });
+
+    const stocktake = await prisma.stocktake.create({
+      data: {
+        branchId,
+        openedById,
+        items: {
+          create: materials.map(m => ({
+            rawMaterialId: m.id,
+            expected: m.currentStock,
+          })),
+        },
+      },
+      include: {
+        items: {
+          include: { stocktake: false },
+        },
+      },
+    });
+
+    res.json({ success: true, data: stocktake });
+  } catch (err) { next(err); }
+});
+
+// Aktiv sayımı al
+router.get('/stocktake/active', authenticate, authorize(['admin', 'manager']), async (req, res, next) => {
+  try {
+    const { branchId } = req.query;
+    if (!branchId) return res.status(400).json({ success: false, message: 'branchId tələb olunur' });
+    const stocktake = await prisma.stocktake.findFirst({
+      where: { branchId: branchId as string, status: 'open' },
+      include: {
+        items: {
+          include: { stocktake: false },
+        },
+      },
+      orderBy: { openedAt: 'desc' },
+    });
+    res.json({ success: true, data: stocktake });
+  } catch (err) { next(err); }
+});
+
+// Sayım item-i yenilə
+router.patch('/stocktake/:id/items/:itemId', authenticate, async (req, res, next) => {
+  try {
+    const { actual } = req.body;
+    const item = await prisma.stocktakeItem.findUnique({ where: { id: req.params.itemId } });
+    if (!item) return res.status(404).json({ success: false, message: 'Item tapılmadı' });
+
+    const updated = await prisma.stocktakeItem.update({
+      where: { id: req.params.itemId },
+      data: { actual, difference: actual - item.expected },
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (err) { next(err); }
+});
+
+// Sayımı tamamla
+router.post('/stocktake/:id/complete', authenticate, authorize(['admin', 'manager']), async (req, res, next) => {
+  try {
+    const { closedById } = req.body;
+    const stocktake = await prisma.stocktake.findUnique({
+      where: { id: req.params.id },
+      include: { items: { include: { stocktake: false } } },
+    });
+    if (!stocktake) return res.status(404).json({ success: false, message: 'Sayım tapılmadı' });
+    if (stocktake.status !== 'open') return res.status(400).json({ success: false, message: 'Sayım artıq bağlıdır' });
+
+    const adjustments = stocktake.items.filter(i => i.actual !== null && i.actual !== i.expected);
+
+    await prisma.$transaction([
+      ...adjustments.map(item =>
+        prisma.rawMaterial.update({
+          where: { id: item.rawMaterialId },
+          data: { currentStock: item.actual! },
+        })
+      ),
+      ...adjustments.map(item =>
+        prisma.rawMovement.create({
+          data: {
+            rawMaterialId: item.rawMaterialId,
+            branchId: stocktake.branchId,
+            type: 'stocktake',
+            quantity: item.difference!,
+            note: `Sayım düzəlişi #${stocktake.id.slice(-6)}`,
+          },
+        })
+      ),
+      prisma.stocktake.update({
+        where: { id: req.params.id },
+        data: { status: 'completed', closedById, closedAt: new Date() },
+      }),
+    ]);
+
+    res.json({ success: true, message: `${adjustments.length} material düzəldildi` });
   } catch (err) { next(err); }
 });
 

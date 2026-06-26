@@ -119,7 +119,26 @@
     "available": "Mevcut teklifler",
     "redeem": "Kullan",
     "noRewards": "Henüz ödül yok",
-    "earnPoints": "Sipariş vererek puan kazanın"
+    "earnPoints": "Sipariş vererek puan kazanın",
+    "tier": {
+      "bronze": "Bronz",
+      "silver": "Gümüş",
+      "gold": "Altın",
+      "platinum": "Platin"
+    },
+    "nextTier": "{{next}} için {{count}} puan daha",
+    "redeemPoints": "Puan kullan",
+    "availablePoints": "{{count}} puan mevcut",
+    "pointsUsed": "{{count}} puan kullanıldı"
+  },
+  "feedback": {
+    "title": "Siparişiniz nasıldı?",
+    "subtitle": "Görüşünüz bizim için çok önemli",
+    "thankYou": "Teşekkürler!",
+    "recorded": "Görüşünüz kaydedildi",
+    "submit": "Gönder",
+    "skip": "Geç",
+    "commentPlaceholder": "Ek yorumlarınız var mı? (isteğe bağlı)"
   },
   "common": {
     "back": "Geri",
@@ -165,9 +184,11 @@
     "branches": "Şubeler",
     "analytics": "Analitik",
     "settings": "Ayarlar",
+    "notifications": "Bildirimler",
     "inventory": "Envanter",
     "cashier": "Kasa & Vardiya",
     "customers": "Müşteriler",
+    "reservations": "Rezervasyonlar",
     "promo": "Promo Kodlar",
     "reports": "Raporlar",
     "totalOrders": "Toplam Sipariş",
@@ -190,11 +211,21 @@
     "serviceFee": "Hizmet bedeli (%)",
     "currency": "Para birimi",
     "language": "Dil",
-    "profile": "Profil",
     "workspace": "Admin çalışma alanı",
     "sidebar": {
       "collapse": "Sidebar'ı daralt",
-      "expand": "Sidebar'ı aç"
+      "expand": "Sidebar'ı aç",
+      "mainBranch": "Ana şube",
+      "sections": {
+        "overview": "Genel bakış",
+        "operations": "Operasyonlar",
+        "business": "İşletme",
+        "system": "Sistem"
+      },
+      "userMenu": {
+        "account": "Account",
+        "signOut": "Çıkış"
+      }
     },
     "roles": {
       "admin": "Admin",
@@ -276,6 +307,20 @@
       }
     },
     "dashboardView": {
+      "liveTables": "Canlı masalar",
+      "comparison": "Karşılaştırma",
+      "tabs": {
+        "overview": "Genel",
+        "operations": "Operasyonlar",
+        "tables": "Masalar",
+        "analytics": "Analitik",
+        "actions": "Geçişler"
+      },
+      "tabDetails": {
+        "overview": "Gunun ana metrikleri ve yonetim gecisleri",
+        "operations": "Siparis akisi, uyarilar ve canli talepler",
+        "tables": "Canli masa haritasi ve QR sagligi"
+      },
       "liveRequests": "Canlı talepler",
       "todayCount": "+{{count}} bugün",
       "todayRevenue": "+${{amount}} bugün",
@@ -296,6 +341,8 @@
       "uncategorized": "Kategorisiz",
       "tableTime": "Masa {{table}} - {{time}}",
       "empty": {
+        "liveTables": "Henüz canlı masa verisi yok",
+        "comparison": "Henüz karşılaştırma verisi yok",
         "orderData": "Henüz sipariş verisi yok",
         "liveActivity": "Henüz canlı aktivite yok",
         "activeRequests": "Aktif garson talebi yok",
@@ -409,6 +456,12 @@
   "kitchen": {
     "title": "Mutfak Paneli",
     "order": "Sipariş",
+    "fulfillmentOrders": "{{type}} siparişleri",
+    "emptyFulfillment": {
+      "delivery": "Şu anda delivery siparişi yok",
+      "takeaway": "Şu anda takeaway siparişi yok",
+      "dine_in": "Şu anda masa siparişi yok"
+    },
     "newOrders": "Yeni Siparişler",
     "preparing": "Hazırlanıyor",
     "ready": "Hazır",
@@ -446,6 +499,7 @@
     "estimatedTime": "Tahmini hazırlama süresi",
     "items": "ürün",
     "productView": "Ürün Özeti",
+    "productOrderCount": "{{count}} sipariş",
     "cardView": "Kart Görünümü",
     "autoPrint": "Otomatik Yazdır",
     "print": "Yazdır",

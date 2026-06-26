@@ -7,7 +7,7 @@ const router = Router();
 // Rezervasiyalar siyahısı
 router.get('/', authenticate, authorize(['admin', 'manager', 'waiter']), async (req, res, next) => {
   try {
-    const { branchId, date, status } = req.query;
+    const { branchId, date, from, to, status } = req.query;
     if (!branchId) return res.status(400).json({ success: false, message: 'branchId tələb olunur' });
 
     const where: any = { branchId };
@@ -18,6 +18,14 @@ router.get('/', authenticate, authorize(['admin', 'manager', 'waiter']), async (
       const next = new Date(d);
       next.setDate(next.getDate() + 1);
       where.dateTime = { gte: d, lt: next };
+    } else if (from || to) {
+      where.dateTime = {};
+      if (from) where.dateTime.gte = new Date(from as string);
+      if (to) {
+        const toDate = new Date(to as string);
+        toDate.setDate(toDate.getDate() + 1); // inclusive end
+        where.dateTime.lt = toDate;
+      }
     }
 
     const reservations = await prisma.tableReservation.findMany({

@@ -34,7 +34,7 @@ export function PanelHeaderBrand({
 }: {
   icon: React.ElementType;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   iconClassName: string;
   iconWrapClassName: string;
 }) {
@@ -50,7 +50,7 @@ export function PanelHeaderBrand({
       </div>
       <div className="hidden sm:block">
         <h1 className="font-bold text-lg leading-tight">{title}</h1>
-        <p className="text-xs text-foreground-muted">{subtitle}</p>
+        {subtitle && <p className="text-xs text-foreground-muted">{subtitle}</p>}
       </div>
     </div>
   );

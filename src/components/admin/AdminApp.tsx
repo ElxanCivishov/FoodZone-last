@@ -4,6 +4,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { cn } from '@/utils/cn';
 import { MobileHeader } from './components/MobileHeader';
 import { Sidebar } from './components/Sidebar';
+import { NotificationToastContainer } from './components/NotificationToastContainer';
 import { useAdminRealtime } from './hooks/useAdminRealtime';
 import { AnalyticsView } from './views/AnalyticsView';
 import { CategoriesView } from './views/CategoriesView';
@@ -13,18 +14,19 @@ import { DashboardView } from './views/DashboardView';
 import { InventoryView } from './views/InventoryView';
 import { MenuView } from './views/MenuView';
 import { OrdersView } from './views/OrdersView';
-import { ProfileView } from './views/ProfileView';
 import { PromoView } from './views/PromoView';
 import { QRView } from './views/QRView';
 import { ReportsView } from './views/ReportsView';
 import { SettingsView } from './views/SettingsView';
 import { StaffView } from './views/StaffView';
 import { MultiBranchView } from './views/MultiBranchView';
+import { NotificationsView } from './views/NotificationsView';
+import { ReservationView } from './views/ReservationView';
 
 export type AdminTab =
   | 'dashboard' | 'menu' | 'categories' | 'orders' | 'qr' | 'staff'
-  | 'analytics' | 'profile' | 'settings' | 'inventory' | 'cashier'
-  | 'customers' | 'promo' | 'reports' | 'branches';
+  | 'analytics' | 'settings' | 'inventory' | 'cashier'
+  | 'customers' | 'promo' | 'reports' | 'branches' | 'notifications' | 'reservations';
 
 export function AdminApp() {
   const navigate = useNavigate();
@@ -46,14 +48,21 @@ export function AdminApp() {
           <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />
         )}
 
-        <div className="flex-1 min-w-0 flex flex-col">
+        <NotificationToastContainer />
+
+        <div className="relative flex-1 min-w-0 flex flex-col">
           <MobileHeader
             sidebarOpen={sidebarOpen}
             isConnected={isConnected}
             onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           />
 
-          <main className="flex-1 p-4 lg:p-8 overflow-auto">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 right-0 top-[65px] z-10 h-8 bg-gradient-to-b from-black/[0.04] to-transparent dark:from-black/20"
+          />
+
+          <main className="relative flex-1 p-4 lg:p-8 overflow-auto">
             <div className="max-w-7xl mx-auto">
               <Routes>
                 <Route index element={<Navigate to="dashboard" replace />} />
@@ -64,7 +73,6 @@ export function AdminApp() {
                 <Route path="qr" element={<QRView />} />
                 <Route path="staff" element={<StaffView />} />
                 <Route path="analytics" element={<AnalyticsView />} />
-                <Route path="profile" element={<ProfileView />} />
                 <Route path="settings" element={<SettingsView />} />
                 <Route path="inventory" element={<InventoryView />} />
                 <Route path="cashier" element={<CashierView />} />
@@ -72,6 +80,8 @@ export function AdminApp() {
                 <Route path="promo" element={<PromoView />} />
                 <Route path="reports" element={<ReportsView />} />
                 <Route path="branches" element={<MultiBranchView />} />
+                <Route path="notifications" element={<NotificationsView />} />
+                <Route path="reservations" element={<ReservationView />} />
                 <Route path="*" element={<Navigate to="dashboard" replace />} />
               </Routes>
             </div>

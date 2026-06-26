@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticate, authorize } from '../middleware/auth';
+import { generateRangeReportXLSX } from '../lib/excelExport';
 
 const router = Router();
 
@@ -283,6 +284,79 @@ router.get('/reports/range', authenticate, authorize(['admin', 'manager']), asyn
         shifts,
       },
     });
+  } catch (err) { next(err); }
+});
+
+// ── XLSX Export ──────────────────────────────────────────────────────────────
+router.get('/reports/export/xlsx', authenticate, authorize(['admin', 'manager']), async (req, res, next) => {
+  try {
+    const { branchId, from, to } = req.query;
+    if (!branchId || !from || !to) {
+      return res.status(400).json({ success: false, message: 'branchId, from, to tələb olunur' });
+    }
+
+    const fromDate = new Date(from as string);
+    const toDate = new Date(to as string);
+    toDate.setHours(23, 59, 59, 999);
+
+    const [orders, topRaw] = await Promise.all([
+      prisma.order.findMany({
+        where: {
+          branchId: branchId as string,
+          createdAt: { gte: fromDate, lte: toDate },
+          status: { not: 'cancelled' },
+        },
+        include: { table: { select: { number: true } } },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.$queryRaw<{ name: string; count: number; revenue: number }[]>`
+        SELECT p."nameAz" as name,
+               COUNT(oi.id)::int as count,
+               SUM(oi."totalPrice")::float as revenue
+        FROM "OrderItem" oi
+        JOIN "Order" o ON o.id = oi."orderId"
+        JOIN "Product" p ON p.id = oi."productId"
+        WHERE o."branchId" = ${branchId}
+          AND o."createdAt" >= ${fromDate}
+          AND o."createdAt" <= ${toDate}
+        GROUP BY p.id, p."nameAz"
+        ORDER BY count DESC
+        LIMIT 20
+      `,
+    ]);
+
+    const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
+    const totalCash    = orders.filter(o => o.paymentMethod === 'cash').reduce((s, o) => s + o.total, 0);
+    const totalCard    = orders.filter(o => o.paymentMethod === 'card').reduce((s, o) => s + o.total, 0);
+    const totalOnline  = orders.filter(o => ['online', 'payriff', 'm10'].includes(o.paymentMethod)).reduce((s, o) => s + o.total, 0);
+
+    const dailyBreakdown: Record<string, { orders: number; revenue: number }> = {};
+    for (const o of orders) {
+      const key = o.createdAt.toISOString().split('T')[0];
+      if (!dailyBreakdown[key]) dailyBreakdown[key] = { orders: 0, revenue: 0 };
+      dailyBreakdown[key].orders++;
+      dailyBreakdown[key].revenue += o.total;
+    }
+
+    const buffer = await generateRangeReportXLSX({
+      title: 'FoodZone Gəlir Hesabatı',
+      dateRange: { from: from as string, to: to as string },
+      summary: {
+        'Ümumi sifariş': orders.length,
+        'Cəmi gəlir': `${totalRevenue.toFixed(2)} ₼`,
+        'Nağd': `${totalCash.toFixed(2)} ₼`,
+        'Kart': `${totalCard.toFixed(2)} ₼`,
+        'Online': `${totalOnline.toFixed(2)} ₼`,
+        'Orta çek': orders.length ? `${(totalRevenue / orders.length).toFixed(2)} ₼` : '0.00 ₼',
+      },
+      orders,
+      topProducts: topRaw,
+      dailyBreakdown,
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="foodzone-report-${from}-${to}.xlsx"`);
+    res.send(buffer);
   } catch (err) { next(err); }
 });
 

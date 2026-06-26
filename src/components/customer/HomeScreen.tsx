@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -9,6 +10,16 @@ import { Search, ChevronRight, Star, ShoppingBag, Flame } from 'lucide-react';
 import { CategoryIcon } from '@/components/common/CategoryIcon';
 import { Skeleton } from '@/components/common/LoadingSpinner';
 import { cn } from '@/utils/cn';
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show:   { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 350, damping: 28 } },
+};
+
+const listVariants = {
+  hidden: {},
+  show:   { transition: { staggerChildren: 0.055 } },
+};
 
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -36,8 +47,6 @@ export function HomeScreen() {
 
   const handleProductClick = (product: any) => {
     useUIStore.setState({ currentScreen: 'product-detail' });
-    // Store selected product in a temporary state or pass via URL
-    // For simplicity, we'll use a global store approach or localStorage
     localStorage.setItem('fz_selected_product', JSON.stringify(product));
   };
 
@@ -54,17 +63,29 @@ export function HomeScreen() {
               {t('waiter.table')} {session?.tableNumber}
             </p>
           </div>
-          <button
+
+          {/* Cart button with animated badge */}
+          <motion.button
             onClick={() => setScreen('cart')}
-            className="relative p-2 rounded-xl bg-surface-elevated border border-border"
+            whileTap={{ scale: 0.9 }}
+            className="relative p-2 rounded-xl bg-surface-elevated border border-border btn-press"
           >
             <ShoppingBag className="w-5 h-5" />
-            {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                {itemCount}
-              </span>
-            )}
-          </button>
+            <AnimatePresence>
+              {itemCount > 0 && (
+                <motion.span
+                  key={itemCount}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                >
+                  {itemCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </div>
 
         {/* Search */}
@@ -95,27 +116,32 @@ export function HomeScreen() {
                 ))}
               </div>
             ) : (
-              <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                <button
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scroll-hide">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedCategory(null)}
                   className={cn(
-                    "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                    'flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                     !selectedCategory
-                      ? "bg-primary-500 text-white"
-                      : "bg-surface-elevated border border-border text-foreground-muted hover:text-foreground"
+                      ? 'bg-primary-500 text-white shadow-glow-sm'
+                      : 'bg-surface-elevated border border-border text-foreground-muted hover:border-primary-500',
                   )}
                 >
                   {t('home.all')}
-                </button>
-                {categories?.data?.map((cat: any) => (
-                  <button
+                </motion.button>
+                {categories?.data?.map((cat: any, i: number) => (
+                  <motion.button
                     key={cat.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedCategory(cat.id)}
                     className={cn(
-                      "flex-shrink-0 px-3 py-2 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-2",
+                      'flex-shrink-0 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 inline-flex items-center gap-2',
                       selectedCategory === cat.id
-                        ? "bg-primary-500 text-white"
-                        : "bg-surface-elevated border border-border text-foreground-muted hover:text-foreground"
+                        ? 'bg-primary-500 text-white shadow-glow-sm'
+                        : 'bg-surface-elevated border border-border text-foreground-muted hover:border-primary-500',
                     )}
                   >
                     <CategoryIcon
@@ -127,7 +153,7 @@ export function HomeScreen() {
                       iconClassName="h-3.5 w-3.5"
                     />
                     {getLocalizedName(cat)}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}
@@ -143,16 +169,21 @@ export function HomeScreen() {
                 {t('home.popular')}
               </h2>
             </div>
-            <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-2">
-              {(popularProducts?.data ?? []).map((product: any) => (
-                <button
+            <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-2 scroll-hide">
+              {(popularProducts?.data ?? []).map((product: any, i: number) => (
+                <motion.button
                   key={product.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.06, type: 'spring', stiffness: 350, damping: 28 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => handleProductClick(product)}
                   className="flex-shrink-0 w-36 text-left"
                 >
                   <div className="w-36 h-36 rounded-2xl bg-surface-elevated border border-border overflow-hidden mb-2">
                     {product.image ? (
-                      <img src={product.image} alt={getLocalizedName(product)} className="w-full h-full object-cover" />
+                      <img src={product.image} alt={getLocalizedName(product)} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-foreground-muted/5">
                         <Star className="w-8 h-8 text-foreground-muted/20" />
@@ -160,8 +191,8 @@ export function HomeScreen() {
                     )}
                   </div>
                   <p className="text-sm font-medium truncate">{getLocalizedName(product)}</p>
-                  <p className="text-sm text-primary-500 font-semibold">${product.price.toFixed(2)}</p>
-                </button>
+                  <p className="text-sm text-primary-500 font-semibold">{product.price.toFixed(2)} ₼</p>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -188,16 +219,24 @@ export function HomeScreen() {
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
+            <motion.div
+              variants={listVariants}
+              initial="hidden"
+              animate="show"
+              className="space-y-3"
+            >
               {filteredProducts.map((product: any) => (
-                <button
+                <motion.button
                   key={product.id}
+                  variants={cardVariants}
+                  whileHover={{ x: 2 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => handleProductClick(product)}
-                  className="w-full flex gap-3 p-3 bg-surface-elevated border border-border rounded-2xl text-left hover:border-primary-500/30 transition-colors"
+                  className="w-full flex gap-3 p-3 bg-surface-elevated border border-border rounded-2xl text-left hover:border-primary-500/40 hover:shadow-card transition-all duration-200"
                 >
                   <div className="w-20 h-20 rounded-xl bg-foreground-muted/5 flex-shrink-0 overflow-hidden">
                     {product.image ? (
-                      <img src={product.image} alt={getLocalizedName(product)} className="w-full h-full object-cover" />
+                      <img src={product.image} alt={getLocalizedName(product)} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Star className="w-6 h-6 text-foreground-muted/20" />
@@ -210,7 +249,7 @@ export function HomeScreen() {
                       {getLocalizedDescription(product)}
                     </p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-semibold text-primary-500">${product.price.toFixed(2)}</span>
+                      <span className="font-semibold text-primary-500">{product.price.toFixed(2)} ₼</span>
                       {product.hasSizes && (
                         <span className="text-xs text-foreground-muted bg-foreground-muted/10 px-2 py-0.5 rounded-full">
                           {t('product.size')}
@@ -218,10 +257,10 @@ export function HomeScreen() {
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-foreground-muted self-center" />
-                </button>
+                  <ChevronRight className="w-5 h-5 text-foreground-muted self-center flex-shrink-0" />
+                </motion.button>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

@@ -119,7 +119,26 @@
     "available": "Mövcud təkliflər",
     "redeem": "İstifadə et",
     "noRewards": "Hələ mükafat yoxdur",
-    "earnPoints": "Sifariş verərək xal qazanın"
+    "earnPoints": "Sifariş verərək xal qazanın",
+    "tier": {
+      "bronze": "Bürünc",
+      "silver": "Gümüş",
+      "gold": "Qızıl",
+      "platinum": "Platin"
+    },
+    "nextTier": "{{next}} üçün {{count}} xal daha",
+    "redeemPoints": "Xalları istifadə et",
+    "availablePoints": "{{count}} xal mövcuddur",
+    "pointsUsed": "{{count}} xal istifadə edildi"
+  },
+  "feedback": {
+    "title": "Rəyinizi bildirin",
+    "subtitle": "Rəyiniz bizim üçün çox vacibdir",
+    "thankYou": "Təşəkkür edirik!",
+    "recorded": "Rəyiniz qeyd edildi",
+    "submit": "Göndər",
+    "skip": "Keç",
+    "commentPlaceholder": "Əlavə şərhiniz var? (isteğe bağlı)"
   },
   "common": {
     "back": "Geri",
@@ -165,9 +184,11 @@
     "branches": "Filiallar",
     "analytics": "Analitika",
     "settings": "Tənzimləmələr",
+    "notifications": "Bildirişlər",
     "inventory": "İnventar",
     "cashier": "Kassa & Smena",
     "customers": "Müştərilər",
+    "reservations": "Rezervasiyalar",
     "promo": "Promo Kodlar",
     "reports": "Hesabatlar",
     "totalOrders": "Ümumi sifarişlər",
@@ -190,11 +211,21 @@
     "serviceFee": "Xidmət haqqı (%)",
     "currency": "Valyuta",
     "language": "Dil",
-    "profile": "Profil",
     "workspace": "Admin iş paneli",
     "sidebar": {
       "collapse": "Sidebar-ı yığ",
-      "expand": "Sidebar-ı aç"
+      "expand": "Sidebar-ı aç",
+      "mainBranch": "Əsas filial",
+      "sections": {
+        "overview": "Ümumi baxış",
+        "operations": "Əməliyyatlar",
+        "business": "Biznes",
+        "system": "Sistem"
+      },
+      "userMenu": {
+        "account": "Account",
+        "signOut": "Çıxış"
+      }
     },
     "roles": {
       "admin": "Admin",
@@ -277,6 +308,20 @@
     },
     "dashboardView": {
       "liveRequests": "Canlı çağırışlar",
+      "liveTables": "Canlı masalar",
+      "comparison": "Müqayisə",
+      "tabs": {
+        "overview": "Ümumi",
+        "operations": "Əməliyyatlar",
+        "tables": "Masalar",
+        "analytics": "Analitika",
+        "actions": "Keçidlər"
+      },
+      "tabDetails": {
+        "overview": "Günün əsas göstəriciləri və idarəetmə keçidləri",
+        "operations": "Sifariş axını, xəbərdarlıqlar və canlı çağırışlar",
+        "tables": "Canlı masa xəritəsi və QR sağlamlığı"
+      },
       "todayCount": "+{{count}} bugün",
       "todayRevenue": "+${{amount}} bugün",
       "pendingCount": "{{count}} gözləyir",
@@ -299,7 +344,9 @@
         "orderData": "Hələ sifariş məlumatı yoxdur",
         "liveActivity": "Hələ canlı aktivlik yoxdur",
         "activeRequests": "Aktiv ofisiant çağırışı yoxdur",
-        "popularItems": "Hələ populyar məhsul yoxdur"
+        "popularItems": "Hələ populyar məhsul yoxdur",
+        "liveTables": "Hələ canlı masa məlumatı yoxdur",
+        "comparison": "Hələ müqayisə məlumatı yoxdur"
       },
       "alerts": {
         "delayedPending": "{{count}} gecikmiş gözləyən sifariş",
@@ -409,6 +456,12 @@
   "kitchen": {
     "title": "Mətbəx paneli",
     "order": "Sifariş",
+    "fulfillmentOrders": "{{type}} sifarişləri",
+    "emptyFulfillment": {
+      "delivery": "Hazırda delivery sifarişi yoxdur",
+      "takeaway": "Hazırda takeaway sifarişi yoxdur",
+      "dine_in": "Hazırda masa sifarişi yoxdur"
+    },
     "newOrders": "Yeni sifarişlər",
     "preparing": "Hazırlanır",
     "ready": "Hazırdır",
@@ -446,6 +499,7 @@
     "estimatedTime": "Təxmini hazırlanma vaxtı",
     "items": "məhsul",
     "productView": "Məhsul xülasəsi",
+    "productOrderCount": "{{count}} sifariş",
     "cardView": "Kart görünüşü",
     "autoPrint": "Avtomatik çap",
     "print": "Çap et",
