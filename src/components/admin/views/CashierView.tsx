@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import {
-  Wallet, Lock, Unlock, Banknote,
+  Wallet, Lock, Unlock, Banknote, CreditCard,
   Clock, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, Printer
 } from 'lucide-react';
 import api from '@/services/api';
@@ -11,10 +11,22 @@ import { SectionTitle } from '../components/SectionTitle';
 import { printShiftReport } from '@/utils/printShiftReport';
 import type { CashDrawer, Shift } from '@/types';
 
+interface Payment {
+  id: string;
+  method: string;
+  provider: string;
+  amount: number;
+  status: 'pending' | 'success' | 'failed' | 'refunded';
+  createdAt: string;
+  order: { orderNumber: string; total: number };
+  externalRef?: string;
+}
+
 export function CashierView() {
   const { activeBranch } = useActiveBranch();
   const branchId = activeBranch?.id;
   const qc = useQueryClient();
+  const [tab, setTab] = useState<'kassa' | 'payments'>('kassa');
   const [openingCash, setOpeningCash] = useState('');
   const [actualCash, setActualCash] = useState('');
   const [shiftNotes, setShiftNotes] = useState('');
@@ -87,13 +99,87 @@ export function CashierView() {
     onError: (e: any) => toast.error(e.response?.data?.message || 'Xəta baş verdi'),
   });
 
+  const { data: paymentsData } = useQuery<{ payments: Payment[]; total: number }>({
+    queryKey: ['payments', branchId],
+    queryFn: () => api.get(`/payments?branchId=${branchId}&limit=50`).then((r: any) => r.data.data),
+    enabled: !!branchId && tab === 'payments',
+    refetchInterval: 60_000,
+  });
+
   const fmtTime = (iso: string) => new Date(iso).toLocaleString('az-AZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   const fmtMoney = (n?: number) => `${(n ?? 0).toFixed(2)} ₼`;
+
+  const paymentStatusColor: Record<Payment['status'], string> = {
+    pending: 'text-warning-600 bg-warning-500/10',
+    success: 'text-success-600 bg-success-500/10',
+    failed: 'text-danger-500 bg-danger-500/10',
+    refunded: 'text-foreground-muted bg-foreground-muted/10',
+  };
+  const paymentStatusLabel: Record<Payment['status'], string> = {
+    pending: 'Gözlənilir', success: 'Ödənildi', failed: 'Uğursuz', refunded: 'Geri qaytarıldı',
+  };
 
   return (
     <div className="space-y-8">
       <SectionTitle title="Kassa & Smena" subtitle="Günlük kassa idarəetməsi" />
 
+      {/* Tab bar */}
+      <div className="flex gap-1 rounded-xl border border-border bg-surface p-1 w-fit">
+        {([['kassa', 'Kassa & Smena', Wallet], ['payments', 'Ödənişlər', CreditCard]] as const).map(([id, label, Icon]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === id ? 'bg-primary-500 text-white' : 'text-foreground-muted hover:text-foreground hover:bg-foreground-muted/10'}`}
+          >
+            <Icon className="h-4 w-4" /> {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'payments' && (
+        <div className="rounded-2xl border border-border bg-surface-elevated p-6">
+          <h3 className="text-base font-semibold mb-4">Ödəniş Tarixçəsi</h3>
+          {!paymentsData?.payments.length ? (
+            <p className="text-center text-sm text-foreground-muted py-8">Ödəniş tapılmadı</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 text-xs font-medium text-foreground-muted">Sifariş</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-foreground-muted">Üsul</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-foreground-muted">Status</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-foreground-muted">Məbləğ</th>
+                    <th className="text-right py-3 px-4 text-xs font-medium text-foreground-muted">Tarix</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {paymentsData.payments.map(p => (
+                    <tr key={p.id} className="hover:bg-foreground-muted/5">
+                      <td className="py-3 px-4 font-medium">#{p.order.orderNumber}</td>
+                      <td className="py-3 px-4 capitalize">
+                        <span className="flex items-center gap-1.5">
+                          <CreditCard className="h-3.5 w-3.5 text-primary-500" />
+                          {p.provider === 'payriff' ? 'Payriff' : p.provider === 'm10' ? 'M10' : p.method}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor[p.status]}`}>
+                          {paymentStatusLabel[p.status]}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right font-semibold">{fmtMoney(p.amount)}</td>
+                      <td className="py-3 px-4 text-right text-foreground-muted">{fmtTime(p.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'kassa' && <>
       {/* ─── Kassa Paneli ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -314,6 +400,7 @@ export function CashierView() {
           </div>
         )}
       </div>
+      </>}
     </div>
   );
 }

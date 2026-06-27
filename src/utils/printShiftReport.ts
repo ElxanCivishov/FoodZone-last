@@ -1,4 +1,4 @@
-import type { Shift } from '@/types';
+import type { Order, Shift } from '@/types';
 
 function fmt(n?: number) {
   return `${(n ?? 0).toFixed(2)} ₼`;
@@ -64,6 +64,154 @@ function topProductsTable(products?: Shift['topProducts']) {
         <tbody>${rows}</tbody>
       </table>
     </section>`;
+}
+
+function openPrint(html: string) {
+  openPrint(html);
+}
+
+export function printOrderReceipt(order: Order, restaurantName = 'FoodZone', thermal = false) {
+  const pageSize = thermal ? '@page{size:80mm auto;margin:4mm}' : '@page{size:A4;margin:20mm}';
+  const bodyWidth = thermal ? 'max-width:72mm' : 'max-width:148mm';
+
+  const itemRows = order.items.map(item => {
+    const name = item.product?.name ?? item.productId;
+    const price = (item.totalPrice ?? (item.unitPrice ?? 0) * item.quantity).toFixed(2);
+    return `<tr>
+      <td>${name}</td>
+      <td style="text-align:center">${item.quantity}</td>
+      <td style="text-align:right;font-weight:600">${price} ₼</td>
+    </tr>`;
+  }).join('');
+
+  const tableLabel = order.table ? `Masa ${order.table.number}` : order.fulfillmentType === 'takeaway' ? 'Aparma' : 'Çatdırılma';
+
+  const html = `<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <title>Qəbz #${order.orderNumber}</title>
+  <style>
+    ${pageSize}
+    * { box-sizing:border-box;margin:0;padding:0; }
+    body { font-family:'Segoe UI',Arial,sans-serif;font-size:${thermal ? '12px' : '13px'};color:#111;${bodyWidth}; }
+    .center { text-align:center; }
+    .divider { border:none;border-top:1px dashed #ccc;margin:8px 0; }
+    table { width:100%;border-collapse:collapse; }
+    td,th { padding:3px 4px;vertical-align:middle; }
+    th { font-size:10px;color:#888;text-align:left; }
+    .total-row { font-size:${thermal ? '13px' : '15px'};font-weight:700;display:flex;justify-content:space-between;padding:5px 0; }
+    .row { display:flex;justify-content:space-between;padding:2px 0;font-size:${thermal ? '11px' : '12px'}; }
+    .footer { margin-top:20px;text-align:center;font-size:10px;color:#aaa; }
+    @media print { body { margin:0; } }
+  </style>
+</head>
+<body>
+  <div class="center" style="margin-bottom:12px">
+    <p style="font-size:${thermal ? '14px' : '18px'};font-weight:700">${restaurantName}</p>
+    <p style="font-size:11px;color:#666">Müştəri Qəbzi</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="row"><span>Sifariş #</span><span style="font-weight:600">${order.orderNumber}</span></div>
+  <div class="row"><span>Növ</span><span>${tableLabel}</span></div>
+  ${order.customerName ? `<div class="row"><span>Müştəri</span><span>${order.customerName}</span></div>` : ''}
+  <div class="row"><span>Tarix</span><span>${new Date(order.createdAt).toLocaleString('az-AZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></div>
+
+  <hr class="divider">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Məhsul</th>
+        <th style="text-align:center">Miqdar</th>
+        <th style="text-align:right">Məbləğ</th>
+      </tr>
+    </thead>
+    <tbody>${itemRows}</tbody>
+  </table>
+
+  <hr class="divider">
+
+  <div class="row"><span>Aralıq cəm</span><span>${order.subtotal.toFixed(2)} ₼</span></div>
+  ${order.discount > 0 ? `<div class="row"><span>Endirim</span><span style="color:#dc2626">-${order.discount.toFixed(2)} ₼</span></div>` : ''}
+  ${order.promoDiscount > 0 ? `<div class="row"><span>Promo endirim</span><span style="color:#dc2626">-${order.promoDiscount.toFixed(2)} ₼</span></div>` : ''}
+  ${order.serviceFee > 0 ? `<div class="row"><span>Servis haqqı</span><span>${order.serviceFee.toFixed(2)} ₼</span></div>` : ''}
+  ${order.tip > 0 ? `<div class="row"><span>Bahşiş</span><span>${order.tip.toFixed(2)} ₼</span></div>` : ''}
+  <hr class="divider">
+  <div class="total-row"><span>CƏMİ</span><span style="color:#16a34a">${order.total.toFixed(2)} ₼</span></div>
+  <div class="row"><span>Ödəniş üsulu</span><span>${order.paymentMethod === 'cash' ? 'Nağd' : order.paymentMethod === 'card' ? 'Kart' : 'Online'}</span></div>
+  <div class="row"><span>Ödəniş statusu</span><span style="color:${order.paymentStatus === 'paid' ? '#16a34a' : '#d97706'}">${order.paymentStatus === 'paid' ? 'Ödənildi' : 'Gözlənilir'}</span></div>
+
+  ${order.specialRequest ? `<hr class="divider"><div class="row"><span>Xüsusi qeyd:</span><span>${order.specialRequest}</span></div>` : ''}
+
+  <div class="footer">
+    <p>Təşəkkür edirik!</p>
+    <p style="margin-top:4px">FoodZone POS Sistemi</p>
+    <p style="margin-top:2px">${new Date().toLocaleString('az-AZ')}</p>
+  </div>
+</body>
+</html>`;
+
+  openPrint(html);
+}
+
+export function printKitchenTicket(order: Order) {
+  const itemRows = order.items.map(item => {
+    const name = item.product?.name ?? item.productId;
+    return `<tr style="border-bottom:1px dashed #ccc">
+      <td style="padding:6px 4px;font-size:14px;font-weight:600">${item.quantity}×</td>
+      <td style="padding:6px 4px;font-size:14px">${name}</td>
+    </tr>`;
+  }).join('');
+
+  const tableLabel = order.table ? `MASA ${order.table.number}` : order.fulfillmentType === 'takeaway' ? 'APARMA' : 'ÇATDIRMA';
+
+  const html = `<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <title>Mətbəx #${order.orderNumber}</title>
+  <style>
+    @page { size:80mm auto;margin:3mm }
+    * { box-sizing:border-box;margin:0;padding:0; }
+    body { font-family:'Courier New',monospace;font-size:13px;color:#000;max-width:72mm; }
+    .center { text-align:center; }
+    .divider { border:none;border-top:2px solid #000;margin:6px 0; }
+    table { width:100%;border-collapse:collapse; }
+    @media print { body { margin:0; } }
+  </style>
+</head>
+<body>
+  <div class="center" style="margin-bottom:8px">
+    <p style="font-size:20px;font-weight:900">MƏTBƏX</p>
+    <p style="font-size:24px;font-weight:900">${tableLabel}</p>
+  </div>
+
+  <hr class="divider">
+
+  <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px">
+    <span>Sifariş #${order.orderNumber}</span>
+    <span>${new Date(order.createdAt).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })}</span>
+  </div>
+
+  <hr class="divider">
+
+  <table>
+    <tbody>${itemRows}</tbody>
+  </table>
+
+  ${order.specialRequest ? `<hr class="divider"><p style="font-size:11px;font-weight:600">QEYD: ${order.specialRequest}</p>` : ''}
+
+  <hr class="divider">
+  <div class="center" style="font-size:10px;color:#555;margin-top:4px">
+    ${new Date().toLocaleString('az-AZ', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+  </div>
+</body>
+</html>`;
+
+  openPrint(html);
 }
 
 export function printRangeReport(
@@ -173,12 +321,7 @@ export function printRangeReport(
 </body>
 </html>`;
 
-  const win = window.open('', '_blank', 'width=800,height=900');
-  if (!win) return;
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); }, 400);
+  openPrint(html);
 }
 
 export function printShiftReport(shift: Shift, restaurantName = 'FoodZone', thermal = false) {
@@ -280,10 +423,5 @@ export function printShiftReport(shift: Shift, restaurantName = 'FoodZone', ther
 </body>
 </html>`;
 
-  const win = window.open('', '_blank', 'width=800,height=900');
-  if (!win) return;
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); }, 400);
+  openPrint(html);
 }

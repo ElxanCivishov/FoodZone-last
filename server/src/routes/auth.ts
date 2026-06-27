@@ -27,6 +27,7 @@ router.post("/login", validate(loginSchema), async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        branchId: user.branchId ?? null,
       },
       process.env.JWT_SECRET!,
       { expiresIn: "7d" },
@@ -40,6 +41,7 @@ router.post("/login", validate(loginSchema), async (req, res, next) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          branchId: user.branchId ?? null,
         },
       },
     });

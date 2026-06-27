@@ -201,6 +201,8 @@ export interface TableReservation {
   branchId: string;
   tableId?: string;
   table?: { id: string; number: string; capacity?: number; section?: string };
+  customerId?: string;
+  customer?: { id: string; name: string; phone?: string; totalOrders: number; totalSpent: number; points: number; tags: string[] };
   customerName: string;
   phone: string;
   partySize: number;
@@ -387,17 +389,6 @@ export interface ProductExtra {
   price: number;
 }
 
-export interface CartItem {
-  id: string;
-  productId: string;
-  product: Product;
-  quantity: number;
-  selectedSize?: ProductSize;
-  selectedExtras: ProductExtra[];
-  specialNote?: string;
-  unitPrice: number;
-  totalPrice: number;
-}
 
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'cancelled';
 export type OrderFulfillmentType = 'delivery' | 'takeaway' | 'dine_in';
@@ -498,50 +489,6 @@ export interface WaiterRequest {
   rejectionNote?: string;
 }
 
-export interface QRScanResult {
-  restaurantId: string;
-  branchId: string;
-  tableId: string;
-  tableNumber: string;
-  branchName: string;
-  restaurantName: string;
-  language?: string;
-  valid: boolean;
-  expired?: boolean;
-  message?: string;
-}
-
-export interface SessionData {
-  restaurantId: string;
-  branchId: string;
-  tableId: string;
-  tableNumber: string;
-  language: string;
-  customerName?: string;
-  sessionId: string;
-  restaurantName?: string;
-  branchName?: string;
-}
-
-export type AppScreen =
-  | 'qr-scan'
-  | 'language'
-  | 'welcome'
-  | 'home'
-  | 'category'
-  | 'product-detail'
-  | 'cart'
-  | 'checkout'
-  | 'order-success'
-  | 'order-tracking'
-  | 'my-orders'
-  | 'wifi-connect'
-  | 'call-waiter'
-  | 'rewards'
-  | 'feedback'
-  | 'admin'
-  | 'kitchen'
-  | 'waiter';
 
 export interface KitchenOrder {
   id: string;

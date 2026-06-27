@@ -16,7 +16,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { cn } from '@/utils/cn';
 import { adminNavSections } from '../navigation';
-import { useActiveBranch } from '../hooks/useActiveBranch';
+import { useActiveBranch, useIsSuperAdmin } from '../hooks/useActiveBranch';
 
 export function Sidebar() {
   const { t } = useTranslation();
@@ -25,6 +25,7 @@ export function Sidebar() {
   const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const isSuperAdmin = useIsSuperAdmin();
   const { activeBranch } = useActiveBranch();
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('admin_sidebar_collapsed') === 'true',
@@ -119,7 +120,7 @@ export function Sidebar() {
             </AnimatePresence>
 
             <div className="space-y-1">
-              {section.items.map((tab) => {
+              {section.items.filter((tab) => tab.id !== 'branches' || isSuperAdmin).map((tab) => {
                 const Icon = tab.icon;
                 const label = t(tab.label);
                 return (

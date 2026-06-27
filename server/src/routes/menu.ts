@@ -1,12 +1,19 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
-import { authenticate, authorize } from '../middleware/auth';
+import { authenticate, authorize, isSuperAdmin, type AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/', authenticate, authorize(['admin', 'manager']), async (_req, res, next) => {
+router.get('/', authenticate, authorize(['admin', 'manager']), async (req, res, next) => {
+  const authReq = req as AuthRequest;
   try {
+    const where = isSuperAdmin(authReq)
+      ? {}
+      : authReq.user?.branchId
+        ? { id: authReq.user.branchId }
+        : { id: '__none__' }; // no branchId assigned → return empty
     const branches = await prisma.branch.findMany({
+      where,
       include: { restaurant: true, tables: true },
       orderBy: { createdAt: 'asc' },
     });
@@ -16,13 +23,14 @@ router.get('/', authenticate, authorize(['admin', 'manager']), async (_req, res,
 
 router.patch('/:id', authenticate, authorize(['admin', 'manager']), async (req, res, next) => {
   try {
-    const { name, address, phone, wifiName, wifiPassword } = req.body;
+    const { name, address, phone, wifiName, wifiPassword, status } = req.body;
     const data: Record<string, any> = {};
     if (name !== undefined) data.name = name;
     if (address !== undefined) data.address = address;
     if (phone !== undefined) data.phone = phone;
     if (wifiName !== undefined) data.wifiName = wifiName;
     if (wifiPassword !== undefined) data.wifiPassword = wifiPassword;
+    if (status !== undefined) data.status = status;
     const branch = await prisma.branch.update({
       where: { id: req.params.id },
       data,

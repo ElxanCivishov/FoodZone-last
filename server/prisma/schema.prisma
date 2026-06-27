@@ -46,6 +46,7 @@ model Branch {
   feedbacks        CustomerFeedback[]
   rawMaterials     RawMaterial[]
   stocktakes       Stocktake[]
+  users            User[]
 
   @@index([restaurantId])
   @@index([status])
@@ -201,6 +202,7 @@ model Order {
   cashDrawer             CashDrawer? @relation(fields: [cashDrawerId], references: [id])
   items                  OrderItem[]
   feedback               CustomerFeedback?
+  payments               Payment[]
 
   @@index([branchId, createdAt])
   @@index([branchId, fulfillmentType, createdAt])
@@ -265,9 +267,11 @@ model User {
   password         String
   name             String
   role             String             @default("waiter")
+  branchId         String?
   status           String             @default("active")
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
+  branch           Branch?            @relation(fields: [branchId], references: [id])
   cancelledOrders  Order[]            @relation("CancelledOrders")
   paidOrders       Order[]            @relation("PaidOrders")
   acceptedRequests WaiterRequest[]    @relation("AcceptedRequests")
@@ -283,6 +287,7 @@ model User {
   pushSubscriptions PushSubscription[]
 
   @@index([role, status])
+  @@index([branchId])
 }
 
 model Reward {
@@ -452,9 +457,10 @@ model Customer {
   createdAt   DateTime           @default(now())
   lastVisit   DateTime?
   branch      Branch             @relation(fields: [branchId], references: [id])
-  orders      Order[]
-  feedbacks   CustomerFeedback[]
-  promoCodes  PromoCode[]
+  orders       Order[]
+  feedbacks    CustomerFeedback[]
+  promoCodes   PromoCode[]
+  reservations TableReservation[]
 
   @@unique([branchId, phone])
   @@index([branchId])
@@ -478,22 +484,25 @@ model CustomerFeedback {
 }
 
 model TableReservation {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   branchId     String
   tableId      String?
+  customerId   String?
   customerName String
-  phone        String
+  phone        String    @default("")
   partySize    Int
   dateTime     DateTime
-  duration     Int      @default(90)
-  status       String   @default("confirmed")
+  duration     Int       @default(90)
+  status       String    @default("confirmed")
   notes        String?
-  createdAt    DateTime @default(now())
-  branch       Branch   @relation(fields: [branchId], references: [id])
-  table        Table?   @relation(fields: [tableId], references: [id])
+  createdAt    DateTime  @default(now())
+  branch       Branch    @relation(fields: [branchId], references: [id])
+  table        Table?    @relation(fields: [tableId], references: [id])
+  customer     Customer? @relation(fields: [customerId], references: [id])
 
   @@index([branchId, dateTime])
   @@index([status])
+  @@index([customerId])
 }
 
 model Notification {
@@ -671,6 +680,30 @@ model StocktakeItem {
   stocktake     Stocktake @relation(fields: [stocktakeId], references: [id])
 
   @@index([stocktakeId])
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  orderId       String
+  method        String
+  provider      String?
+  amount        Float
+  currency      String    @default("AZN")
+  status        String    @default("pending")
+  externalRef   String?
+  externalTxnId String?
+  paymentUrl    String?
+  webhookData   Json?
+  refundAmount  Float?
+  refundedAt    DateTime?
+  failReason    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  order         Order     @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([status])
+  @@index([externalRef])
 }
 
 model PushSubscription {

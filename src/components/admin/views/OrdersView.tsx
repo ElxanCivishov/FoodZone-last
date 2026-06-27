@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, ShoppingBag, Truck, Utensils, X } from 'lucide-react';
+import { Printer, Search, ShoppingBag, Truck, Utensils, X } from 'lucide-react';
 import { useOrders } from '@/hooks/useDashboard';
+import { printKitchenTicket, printOrderReceipt } from '@/utils/printShiftReport';
 import type { Order, OrderFulfillmentType, OrderStatus } from '@/types';
 import {
   getOrderFulfillmentLabel,
@@ -87,7 +88,7 @@ export function OrdersView() {
         </div>
       </div>
 
-      <DataTable loading={isLoading} colSpan={7}>
+      <DataTable loading={isLoading} colSpan={8}>
         <thead className="bg-foreground-muted/5">
           <tr>
             <Th>{t('admin.ordersView.orderNumber')}</Th>
@@ -96,13 +97,14 @@ export function OrdersView() {
             <Th>{t('admin.status')}</Th>
             <Th>{t('admin.ordersView.total')}</Th>
             <Th>{t('admin.ordersView.time')}</Th>
+            <Th>Çap</Th>
             <Th right>{t('admin.actions')}</Th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
           {filteredOrders.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-4 py-8 text-center text-sm text-foreground-muted">
+              <td colSpan={8} className="px-4 py-8 text-center text-sm text-foreground-muted">
                 {t('filters.noResults')}
               </td>
             </tr>
@@ -119,8 +121,26 @@ export function OrdersView() {
                 <Td>
                   <StatusPill status={order.status} />
                 </Td>
-                <Td className="font-medium">${order.total?.toFixed(2)}</Td>
+                <Td className="font-medium">{order.total?.toFixed(2)} ₼</Td>
                 <Td muted>{new Date(order.createdAt).toLocaleTimeString()}</Td>
+                <Td>
+                  <div className="flex gap-1">
+                    <button
+                      title="Müştəri qəbzi"
+                      onClick={() => printOrderReceipt(order)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-border text-xs text-foreground-muted hover:bg-surface-elevated hover:text-foreground transition-colors"
+                    >
+                      <Printer className="h-3 w-3" /> Qəbz
+                    </button>
+                    <button
+                      title="Mətbəx bileti"
+                      onClick={() => printKitchenTicket(order)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-border text-xs text-foreground-muted hover:bg-surface-elevated hover:text-foreground transition-colors"
+                    >
+                      <Printer className="h-3 w-3" /> Mətbəx
+                    </button>
+                  </div>
+                </Td>
                 <Td right>
                   {(nextStatuses[order.status] || []).map((status) => (
                     <button key={status} onClick={() => updateOrderStatus.mutate({ orderId: order.id, status })} className="ml-2 px-2.5 py-1.5 rounded-lg bg-primary-500/10 text-primary-500 text-xs font-medium capitalize">

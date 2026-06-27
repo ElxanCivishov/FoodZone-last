@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { UtensilsCrossed, Eye, EyeOff, LogIn } from 'lucide-react';
 
 const ROLE_REDIRECT: Record<string, string> = {
+  super_admin: '/admin',
   admin: '/admin',
   manager: '/admin',
   kitchen: '/kitchen',

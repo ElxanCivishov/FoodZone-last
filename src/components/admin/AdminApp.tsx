@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { useThemeStore } from '@/stores/themeStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 import { MobileHeader } from './components/MobileHeader';
 import { Sidebar } from './components/Sidebar';
@@ -34,6 +35,7 @@ export function AdminApp() {
   const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
   const { resolvedTheme } = useThemeStore();
   const isConnected = useAdminRealtime();
+  const isSuperAdmin = useAuthStore((s) => s.user?.role === 'super_admin');
 
   const selectTab = (tab: AdminTab) => {
     navigate(`/admin/${tab}`);
@@ -79,7 +81,7 @@ export function AdminApp() {
                 <Route path="customers" element={<CustomersView />} />
                 <Route path="promo" element={<PromoView />} />
                 <Route path="reports" element={<ReportsView />} />
-                <Route path="branches" element={<MultiBranchView />} />
+                <Route path="branches" element={isSuperAdmin ? <MultiBranchView /> : <Navigate to="dashboard" replace />} />
                 <Route path="notifications" element={<NotificationsView />} />
                 <Route path="reservations" element={<ReservationView />} />
                 <Route path="*" element={<Navigate to="dashboard" replace />} />

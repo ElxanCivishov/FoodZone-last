@@ -28,6 +28,8 @@ import { feedbackRoutes } from "./routes/feedback";
 import { rawMaterialRoutes } from "./routes/rawMaterials";
 import { recipeRoutes } from "./routes/recipes";
 import { pushSubscriptionRoutes } from "./routes/pushSubscriptions";
+import { paymentRoutes } from "./routes/payments";
+import { printRoutes } from "./routes/print";
 import { setupSocketEvents } from "./events/socketEvents";
 import { startScheduler } from "./jobs/scheduler";
 import { errorHandler } from "./middleware/errorHandler";
@@ -97,6 +99,8 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/raw-materials", rawMaterialRoutes);
 app.use("/api/recipes", recipeRoutes);
 app.use("/api/push", pushSubscriptionRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/print", printRoutes);
 
 setupSocketEvents(io);
 startScheduler(io);

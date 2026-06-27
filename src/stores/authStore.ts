@@ -6,7 +6,8 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'manager' | 'kitchen' | 'waiter' | 'staff';
+  role: 'super_admin' | 'admin' | 'manager' | 'kitchen' | 'waiter' | 'staff';
+  branchId?: string | null;
 }
 
 interface AuthState {

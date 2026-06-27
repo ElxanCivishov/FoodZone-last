@@ -1,32 +1,27 @@
-import { create } from "zustand";
-import { AppScreen } from "@/types";
+import { create } from 'zustand';
 
 interface Notification {
   id: string;
-  type: "info" | "success" | "warning" | "error";
+  type: 'info' | 'success' | 'warning' | 'error';
   message: string;
 }
 
 interface UIState {
-  currentScreen: AppScreen;
   isLoading: boolean;
   notifications: Notification[];
   sidebarOpen: boolean;
-  setScreen: (screen: AppScreen) => void;
   setLoading: (loading: boolean) => void;
-  addNotification: (notification: Omit<Notification, "id">) => void;
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
   removeNotification: (id: string) => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
-  currentScreen: "qr-scan",
   isLoading: false,
   notifications: [],
   sidebarOpen: false,
 
-  setScreen: (screen) => set({ currentScreen: screen }),
   setLoading: (loading) => set({ isLoading: loading }),
 
   addNotification: (notification) => {
