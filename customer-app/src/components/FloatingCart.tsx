@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, X } from 'lucide-react';
 import { useUIStore, useCartStore } from '@/store';
@@ -6,19 +6,18 @@ import { useUIStore, useCartStore } from '@/store';
 const HIDDEN = ['splash', 'checkout', 'tracking', 'login', 'register', 'admin'];
 
 export default function FloatingCart() {
-  const { currentScreen, openCartDrawer } = useUIStore();
+  const { currentScreen, openCartDrawer, floatingCartDismissed, setFloatingCartDismissed } = useUIStore();
   const itemCount = useCartStore((s) => s.getItemCount());
   const total = useCartStore((s) => s.getTotal());
-  const [dismissed, setDismissed] = useState(false);
   const prevCountRef = useRef(itemCount);
 
   // Re-show whenever a new item is added
   useEffect(() => {
-    if (itemCount > prevCountRef.current) setDismissed(false);
+    if (itemCount > prevCountRef.current) setFloatingCartDismissed(false);
     prevCountRef.current = itemCount;
-  }, [itemCount]);
+  }, [itemCount, setFloatingCartDismissed]);
 
-  const show = !HIDDEN.includes(currentScreen) && itemCount > 0 && !dismissed;
+  const show = !HIDDEN.includes(currentScreen) && itemCount > 0 && !floatingCartDismissed;
 
   return (
     <AnimatePresence>
@@ -54,7 +53,7 @@ export default function FloatingCart() {
           {/* Close button */}
           <motion.button
             whileTap={{ scale: 0.85 }}
-            onClick={() => setDismissed(true)}
+            onClick={() => setFloatingCartDismissed(true)}
             className="absolute -top-2.5 -right-2.5 pointer-events-auto w-6 h-6 rounded-full bg-[#1a1a2e] border border-white/20 flex items-center justify-center shadow-md"
           >
             <X size={11} className="text-white/80" strokeWidth={2.5} />

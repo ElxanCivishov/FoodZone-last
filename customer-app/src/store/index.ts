@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Screen, NavTab, CartItem, Order, ToastMessage, Product, ModalType, Restaurant, Language, WaiterRequest, WaiterRequestType, WaiterRequestStatus } from '@/types';
+import type { Screen, NavTab, CartItem, Order, ToastMessage, Product, ModalType, Restaurant, Language, WaiterRequest, WaiterRequestType, WaiterRequestStatus, OrderStatus } from '@/types';
 
 interface UserInfo {
   name: string;
@@ -21,6 +21,15 @@ interface UIState {
   activeModal: ModalType;
   selectedRestaurant: Restaurant | null;
   language: Language;
+  menuInitialGroup: string | null;
+  setMenuInitialGroup: (id: string | null) => void;
+  searchAutoFocus: boolean;
+  setSearchAutoFocus: (v: boolean) => void;
+  floatingCartDismissed: boolean;
+  setFloatingCartDismissed: (v: boolean) => void;
+  /* ─── Restaurant settings (synced from admin) ─── */
+  deliveryOnlyCard: boolean;
+  setDeliveryOnlyCard: (v: boolean) => void;
   /* ─── Session ─── */
   isQRSession: boolean;
   tableNumber: number;
@@ -65,6 +74,14 @@ export const useUIStore = create<UIState>((set, get) => ({
   tableNumber: 12,
   isLoggedIn: false,
   userInfo: null,
+  menuInitialGroup: null,
+  setMenuInitialGroup: (id) => set({ menuInitialGroup: id }),
+  searchAutoFocus: false,
+  setSearchAutoFocus: (v) => set({ searchAutoFocus: v }),
+  floatingCartDismissed: false,
+  setFloatingCartDismissed: (v) => set({ floatingCartDismissed: v }),
+  deliveryOnlyCard: false,
+  setDeliveryOnlyCard: (v) => set({ deliveryOnlyCard: v }),
 
   setScreen: (screen) => {
     const current = get().currentScreen;
@@ -203,7 +220,9 @@ interface OrderState {
   currentOrder: Order | null;
   addOrder: (order: Order) => void;
   setCurrentOrder: (order: Order | null) => void;
-  updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  cancelOrder: (orderId: string, reason: string) => void;
+  payOrder: (orderId: string) => void;
 }
 
 export const useOrderStore = create<OrderState>((set) => ({
@@ -228,6 +247,35 @@ export const useOrderStore = create<OrderState>((set) => ({
           ? { ...state.currentOrder, status }
           : state.currentOrder,
     })),
+
+  cancelOrder: (orderId, reason) =>
+    set((state) => {
+      const now = new Date().toISOString();
+      const updated = state.orders.map((o) =>
+        o.id === orderId
+          ? { ...o, status: 'cancelled' as OrderStatus, cancellationReason: reason, cancelledAt: now }
+          : o
+      );
+      const currentOrder =
+        state.currentOrder?.id === orderId
+          ? { ...state.currentOrder, status: 'cancelled' as OrderStatus, cancellationReason: reason, cancelledAt: now }
+          : state.currentOrder;
+      return { orders: updated, currentOrder };
+    }),
+
+  payOrder: (orderId) =>
+    set((state) => {
+      const updated = state.orders.map((o) =>
+        o.id === orderId
+          ? { ...o, paymentStatus: 'paid' as const, status: 'new' as OrderStatus }
+          : o
+      );
+      const currentOrder =
+        state.currentOrder?.id === orderId
+          ? { ...state.currentOrder, paymentStatus: 'paid' as const, status: 'new' as OrderStatus }
+          : state.currentOrder;
+      return { orders: updated, currentOrder };
+    }),
 }));
 
 /* ─── Support Requests ─── */

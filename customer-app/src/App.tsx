@@ -20,6 +20,7 @@ import OrderHistory from "@/screens/OrderHistory";
 import OrderSuccessScreen from "@/screens/OrderSuccessScreen";
 import OrderTracking from "@/screens/OrderTracking";
 import PaymentsScreen from "@/screens/PaymentsScreen";
+import PaymentScreen from "@/screens/PaymentScreen";
 import ProductDetail from "@/screens/ProductDetail";
 import ProfileScreen from "@/screens/ProfileScreen";
 import ReviewsScreen from "@/screens/ReviewsScreen";
@@ -54,6 +55,8 @@ function ScreenRouter() {
       return <FavoritesScreen />;
     case "checkout":
       return <CheckoutScreen />;
+    case "payment":
+      return <PaymentScreen />;
     case "orderSuccess":
       return <OrderSuccessScreen />;
     case "addresses":

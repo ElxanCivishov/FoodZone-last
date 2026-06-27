@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Clock, ChevronRight, Home } from 'lucide-react';
+import { CheckCircle2, Clock, ChevronRight, Home, CreditCard, AlertCircle } from 'lucide-react';
 import { useUIStore, useOrderStore } from '@/store';
 import { useT } from '@/hooks/useT';
 
@@ -22,6 +22,7 @@ export default function OrderSuccessScreen() {
   const currentOrder = useOrderStore((s) => s.currentOrder);
   const t = useT();
   const [showContent, setShowContent] = useState(false);
+  const isPendingPayment = currentOrder?.paymentStatus === 'pending';
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 400);
@@ -138,6 +139,21 @@ export default function OrderSuccessScreen() {
           </motion.div>
         )}
 
+        {/* Pending payment warning */}
+        {isPendingPayment && (
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ ...SPRING, delay: 0.6 }}
+            className="mt-4 w-full bg-warning/10 border border-warning/30 rounded-2xl p-3 flex items-center gap-3"
+          >
+            <AlertCircle size={18} className="text-warning shrink-0" />
+            <p className="text-[13px] text-warning font-medium flex-1">
+              Sifariş ödəniş gözləyir. Təsdiqlənmək üçün ödəyin.
+            </p>
+          </motion.div>
+        )}
+
         {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -145,15 +161,27 @@ export default function OrderSuccessScreen() {
           transition={{ ...SPRING, delay: 0.65 }}
           className="mt-6 w-full flex flex-col gap-3"
         >
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setScreen('tracking')}
-            className="w-full py-4 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2 shadow-primary-glow"
-            style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
-          >
-            {t.order.track}
-            <ChevronRight size={18} />
-          </motion.button>
+          {isPendingPayment ? (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setScreen('payment')}
+              className="w-full py-4 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg,#f6a623,#f5576c)' }}
+            >
+              <CreditCard size={18} />
+              İndi Ödə — {currentOrder?.total?.toFixed(2)} AZN
+            </motion.button>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setScreen('tracking')}
+              className="w-full py-4 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2 shadow-primary-glow"
+              style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
+            >
+              {t.order.track}
+              <ChevronRight size={18} />
+            </motion.button>
+          )}
 
           <motion.button
             whileTap={{ scale: 0.97 }}

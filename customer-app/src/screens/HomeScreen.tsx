@@ -1,27 +1,27 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import AppHeaderRow from "@/components/AppHeaderRow";
+import CategoryBottomSheet from "@/components/CategoryBottomSheet";
 import {
-  MapPin,
-  Star,
-  Clock,
-  ShoppingBag,
-  Search,
-  Heart,
-  Plus,
-  ChevronRight,
-  Wifi,
-  Info,
-  Sun,
-  Moon,
-} from "lucide-react";
-import { useUIStore, useCartStore } from "@/store";
-import {
-  popularProducts,
-  newArrivals,
-  setMenus,
   categories,
+  newArrivals,
+  popularProducts,
+  setMenus,
 } from "@/data/menuData";
+import { useCartStore, useUIStore } from "@/store";
 import type { Category, Product } from "@/types";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ChevronRight,
+  Clock,
+  Heart,
+  Info,
+  Menu,
+  Percent,
+  Plus,
+  Search,
+  ShoppingBag,
+  Star,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
@@ -54,22 +54,26 @@ const INFO = {
   maxTime: 25,
   minOrder: 10,
   deliveryFee: 2,
+  serviceFee: 10,
   address: "İçərişəhər, Bakı",
 };
 
 export default function HomeScreen() {
-  const { openProductModal, openCartDrawer, openModal, setScreen, userInfo, isLoggedIn, isDark, toggleDark } =
-    useUIStore();
+  const {
+    openProductModal,
+    setActiveTab,
+    setMenuInitialGroup,
+    setScreen,
+    setSearchAutoFocus,
+  } = useUIStore();
   const addToast = useUIStore((s) => s.addToast);
-  const cartItemCount = useCartStore((s) =>
-    s.items.reduce((c, i) => c + i.quantity, 0),
-  );
   const addItem = useCartStore((s) => s.addItem);
 
   const [activeCategory, setActiveCategory] = useState<Category>("all");
   const [scrolled, setScrolled] = useState(false);
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [promoIdx, setPromoIdx] = useState(0);
+  const [catModalOpen, setCatModalOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,92 +134,17 @@ export default function HomeScreen() {
             : "bg-transparent"
         }`}
       >
-        <div className="flex items-center justify-between px-4 pt-12 pb-3">
-          <div className="flex items-center gap-1.5">
-            <MapPin size={15} className="text-primary" strokeWidth={2.5} />
-            <span className="text-[13px] text-text-secondary font-medium">
-              {INFO.address}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={toggleDark}
-              className="w-9 h-9 rounded-full bg-white dark:bg-[#22223a] shadow-xs border border-border-light flex items-center justify-center"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={isDark ? 'moon' : 'sun'}
-                  initial={{ rotate: -30, opacity: 0, scale: 0.7 }}
-                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                  exit={{ rotate: 30, opacity: 0, scale: 0.7 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  {isDark
-                    ? <Sun size={16} className="text-warning" />
-                    : <Moon size={16} className="text-text-secondary" />
-                  }
-                </motion.div>
-              </AnimatePresence>
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={() => openModal("wifi")}
-              className="w-9 h-9 rounded-full bg-white dark:bg-[#22223a] shadow-xs border border-border-light flex items-center justify-center"
-            >
-              <Wifi size={16} className="text-text-secondary" />
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.88 }}
-              onClick={openCartDrawer}
-              className="w-9 h-9 rounded-full bg-white shadow-xs border border-border-light flex items-center justify-center relative"
-            >
-              <ShoppingBag size={16} className="text-text-secondary" />
-              <AnimatePresence>
-                {cartItemCount > 0 && (
-                  <motion.span
-                    key="badge"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-bold"
-                  >
-                    {cartItemCount}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.button>
-
-            <AnimatePresence>
-              {isLoggedIn && userInfo && (
-                <motion.button
-                  key="avatar"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 24 }}
-                  whileTap={{ scale: 0.88 }}
-                  onClick={() => setScreen("profile")}
-                  className="w-9 h-9 rounded-full p-[2px] shrink-0"
-                  style={{ background: "linear-gradient(135deg,#00c2e8,#a78bfa,#f59e0b)" }}
-                >
-                  <div className="w-full h-full rounded-full bg-[#191540] flex items-center justify-center">
-                    <span className="font-outfit text-[11px] font-black text-white tracking-tighter select-none">
-                      {userInfo.name.trim().split(" ").map(w => w[0] ?? "").join("").toUpperCase().slice(0, 2) || "Q"}
-                    </span>
-                  </div>
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+        <AppHeaderRow />
 
         {/* Search bar */}
         <div className="px-4 pb-3">
           <motion.button
             whileTap={{ scale: 0.98 }}
-            onClick={() => setScreen("search")}
+            onClick={() => {
+              setSearchAutoFocus(true);
+              setActiveTab("search");
+              setScreen("search");
+            }}
             className="w-full flex items-center gap-2.5 h-11 px-4 rounded-full bg-white border border-border-light shadow-xs text-text-tertiary text-[14px]"
           >
             <Search size={16} className="shrink-0" />
@@ -300,6 +229,10 @@ export default function HomeScreen() {
                   icon={<Info size={11} />}
                   text={`${INFO.deliveryFee} AZN çatdırılma`}
                 />
+                <MetaBadge
+                  icon={<Percent size={11} />}
+                  text={`${INFO.serviceFee}% servis`}
+                />
               </div>
             </motion.div>
           </AnimatePresence>
@@ -322,32 +255,50 @@ export default function HomeScreen() {
           transition={{ delay: 0.15, ...SPRING }}
           className="mt-4 px-4"
         >
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
-            {categories.map((cat, i) => {
-              const isActive = activeCategory === cat.id;
-              return (
-                <motion.button
-                  key={cat.id}
-                  initial={{ opacity: 0, x: -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.18 + i * 0.04, ...SPRING }}
-                  whileTap={{ scale: 0.92 }}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`flex items-center gap-1.5 px-4 h-9 rounded-full text-[13px] font-semibold shrink-0 snap-start pill-spring ${
-                    isActive
-                      ? "bg-primary text-white shadow-primary-glow"
-                      : "bg-white text-text-secondary border border-border-light"
-                  }`}
-                >
-                  {cat.label}
-                </motion.button>
-              );
-            })}
+          <div className="flex items-center gap-2">
+            {/* Burger düyməsi */}
+            <motion.button
+              whileTap={{ scale: 0.88 }}
+              onClick={() => setCatModalOpen(true)}
+              className="w-9 h-9 rounded-full bg-white border border-border-light shadow-xs flex items-center justify-center shrink-0"
+            >
+              <Menu size={16} className="text-text-secondary" />
+            </motion.button>
+
+            {/* Scrollable pills */}
+            <div className="flex-1 min-w-0 flex gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
+              {categories.map((cat, i) => {
+                const isActive = activeCategory === cat.id;
+                return (
+                  <motion.button
+                    key={cat.id}
+                    initial={{ opacity: 0, x: -15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.18 + i * 0.04, ...SPRING }}
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`flex items-center gap-1.5 px-4 h-9 rounded-full text-[13px] font-semibold shrink-0 snap-start pill-spring ${
+                      isActive
+                        ? "bg-primary text-white shadow-primary-glow"
+                        : "bg-white text-text-secondary border border-border-light"
+                    }`}
+                  >
+                    {cat.label}
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
         </motion.div>
 
         {/* Popular */}
-        <SectionHeader title="Populyar" />
+        <SectionHeader
+          title="Populyar"
+          onViewAll={() => {
+            setMenuInitialGroup(null);
+            setActiveTab("search" as any);
+          }}
+        />
         <div className="px-4 grid grid-cols-2 gap-3">
           <AnimatePresence mode="popLayout">
             {filter(popularProducts).map((p, i) => (
@@ -365,7 +316,13 @@ export default function HomeScreen() {
         </div>
 
         {/* New Arrivals */}
-        <SectionHeader title="Yeni Gələnlər" />
+        <SectionHeader
+          title="Yeni Gələnlər"
+          onViewAll={() => {
+            setMenuInitialGroup(null);
+            setActiveTab("search" as any);
+          }}
+        />
         <div className="px-4">
           <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1">
             {filter(newArrivals).map((p) => (
@@ -406,7 +363,13 @@ export default function HomeScreen() {
 
         {/* Set Menus */}
         <div id="sets-section">
-          <SectionHeader title="Set Menyular" />
+          <SectionHeader
+            title="Set Menyular"
+            onViewAll={() => {
+              setMenuInitialGroup("sets");
+              setActiveTab("search" as any);
+            }}
+          />
           <div className="px-4 grid grid-cols-2 gap-3 pb-4">
             {filter(setMenus).map((p, i) => (
               <ProductCard
@@ -422,6 +385,17 @@ export default function HomeScreen() {
           </div>
         </div>
       </div>
+
+      <CategoryBottomSheet
+        isOpen={catModalOpen}
+        activeGroupId="all"
+        onClose={() => setCatModalOpen(false)}
+        onSelect={(id) => {
+          setMenuInitialGroup(id);
+          setActiveTab("search" as any);
+          setCatModalOpen(false);
+        }}
+      />
     </motion.div>
   );
 }
@@ -437,13 +411,22 @@ function MetaBadge({ icon, text }: { icon: React.ReactNode; text: string }) {
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({
+  title,
+  onViewAll,
+}: {
+  title: string;
+  onViewAll?: () => void;
+}) {
   return (
     <div className="flex items-center justify-between px-4 pt-5 pb-3">
       <h2 className="font-outfit text-[17px] font-bold text-text-primary tracking-[-0.4px]">
         {title}
       </h2>
-      <button className="flex items-center gap-1 text-primary text-xs font-semibold">
+      <button
+        onClick={onViewAll}
+        className="flex items-center gap-1 text-primary text-xs font-semibold"
+      >
         Hamısı <ChevronRight size={13} />
       </button>
     </div>
@@ -489,6 +472,11 @@ function ProductCard({
             {product.badge}
           </span>
         )}
+        {product.originalPrice && (
+          <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-green-500 text-white text-[10px] font-bold">
+            -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+          </span>
+        )}
         <motion.button
           whileTap={{ scale: 0.8 }}
           onClick={onLike}
@@ -515,9 +503,16 @@ function ProductCard({
           </span>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p className="text-primary font-outfit text-[15px] font-bold">
-            <span className="text-[10px]">AZN</span> {product.price}
-          </p>
+          <div>
+            <p className="text-primary font-outfit text-[15px] font-bold leading-none">
+              <span className="text-[10px]">AZN</span> {product.price}
+            </p>
+            {product.originalPrice && (
+              <p className="text-text-tertiary text-[11px] line-through leading-none mt-0.5">
+                AZN {product.originalPrice}
+              </p>
+            )}
+          </div>
           <motion.button
             whileTap={{ scale: 0.8 }}
             onClick={onQuickAdd}

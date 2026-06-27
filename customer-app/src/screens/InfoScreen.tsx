@@ -13,6 +13,7 @@ import {
   Info,
   MapPin,
   MessageSquare,
+  Percent,
   Phone,
   ShoppingBag,
   Star,
@@ -54,6 +55,9 @@ export default function InfoScreen() {
 
           {/* ─── Gallery strip ─── */}
           <GalleryStrip onViewAll={() => setScreen("gallery")} />
+
+          {/* ─── Service Fee ─── */}
+          <ServiceFeeCard />
 
           {/* ─── Hours ─── */}
           <HoursCard today={today} isOpen={isOpen} />
@@ -226,6 +230,28 @@ function GalleryStrip({ onViewAll }: { onViewAll: () => void }) {
           <span className="text-primary font-bold text-[15px]">+10</span>
           <span className="text-text-tertiary text-[10px]">şəkil</span>
         </motion.button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Service Fee ─── */
+function ServiceFeeCard() {
+  return (
+    <div className="bg-white rounded-2xl border border-border-light overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-4">
+        <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center shrink-0">
+          <Percent size={15} className="text-primary" />
+        </div>
+        <div className="flex-1">
+          <p className="text-[13px] font-bold text-text-primary">Servis haqqı</p>
+          <p className="text-[12px] text-text-secondary mt-0.5">
+            Hesaba {RESTAURANT_INFO.serviceFee}% xidmət haqqı əlavə olunur
+          </p>
+        </div>
+        <span className="text-[15px] font-outfit font-bold text-primary shrink-0">
+          {RESTAURANT_INFO.serviceFee}%
+        </span>
       </div>
     </div>
   );
@@ -602,7 +628,7 @@ function DeliveryCard() {
       label: "Çatdırılma haqqı",
       value: `${RESTAURANT_INFO.deliveryFee} AZN`,
     },
-    {
+{
       icon: <Timer size={14} className="text-primary" />,
       label: "Çatdırılma vaxtı",
       value: `${RESTAURANT_INFO.minTime}–${RESTAURANT_INFO.maxTime} dəq`,

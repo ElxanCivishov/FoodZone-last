@@ -1,26 +1,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, ChevronRight, UtensilsCrossed, Truck } from 'lucide-react';
 import { useUIStore, useCartStore, useOrderStore } from '@/store';
 import { generateOrderId, getCurrentTime } from '@/utils';
 
 const SPRING = { type: 'spring' as const, stiffness: 350, damping: 30 };
 
 export default function CartDrawer() {
-  const { cartDrawerOpen, closeCartDrawer, setScreen, addToast } = useUIStore();
-  const { items, removeItem, updateQuantity, clearCart, getSubtotal, getServiceFee, getTotal } =
-    useCartStore();
+  const { cartDrawerOpen, closeCartDrawer, setScreen, addToast, isQRSession, tableNumber } = useUIStore();
+  const { items, removeItem, updateQuantity, clearCart, getSubtotal, getServiceFee, getTotal } = useCartStore();
   const addOrder = useOrderStore((s) => s.addOrder);
   const [placing, setPlacing] = useState(false);
 
   const subtotal = getSubtotal();
-  const fee = getServiceFee();
-  const total = getTotal();
-
-  const handleCheckout = () => {
-    closeCartDrawer();
-    setScreen('checkout');
-  };
+  const fee      = getServiceFee();
+  const total    = getTotal();
 
   const handleQuickOrder = () => {
     setPlacing(true);
@@ -29,12 +23,16 @@ export default function CartDrawer() {
         id: generateOrderId(),
         items: [...items],
         status: 'new',
+        orderType: 'dine_in',
+        paymentMethod: 'cash',
+        paymentStatus: 'paid',
         subtotal,
         serviceFee: fee,
         discount: 0,
         total,
-        tableNumber: 12,
+        tableNumber,
         createdAt: getCurrentTime(),
+        createdAtMs: Date.now(),
         estimatedTime: 18,
       });
       clearCart();
@@ -42,7 +40,12 @@ export default function CartDrawer() {
       addToast('Sifarişiniz qəbul edildi!', 'success');
       setScreen('tracking');
       setPlacing(false);
-    }, 1200);
+    }, 1000);
+  };
+
+  const handleCheckout = () => {
+    closeCartDrawer();
+    setScreen('checkout');
   };
 
   return (
@@ -59,7 +62,7 @@ export default function CartDrawer() {
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={SPRING}
-            className="absolute bottom-0 left-0 right-0 z-[201] bg-white rounded-t-3xl max-h-[85%] flex flex-col shadow-modal"
+            className="absolute bottom-0 left-0 right-0 z-[201] bg-white dark:bg-[#1a1a2e] rounded-t-3xl max-h-[85%] flex flex-col shadow-modal"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
@@ -89,10 +92,7 @@ export default function CartDrawer() {
                   <p className="text-text-secondary text-[13px] mt-1 text-center">
                     Menyu bölməsindən əlavə edin
                   </p>
-                  <button
-                    onClick={closeCartDrawer}
-                    className="mt-4 text-primary text-[13px] font-semibold"
-                  >
+                  <button onClick={closeCartDrawer} className="mt-4 text-primary text-[13px] font-semibold">
                     Menyuya keç
                   </button>
                 </div>
@@ -164,7 +164,6 @@ export default function CartDrawer() {
             {/* Summary + CTA */}
             {items.length > 0 && (
               <div className="border-t border-border-light">
-                {/* Summary */}
                 <div className="mx-4 mt-3 p-4 bg-surface-elevated rounded-xl">
                   <div className="flex justify-between text-[13px] mb-1.5">
                     <span className="text-text-secondary">Ara cəmi</span>
@@ -176,30 +175,39 @@ export default function CartDrawer() {
                   </div>
                   <div className="flex justify-between border-t border-border-light pt-2">
                     <span className="font-outfit text-[15px] font-bold text-text-primary">Ümumi</span>
-                    <span className="font-outfit text-[15px] font-bold text-primary">
-                      {total.toFixed(2)} AZN
-                    </span>
+                    <span className="font-outfit text-[15px] font-bold text-primary">{total.toFixed(2)} AZN</span>
                   </div>
                 </div>
 
-                {/* Buttons */}
                 <div className="px-4 pt-3 pb-6 flex flex-col gap-2">
+                  {/* Primary: go to order type selection */}
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleCheckout}
                     className="w-full py-4 rounded-xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 shadow-primary-glow"
                     style={{ background: 'linear-gradient(135deg, #00c2e8, #00c2a8)' }}
                   >
-                    Ödənişə keç <ArrowRight size={18} />
+                    Sifariş növü seç <ChevronRight size={18} />
                   </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleQuickOrder}
-                    disabled={placing}
-                    className="w-full py-3.5 rounded-xl text-[14px] font-semibold text-primary border-2 border-primary/30 bg-primary-light"
-                  >
-                    {placing ? 'Sifariş verilir…' : 'Tez sifariş ver (masaya)'}
-                  </motion.button>
+
+                  {/* Secondary: quick table order (only in QR session) */}
+                  {isQRSession && (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleQuickOrder}
+                      disabled={placing}
+                      className="w-full py-3.5 rounded-xl text-[14px] font-semibold flex items-center justify-center gap-2 border-2 border-primary/30 bg-primary-light text-primary"
+                    >
+                      {placing ? (
+                        'Sifariş verilir…'
+                      ) : (
+                        <>
+                          <UtensilsCrossed size={15} />
+                          Tez sifariş ver (Masa {tableNumber})
+                        </>
+                      )}
+                    </motion.button>
+                  )}
                 </div>
               </div>
             )}

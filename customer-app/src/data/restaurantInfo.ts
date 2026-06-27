@@ -16,6 +16,7 @@ export const RESTAURANT_INFO = {
   ],
   minOrder: 10,
   deliveryFee: 2,
+  serviceFee: 10,
   minTime: 15,
   maxTime: 25,
   hours: [

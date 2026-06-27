@@ -2,7 +2,7 @@ import { useT } from "@/hooks/useT";
 import { useUIStore } from "@/store";
 import type { NavTab } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { ClipboardList, Home, Search, Store, User } from "lucide-react";
+import { ClipboardList, Home, LayoutGrid, Store, User } from "lucide-react";
 
 const HIDDEN = ["splash", "login", "register", "checkout", "admin"];
 
@@ -22,6 +22,8 @@ export default function BottomNav() {
 
   const infoActive = currentScreen === "info";
 
+  console.log("activeTab", activeTab);
+
   const items: Item[] = [
     {
       key: "home",
@@ -32,8 +34,8 @@ export default function BottomNav() {
     },
     {
       key: "search",
-      label: t.nav.search,
-      icon: Search,
+      label: "Menyu",
+      icon: LayoutGrid,
       isActive: activeTab === "search" && !infoActive,
       onClick: () => setActiveTab("search" as NavTab),
     },
