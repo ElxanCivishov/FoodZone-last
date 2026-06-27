@@ -11,6 +11,8 @@ import {
   ChevronRight,
   Wifi,
   Info,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useUIStore, useCartStore } from "@/store";
 import {
@@ -56,7 +58,7 @@ const INFO = {
 };
 
 export default function HomeScreen() {
-  const { openProductModal, openCartDrawer, openModal, setScreen } =
+  const { openProductModal, openCartDrawer, openModal, setScreen, userInfo, isLoggedIn, isDark, toggleDark } =
     useUIStore();
   const addToast = useUIStore((s) => s.addToast);
   const cartItemCount = useCartStore((s) =>
@@ -124,7 +126,7 @@ export default function HomeScreen() {
       <div
         className={`sticky top-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-white/90 backdrop-blur-xl shadow-sm border-b border-border-light"
+            ? "bg-white/90 dark:bg-[#1a1a2e]/95 backdrop-blur-xl shadow-sm border-b border-border-light"
             : "bg-transparent"
         }`}
       >
@@ -138,8 +140,28 @@ export default function HomeScreen() {
           <div className="flex items-center gap-2">
             <motion.button
               whileTap={{ scale: 0.88 }}
+              onClick={toggleDark}
+              className="w-9 h-9 rounded-full bg-white dark:bg-[#22223a] shadow-xs border border-border-light flex items-center justify-center"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={isDark ? 'moon' : 'sun'}
+                  initial={{ rotate: -30, opacity: 0, scale: 0.7 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: 30, opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {isDark
+                    ? <Sun size={16} className="text-warning" />
+                    : <Moon size={16} className="text-text-secondary" />
+                  }
+                </motion.div>
+              </AnimatePresence>
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.88 }}
               onClick={() => openModal("wifi")}
-              className="w-9 h-9 rounded-full bg-white shadow-xs border border-border-light flex items-center justify-center"
+              className="w-9 h-9 rounded-full bg-white dark:bg-[#22223a] shadow-xs border border-border-light flex items-center justify-center"
             >
               <Wifi size={16} className="text-text-secondary" />
             </motion.button>
@@ -164,6 +186,28 @@ export default function HomeScreen() {
                 )}
               </AnimatePresence>
             </motion.button>
+
+            <AnimatePresence>
+              {isLoggedIn && userInfo && (
+                <motion.button
+                  key="avatar"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 24 }}
+                  whileTap={{ scale: 0.88 }}
+                  onClick={() => setScreen("profile")}
+                  className="w-9 h-9 rounded-full p-[2px] shrink-0"
+                  style={{ background: "linear-gradient(135deg,#00c2e8,#a78bfa,#f59e0b)" }}
+                >
+                  <div className="w-full h-full rounded-full bg-[#191540] flex items-center justify-center">
+                    <span className="font-outfit text-[11px] font-black text-white tracking-tighter select-none">
+                      {userInfo.name.trim().split(" ").map(w => w[0] ?? "").join("").toUpperCase().slice(0, 2) || "Q"}
+                    </span>
+                  </div>
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

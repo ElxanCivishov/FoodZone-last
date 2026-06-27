@@ -15,6 +15,8 @@ import {
   Bell,
   MessageSquare,
   Zap,
+  LogIn,
+  Pencil,
 } from "lucide-react";
 import { useUIStore } from "@/store";
 import type { Screen } from "@/types";
@@ -75,8 +77,12 @@ const GROUPS: { title: string; items: MenuItem[] }[] = [
 
 const MOCK_XP = 240; // TODO: fetch from Customer API
 
+function getInitials(name: string) {
+  return name.trim().split(' ').map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2) || 'Qİ';
+}
+
 export default function ProfileScreen() {
-  const { setScreen, openModal, language } = useUIStore();
+  const { setScreen, openModal, language, userInfo, isLoggedIn } = useUIStore();
 
   const LANG_CODES: Record<string, string> = {
     az: "AZ",
@@ -90,6 +96,9 @@ export default function ProfileScreen() {
   const xpLabel = tierInfo.nextMin
     ? `${MOCK_XP} / ${tierInfo.nextMin} XP`
     : `${MOCK_XP} XP`;
+
+  const displayName = userInfo?.name || 'Qonaq İstifadəçi';
+  const avatarLetters = getInitials(displayName);
 
   const handleItem = (item: MenuItem) => {
     if (item.label === "Dil seçimi") {
@@ -155,7 +164,7 @@ export default function ProfileScreen() {
             >
               <div className="w-full h-full rounded-full bg-[#191540] flex items-center justify-center">
                 <span className="font-outfit text-[26px] font-black text-white tracking-tighter select-none">
-                  Qİ
+                  {avatarLetters}
                 </span>
               </div>
             </div>
@@ -166,9 +175,20 @@ export default function ProfileScreen() {
           </div>
 
           <div className="flex-1 min-w-0 pt-5">
-            <h1 className="font-outfit text-[20px] font-bold text-white tracking-[-0.4px] leading-tight">
-              Qonaq İstifadəçi
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-outfit text-[20px] font-bold text-white tracking-[-0.4px] leading-tight truncate">
+                {displayName}
+              </h1>
+              {isLoggedIn && (
+                <motion.button
+                  whileTap={{ scale: 0.88 }}
+                  onClick={() => setScreen('editProfile')}
+                  className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center shrink-0"
+                >
+                  <Pencil size={12} className="text-white" />
+                </motion.button>
+              )}
+            </div>
 
             {/* Pills row */}
             <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -320,18 +340,21 @@ export default function ProfileScreen() {
           <ChevronRight size={16} className="text-text-tertiary" />
         </motion.button>
 
-        {/* Login CTA */}
-        <motion.button
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.62, ...SPRING }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setScreen("login")}
-          className="w-full py-4 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2"
-          style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
-        >
-          Daxil ol / Qeydiyyat
-        </motion.button>
+        {/* Login CTA — only when guest */}
+        {!isLoggedIn && (
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.62, ...SPRING }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setScreen("login")}
+            className="w-full py-4 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2"
+            style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
+          >
+            <LogIn size={16} />
+            Daxil ol / Qeydiyyat
+          </motion.button>
+        )}
       </div>
     </motion.div>
   );

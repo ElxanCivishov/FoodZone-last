@@ -285,7 +285,7 @@ export default function OrderDetailScreen() {
             </div>
             <div className="text-left">
               <p className="text-[14px] font-semibold text-text-primary">
-                Rəy yaz
+                Rəy bildir
               </p>
               <p className="text-[12px] text-text-secondary mt-0.5">
                 Bu sifarişi qiymətləndir

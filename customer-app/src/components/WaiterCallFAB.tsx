@@ -18,7 +18,7 @@ export default function WaiterCallFAB() {
         transition={{ type: 'spring', stiffness: 320, damping: 24, delay: 0.2 }}
         whileTap={{ scale: 0.88 }}
         onClick={() => openModal('waiterCall')}
-        className="absolute bottom-[88px] left-4 z-[90] w-12 h-12 rounded-2xl flex items-center justify-center shadow-[0_6px_24px_rgba(0,194,232,0.35)]"
+        className="absolute bottom-[88px] left-4 z-[95] w-12 h-12 rounded-2xl flex items-center justify-center shadow-[0_6px_24px_rgba(0,194,232,0.35)]"
         style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
       >
         {/* Pulse ring */}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bell, Mail, Globe, Moon, Shield, Info, BellOff, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Bell, Mail, Globe, Moon, Shield, Info, BellOff, AlertTriangle, Trash2, X } from 'lucide-react';
 import { useUIStore } from '@/store';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
@@ -64,7 +65,8 @@ function PermissionBanner({ permission }: { permission: NotifPermission }) {
 }
 
 export default function SettingsScreen() {
-  const { goBack, openModal, language } = useUIStore();
+  const { goBack, setScreen, openModal, language, logout, isLoggedIn, isDark, toggleDark } = useUIStore();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const LANG_LABELS: Record<string, string> = { az: 'Azərbaycan', en: 'English', ru: 'Русский', tr: 'Türkçe' };
   const LANG_CODES: Record<string, string> = { az: 'AZ', en: 'EN', ru: 'RU', tr: 'TR' };
@@ -250,7 +252,7 @@ export default function SettingsScreen() {
                 <p className="text-[14px] font-medium text-text-primary">Qaranlıq rejim</p>
                 <p className="text-[12px] text-text-secondary">Göz yorğunluğunu azaldır</p>
               </div>
-              <Toggle on={settings.darkMode} onToggle={() => toggle('darkMode')} />
+              <Toggle on={isDark} onToggle={toggleDark} />
             </motion.div>
           </div>
         </div>
@@ -304,7 +306,85 @@ export default function SettingsScreen() {
           </div>
         </div>
 
+        {/* Danger zone — only when logged in */}
+        {isLoggedIn && (
+          <div>
+            <p className="text-[12px] font-bold text-text-tertiary uppercase tracking-wider mb-2 px-1">Təhlükəli zona</p>
+            <div className="bg-white rounded-2xl border border-red-100 shadow-xs overflow-hidden">
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-red-50 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                  <Trash2 size={16} className="text-red-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[15px] font-semibold text-red-500">Profili sil</p>
+                  <p className="text-[12px] text-text-tertiary mt-0.5">Hesabınız və bütün məlumatlarınız silinəcək</p>
+                </div>
+              </motion.button>
+            </div>
+          </div>
+        )}
+
       </div>
+
+      {/* Delete confirm modal */}
+      {createPortal(
+        <AnimatePresence>
+          {showDeleteConfirm && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="absolute inset-0 bg-black/40 z-[500]"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: 20 }}
+                transition={SPRING}
+                className="absolute inset-x-5 top-1/2 -translate-y-1/2 z-[501] bg-white rounded-3xl shadow-2xl overflow-hidden"
+              >
+                <div className="h-1.5 bg-gradient-to-r from-red-400 to-rose-500" />
+                <div className="p-6">
+                  <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle size={26} className="text-red-500" />
+                  </div>
+                  <h3 className="font-outfit text-[18px] font-bold text-text-primary text-center">Profili sil?</h3>
+                  <p className="text-[13px] text-text-secondary text-center mt-2 leading-relaxed">
+                    Bu əməliyyat geri qaytarıla bilməz. Hesabınız, sifariş tarixçəniz və bütün məlumatlarınız həmişəlik silinəcək.
+                  </p>
+                  <div className="flex gap-3 mt-6">
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="flex-1 h-12 rounded-2xl border-2 border-border text-[14px] font-semibold text-text-secondary flex items-center justify-center gap-1.5 hover:border-primary hover:text-primary transition-colors"
+                    >
+                      <X size={15} />
+                      Ləğv et
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => { logout(); setScreen('home'); }}
+                      className="flex-1 h-12 rounded-2xl text-[14px] font-bold text-white flex items-center justify-center gap-1.5"
+                      style={{ background: 'linear-gradient(135deg,#ef4444,#dc2626)' }}
+                    >
+                      <Trash2 size={15} />
+                      Sil
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.getElementById('app-root') ?? document.body
+      )}
     </motion.div>
   );
 }

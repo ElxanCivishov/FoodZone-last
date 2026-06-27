@@ -1,28 +1,34 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { useUIStore } from '@/store';
+import PhoneInput, { DEFAULT_COUNTRY } from '@/components/PhoneInput';
+import type { Country } from '@/components/PhoneInput';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
 type Mode = 'login' | 'register';
 
 export default function LoginScreen() {
-  const { goBack, setScreen, addToast } = useUIStore();
+  const { goBack, setScreen, addToast, login, isDark } = useUIStore();
   const [mode, setMode] = useState<Mode>('login');
   const [showPass, setShowPass] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [phoneCountry, setPhoneCountry] = useState<Country>(DEFAULT_COUNTRY);
 
   const update = (field: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+      setForm(prev => ({ ...prev, [field]: e.target.value }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addToast(
-      mode === 'login' ? 'Uğurla daxil oldunuz!' : 'Qeydiyyat tamamlandı!',
-      'success'
-    );
+    login({
+      name:    form.name  || 'İstifadəçi',
+      phone:   form.phone ? `${phoneCountry.prefix} ${form.phone}` : '',
+      email:   form.email,
+      address: '',
+    });
+    addToast(mode === 'login' ? 'Uğurla daxil oldunuz!' : 'Qeydiyyat tamamlandı!', 'success');
     setScreen('home');
   };
 
@@ -33,7 +39,11 @@ export default function LoginScreen() {
       exit={{ x: '100%' }}
       transition={SPRING}
       className="absolute inset-0 flex flex-col overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #00c2e8 0%, #00c2a8 100%)' }}
+      style={{
+        background: isDark
+          ? 'linear-gradient(135deg, #0f0c29 0%, #302b63 60%, #24243e 100%)'
+          : 'linear-gradient(135deg, #00c2e8 0%, #00c2a8 100%)',
+      }}
     >
       {/* Deco circles */}
       <div className="absolute -top-[20%] -right-[20%] w-[280px] h-[280px] rounded-full bg-white/10" />
@@ -46,7 +56,7 @@ export default function LoginScreen() {
         transition={{ delay: 0.2 }}
         whileTap={{ scale: 0.88 }}
         onClick={goBack}
-        className="absolute top-12 left-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center z-10"
+        className="absolute top-12 left-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center z-20"
       >
         <ChevronLeft size={20} className="text-white" />
       </motion.button>
@@ -89,18 +99,16 @@ export default function LoginScreen() {
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, ...SPRING }}
-        className="mx-4 rounded-3xl bg-white p-6 shadow-xl relative z-10"
+        className="mx-4 rounded-3xl bg-white dark:bg-[#1a1a2e] p-6 shadow-xl relative z-10"
       >
         {/* Mode toggle */}
-        <div className="flex bg-surface-elevated rounded-xl p-1 mb-6">
+        <div className="flex bg-surface-elevated dark:bg-[#22223a] rounded-xl p-1 mb-6">
           {(['login', 'register'] as Mode[]).map((m) => (
             <button
               key={m}
               onClick={() => setMode(m)}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                mode === m
-                  ? 'bg-primary text-white shadow-primary-glow'
-                  : 'text-text-secondary'
+                mode === m ? 'bg-primary text-white shadow-primary-glow' : 'text-text-secondary'
               }`}
             >
               {m === 'login' ? 'Daxil ol' : 'Qeydiyyat'}
@@ -109,28 +117,46 @@ export default function LoginScreen() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name – register only */}
-          {mode === 'register' && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">Ad Soyad</label>
-              <div className="relative">
-                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
-                <input
-                  type="text"
-                  required={mode === 'register'}
-                  placeholder="Adınızı daxil edin"
-                  value={form.name}
-                  onChange={update('name')}
-                  className="w-full pl-11 pr-4 py-3.5 bg-surface-elevated rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                />
-              </div>
-            </motion.div>
-          )}
+
+          {/* Register-only fields */}
+          <AnimatePresence>
+            {mode === 'register' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.22 }}
+                className="space-y-4 overflow-hidden"
+              >
+                {/* Name */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">Ad Soyad</label>
+                  <div className="relative">
+                    <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="Adınızı daxil edin"
+                      value={form.name}
+                      onChange={update('name')}
+                      className="w-full pl-11 pr-4 py-3.5 bg-surface-elevated dark:bg-[#22223a] rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">Telefon nömrəsi</label>
+                  <PhoneInput
+                    value={form.phone}
+                    country={phoneCountry}
+                    onCountryChange={setPhoneCountry}
+                    onChange={(v) => setForm(p => ({ ...p, phone: v }))}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Email */}
           <div>
@@ -143,7 +169,7 @@ export default function LoginScreen() {
                 placeholder="example@mail.com"
                 value={form.email}
                 onChange={update('email')}
-                className="w-full pl-11 pr-4 py-3.5 bg-surface-elevated rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                className="w-full pl-11 pr-4 py-3.5 bg-surface-elevated dark:bg-[#22223a] rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
             </div>
           </div>
@@ -159,11 +185,11 @@ export default function LoginScreen() {
                 placeholder="••••••••"
                 value={form.password}
                 onChange={update('password')}
-                className="w-full pl-11 pr-12 py-3.5 bg-surface-elevated rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                className="w-full pl-11 pr-12 py-3.5 bg-surface-elevated dark:bg-[#22223a] rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
               <button
                 type="button"
-                onClick={() => setShowPass((v) => !v)}
+                onClick={() => setShowPass(v => !v)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary"
               >
                 {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -192,8 +218,8 @@ export default function LoginScreen() {
         {/* Guest */}
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={() => { setScreen('home'); }}
-          className="w-full py-3.5 rounded-xl text-[14px] font-semibold text-text-secondary border-2 border-border hover:border-primary hover:text-primary transition-colors"
+          onClick={() => setScreen('home')}
+          className="w-full py-3.5 rounded-xl text-[14px] font-semibold text-text-secondary dark:text-white/60 border-2 border-border dark:border-white/10 hover:border-primary hover:text-primary transition-colors"
         >
           Qonaq kimi davam et
         </motion.button>

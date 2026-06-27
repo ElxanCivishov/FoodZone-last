@@ -82,14 +82,14 @@ export default function ProductDetail() {
             dragConstraints={{ top: 0, bottom: 300 }}
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
-            className="absolute bottom-0 left-0 right-0 z-[201] bg-white rounded-t-3xl max-h-[88%] flex flex-col shadow-modal"
+            className="absolute bottom-0 left-0 right-0 z-[201] bg-white dark:bg-[#1a1a2e] rounded-t-3xl max-h-[88%] flex flex-col shadow-modal"
           >
             {/* Drag handle */}
             <div
               className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing"
               onPointerDown={(e) => dragControls.start(e)}
             >
-              <div className="w-10 h-1 rounded-full bg-border" />
+              <div className="w-10 h-1 rounded-full bg-border dark:bg-white/10" />
             </div>
 
             <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -130,7 +130,7 @@ export default function ProductDetail() {
                   <h2 className="font-outfit text-[22px] font-bold text-text-primary tracking-[-0.8px] flex-1">
                     {selectedProduct.name}
                   </h2>
-                  <div className="flex items-center gap-1 bg-warning/10 rounded-full px-2.5 py-1 shrink-0">
+                  <div className="flex items-center gap-1 bg-warning/10 dark:bg-warning/15 rounded-full px-2.5 py-1 shrink-0">
                     <Star size={13} className="text-warning fill-warning" />
                     <span className="text-[13px] font-bold text-text-primary">{selectedProduct.rating}</span>
                   </div>
@@ -148,13 +148,13 @@ export default function ProductDetail() {
                       onClick={() => setSelectedSize(size)}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${
                         selectedSize.id === size.id
-                          ? 'border-primary bg-primary-light'
-                          : 'border-transparent bg-surface-elevated'
+                          ? 'border-primary bg-primary-light dark:bg-[rgba(0,194,232,0.12)]'
+                          : 'border-transparent bg-surface-elevated dark:bg-[#22223a]'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                          selectedSize.id === size.id ? 'border-primary bg-primary' : 'border-border'
+                          selectedSize.id === size.id ? 'border-primary bg-primary' : 'border-border dark:border-white/20'
                         }`}>
                           {selectedSize.id === size.id && <Check size={11} className="text-white" strokeWidth={3} />}
                         </div>
@@ -176,12 +176,14 @@ export default function ProductDetail() {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => toggleExtra(extra)}
                         className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${
-                          on ? 'border-primary bg-primary-light' : 'border-transparent bg-surface-elevated'
+                          on
+                            ? 'border-primary bg-primary-light dark:bg-[rgba(0,194,232,0.12)]'
+                            : 'border-transparent bg-surface-elevated dark:bg-[#22223a]'
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                            on ? 'border-primary bg-primary' : 'border-border'
+                            on ? 'border-primary bg-primary' : 'border-border dark:border-white/20'
                           }`}>
                             {on && <Check size={11} className="text-white" strokeWidth={3} />}
                           </div>
@@ -199,7 +201,7 @@ export default function ProductDetail() {
                     whileTap={{ scale: 0.85 }}
                     disabled={quantity <= 1}
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-11 h-11 rounded-full border-2 border-border flex items-center justify-center disabled:opacity-40"
+                    className="w-11 h-11 rounded-full border-2 border-border dark:border-white/15 flex items-center justify-center disabled:opacity-40"
                   >
                     <Minus size={16} className="text-text-primary" />
                   </motion.button>
@@ -209,7 +211,7 @@ export default function ProductDetail() {
                   <motion.button
                     whileTap={{ scale: 0.85 }}
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="w-11 h-11 rounded-full border-2 border-border flex items-center justify-center"
+                    className="w-11 h-11 rounded-full border-2 border-border dark:border-white/15 flex items-center justify-center"
                   >
                     <Plus size={16} className="text-text-primary" />
                   </motion.button>

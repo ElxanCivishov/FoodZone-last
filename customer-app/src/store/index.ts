@@ -4,6 +4,7 @@ import type { Screen, NavTab, CartItem, Order, ToastMessage, Product, ModalType,
 interface UserInfo {
   name: string;
   phone: string;
+  email: string;
   address: string;
 }
 
@@ -26,6 +27,8 @@ interface UIState {
   isLoggedIn: boolean;
   userInfo: UserInfo | null;
   setScreen: (screen: Screen) => void;
+  isDark: boolean;
+  toggleDark: () => void;
   setLanguage: (lang: Language) => void;
   goBack: () => void;
   setActiveTab: (tab: NavTab) => void;
@@ -57,6 +60,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   activeModal: null,
   selectedRestaurant: null,
   language: (localStorage.getItem('fz_lang') as Language) ?? 'az',
+  isDark: localStorage.getItem('fz_dark') === '1',
   isQRSession: true,
   tableNumber: 12,
   isLoggedIn: false,
@@ -68,10 +72,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   },
 
   goBack: () => {
-    const prev = get().previousScreen;
-    if (prev) {
-      set({ currentScreen: prev, previousScreen: null, direction: -1 });
-    }
+    const prev = get().previousScreen ?? 'home';
+    set({ currentScreen: prev, previousScreen: null, direction: -1 });
   },
 
   setActiveTab: (tab) => {
@@ -108,6 +110,13 @@ export const useUIStore = create<UIState>((set, get) => ({
 
   openModal: (modal) => set({ activeModal: modal }),
   closeModal: () => set({ activeModal: null }),
+  toggleDark: () => {
+    const next = !get().isDark;
+    localStorage.setItem('fz_dark', next ? '1' : '0');
+    document.documentElement.classList.toggle('dark', next);
+    set({ isDark: next });
+  },
+
   setLanguage: (lang) => {
     localStorage.setItem('fz_lang', lang);
     set({ language: lang });
@@ -122,7 +131,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   logout: () => set({ isLoggedIn: false, userInfo: null }),
   setUserInfo: (info) =>
     set((state) => ({
-      userInfo: state.userInfo ? { ...state.userInfo, ...info } : { name: '', phone: '', address: '', ...info },
+      userInfo: state.userInfo ? { ...state.userInfo, ...info } : { name: '', phone: '', email: '', address: '', ...info },
     })),
 }));
 

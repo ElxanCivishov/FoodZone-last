@@ -21,6 +21,7 @@ export type Screen =
   | 'orderSuccess'
   | 'waiterRequests'
   | 'supportRequests'
+  | 'editProfile'
   | 'login'
   | 'register'
   | 'admin';
