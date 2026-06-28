@@ -143,7 +143,7 @@ export default function SearchScreen() {
             : "bg-transparent"
         }`}
       >
-        <AppHeaderRow className="pt-12 pb-2" />
+        <AppHeaderRow className="pt-4 pb-2" />
         <SearchTopBar
           query={query}
           isSearchMode={isSearchMode}

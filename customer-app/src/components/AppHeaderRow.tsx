@@ -6,7 +6,7 @@ interface Props {
   className?: string;
 }
 
-export default function AppHeaderRow({ className = "pt-12 pb-3" }: Props) {
+export default function AppHeaderRow({ className = "pt-4 pb-3" }: Props) {
   const {
     isDark,
     toggleDark,

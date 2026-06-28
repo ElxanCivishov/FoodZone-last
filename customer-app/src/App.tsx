@@ -1,6 +1,7 @@
 import BottomModals from "@/components/BottomModals";
 import BottomNav from "@/components/BottomNav";
 import FloatingCart from "@/components/FloatingCart";
+import PWAInstallBanner from "@/components/PWAInstallBanner";
 import Toast from "@/components/Toast";
 import WaiterCallFAB from "@/components/WaiterCallFAB";
 import AddressesScreen from "@/screens/AddressesScreen";
@@ -110,6 +111,7 @@ export default function App() {
           <WaiterCallFAB />
           <FloatingCart />
           <Toast />
+          <PWAInstallBanner />
           <BottomNav />
         </div>
       </div>
