@@ -141,6 +141,7 @@
 .mobile-frame {
   width: 430px;
   height: 100vh;
+  height: 100svh; /* Chrome 108+, Safari 15.4+, FF 101+: excludes browser chrome */
   max-height: 932px;
   background: #fff;
   border-radius: 40px;
@@ -149,6 +150,16 @@
   box-shadow:
     0 25px 60px rgba(0, 0, 0, 0.2),
     0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* On real devices: full-screen, no decorative frame */
+@media (max-width: 767px) {
+  .mobile-frame {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    max-height: none;
+  }
 }
 
 .phone-notch {

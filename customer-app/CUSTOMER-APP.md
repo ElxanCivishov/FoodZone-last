@@ -7,14 +7,14 @@ Hazırda **mock data** istifadə edir — backend API bağlantısı yoxdur.
 
 ## Texnologiyalar
 
-| | |
-|---|---|
-| Framework | React + TypeScript |
-| Build | Vite |
-| State | Zustand (`src/store/index.ts`) |
-| Animasiya | Framer Motion |
-| UI | Tailwind CSS + Lucide React ikonları |
-| i18n | Öz sadə hook-u (`useT`) |
+|           |                                      |
+| --------- | ------------------------------------ |
+| Framework | React + TypeScript                   |
+| Build     | Vite                                 |
+| State     | Zustand (`src/store/index.ts`)       |
+| Animasiya | Framer Motion                        |
+| UI        | Tailwind CSS + Lucide React ikonları |
+| i18n      | Öz sadə hook-u (`useT`)              |
 
 ---
 
@@ -51,7 +51,6 @@ customer-app/
       WaiterRequestsScreen.tsx
       SupportRequestsScreen.tsx
       LoginScreen.tsx
-      AdminDashboard.tsx
 
     components/
       BottomNav.tsx          ← alt tab bar (home/search/orders/profile)
@@ -123,8 +122,10 @@ Ekranlar arası keçid: `useUIStore().setScreen('screenName')` — **URL dəyiş
 
 ```tsx
 switch (currentScreen) {
-  case 'home':      return <HomeScreen />;
-  case 'checkout':  return <CheckoutScreen />;
+  case "home":
+    return <HomeScreen />;
+  case "checkout":
+    return <CheckoutScreen />;
   // ...
 }
 ```
@@ -137,39 +138,44 @@ bütün ekranların üstündə **həmişə** render olunur (overlay layer).
 ## Store-lar (`src/store/index.ts`)
 
 ### `useUIStore`
-| State | Tip | Məqsəd |
-|-------|-----|--------|
-| `currentScreen` | `Screen` | Aktiv ekran |
-| `previousScreen` | `Screen \| null` | Geri üçün |
-| `activeTab` | `NavTab` | Alt nav aktiv tab |
-| `selectedProduct` | `Product \| null` | ProductDetail-ə ötürülən məhsul |
-| `productModalOpen` | `boolean` | ProductDetail açıq/qapalı |
-| `cartDrawerOpen` | `boolean` | CartDrawer açıq/qapalı |
-| `language` | `az/en/ru/tr` | Aktiv dil |
-| `isDark` | `boolean` | Dark mode |
-| `isQRSession` | `boolean` | QR ilə giriş (default: `true`) |
-| `tableNumber` | `number` | Masa nömrəsi (default: `12`, mock) |
-| `isLoggedIn` | `boolean` | Müştəri daxil olub |
-| `activeModal` | `ModalType` | Açıq modal (wifi/language/feedback...) |
+
+| State              | Tip               | Məqsəd                                 |
+| ------------------ | ----------------- | -------------------------------------- |
+| `currentScreen`    | `Screen`          | Aktiv ekran                            |
+| `previousScreen`   | `Screen \| null`  | Geri üçün                              |
+| `activeTab`        | `NavTab`          | Alt nav aktiv tab                      |
+| `selectedProduct`  | `Product \| null` | ProductDetail-ə ötürülən məhsul        |
+| `productModalOpen` | `boolean`         | ProductDetail açıq/qapalı              |
+| `cartDrawerOpen`   | `boolean`         | CartDrawer açıq/qapalı                 |
+| `language`         | `az/en/ru/tr`     | Aktiv dil                              |
+| `isDark`           | `boolean`         | Dark mode                              |
+| `isQRSession`      | `boolean`         | QR ilə giriş (default: `true`)         |
+| `tableNumber`      | `number`          | Masa nömrəsi (default: `12`, mock)     |
+| `isLoggedIn`       | `boolean`         | Müştəri daxil olub                     |
+| `activeModal`      | `ModalType`       | Açıq modal (wifi/language/feedback...) |
 
 ### `useCartStore`
-| Metod | Məqsəd |
-|-------|--------|
-| `addItem(item)` | Eyni məhsul+ölçü varsa miqdarı artır |
-| `removeItem(productId)` | Məhsulu sil |
-| `updateQuantity(id, qty)` | qty ≤ 0 olsa sil |
-| `getSubtotal()` | Ara cəm |
-| `getServiceFee()` | Xidmət haqqı (subtotal × 10%) |
-| `getTotal()` | Ümumi cəm |
-| `getItemCount()` | Səbətdəki ümumi miqdar |
+
+| Metod                     | Məqsəd                               |
+| ------------------------- | ------------------------------------ |
+| `addItem(item)`           | Eyni məhsul+ölçü varsa miqdarı artır |
+| `removeItem(productId)`   | Məhsulu sil                          |
+| `updateQuantity(id, qty)` | qty ≤ 0 olsa sil                     |
+| `getSubtotal()`           | Ara cəm                              |
+| `getServiceFee()`         | Xidmət haqqı (subtotal × 10%)        |
+| `getTotal()`              | Ümumi cəm                            |
+| `getItemCount()`          | Səbətdəki ümumi miqdar               |
 
 ### `useOrderStore`
+
 Sifarişlər tarixi + cari sifariş saxlanılır.
 
 ### `useWaiterRequestStore`
+
 Ofisiant çağırma sorğuları (masa nömrəsi ilə).
 
 ### `useSupportRequestStore`
+
 Dəstək sorğuları (mövzu + mesaj).
 
 ---
@@ -177,6 +183,7 @@ Dəstək sorğuları (mövzu + mesaj).
 ## Mock Data (`src/data/`)
 
 **`menuData.ts`** — statik, backend-dən gəlmir:
+
 - `popularProducts` — 6 məhsul
 - `newArrivals` — 4 məhsul
 - `setMenus` — 4 set menyu
@@ -198,13 +205,13 @@ Aktiv dil: `useUIStore().language`, `localStorage` açarı: `fz_lang`.
 
 ## Hazırda Olmayan / Ediləcəklər
 
-| | |
-|---|---|
-| Backend bağlantısı | Mock data real API ilə əvəzlənəcək |
-| QR skan | `tableNumber` URL params-dan oxunacaq |
-| `branchId` | Session-a əlavə ediləcək |
-| Sifariş göndərmə | `POST /api/orders` çağırılacaq |
-| Ofisiant sorğusu | `POST /api/waiter-requests` çağırılacaq |
+|                    |                                         |
+| ------------------ | --------------------------------------- |
+| Backend bağlantısı | Mock data real API ilə əvəzlənəcək      |
+| QR skan            | `tableNumber` URL params-dan oxunacaq   |
+| `branchId`         | Session-a əlavə ediləcək                |
+| Sifariş göndərmə   | `POST /api/orders` çağırılacaq          |
+| Ofisiant sorğusu   | `POST /api/waiter-requests` çağırılacaq |
 
 ---
 

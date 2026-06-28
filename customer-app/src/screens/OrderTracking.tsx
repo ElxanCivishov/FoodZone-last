@@ -1,4 +1,5 @@
 import { useOrderStore, useUIStore } from "@/store";
+import type { OrderStatus, OrderType } from "@/types";
 import { motion } from "framer-motion";
 import {
   CheckCircle2,
@@ -7,10 +8,9 @@ import {
   Flame,
   Package,
   Star,
-  Utensils,
   Truck,
+  Utensils,
 } from "lucide-react";
-import type { OrderStatus, OrderType } from "@/types";
 
 interface TimelineStep {
   status: OrderStatus;
@@ -21,24 +21,94 @@ interface TimelineStep {
 
 const STEPS_BY_TYPE: Record<OrderType, TimelineStep[]> = {
   dine_in: [
-    { status: "new",       title: "Qəbul edildi",  subtitle: "Sifarişiniz sistemə daxil oldu", icon: CheckCircle2 },
-    { status: "preparing", title: "Hazırlanır",     subtitle: "Aşpazımız işə başladı",          icon: Flame        },
-    { status: "ready",     title: "Hazırdır",       subtitle: "Sifarişiniz hazırlanıb",          icon: Package      },
-    { status: "served",    title: "Xidmət edildi",  subtitle: "Masanıza gətirildi",              icon: Utensils     },
-    { status: "completed", title: "Tamamlandı",     subtitle: "Nuş olsun!",                      icon: Star         },
+    {
+      status: "new",
+      title: "Qəbul edildi",
+      subtitle: "Sifarişiniz sistemə daxil oldu",
+      icon: CheckCircle2,
+    },
+    {
+      status: "preparing",
+      title: "Hazırlanır",
+      subtitle: "Aşpazımız işə başladı",
+      icon: Flame,
+    },
+    {
+      status: "ready",
+      title: "Hazırdır",
+      subtitle: "Sifarişiniz hazırlanıb",
+      icon: Package,
+    },
+    {
+      status: "served",
+      title: "Xidmət edildi",
+      subtitle: "Masanıza gətirildi",
+      icon: Utensils,
+    },
+    {
+      status: "completed",
+      title: "Tamamlandı",
+      subtitle: "Nuş olsun!",
+      icon: Star,
+    },
   ],
   take_away: [
-    { status: "new",       title: "Qəbul edildi",  subtitle: "Sifarişiniz sistemə daxil oldu", icon: CheckCircle2 },
-    { status: "preparing", title: "Hazırlanır",     subtitle: "Aşpazımız işə başladı",          icon: Flame        },
-    { status: "ready",     title: "Hazırdır",       subtitle: "Götürməyə hazırdır",             icon: Package      },
-    { status: "completed", title: "Tamamlandı",     subtitle: "Nuş olsun!",                     icon: Star         },
+    {
+      status: "new",
+      title: "Qəbul edildi",
+      subtitle: "Sifarişiniz sistemə daxil oldu",
+      icon: CheckCircle2,
+    },
+    {
+      status: "preparing",
+      title: "Hazırlanır",
+      subtitle: "Aşpazımız işə başladı",
+      icon: Flame,
+    },
+    {
+      status: "ready",
+      title: "Hazırdır",
+      subtitle: "Götürməyə hazırdır",
+      icon: Package,
+    },
+    {
+      status: "completed",
+      title: "Tamamlandı",
+      subtitle: "Nuş olsun!",
+      icon: Star,
+    },
   ],
   delivery: [
-    { status: "new",        title: "Qəbul edildi", subtitle: "Sifarişiniz sistemə daxil oldu", icon: CheckCircle2 },
-    { status: "preparing",  title: "Hazırlanır",   subtitle: "Aşpazımız işə başladı",          icon: Flame        },
-    { status: "ready",      title: "Hazırdır",     subtitle: "Kuryerimiz sifarişinizi təhvil alır", icon: Package },
-    { status: "on_the_way", title: "Yoldadır",     subtitle: "Kuryerimiz sizə doğru gəlir",        icon: Truck   },
-    { status: "delivered",  title: "Çatdırıldı",   subtitle: "Nuş olsun!",                     icon: CheckCircle2 },
+    {
+      status: "new",
+      title: "Qəbul edildi",
+      subtitle: "Sifarişiniz sistemə daxil oldu",
+      icon: CheckCircle2,
+    },
+    {
+      status: "preparing",
+      title: "Hazırlanır",
+      subtitle: "Aşpazımız işə başladı",
+      icon: Flame,
+    },
+    {
+      status: "ready",
+      title: "Hazırdır",
+      subtitle: "Kuryerimiz sifarişinizi təhvil alır",
+      icon: Package,
+    },
+    {
+      status: "on_the_way",
+      title: "Yoldadır",
+      subtitle: "Kuryerimiz sizə doğru gəlir",
+      icon: Truck,
+    },
+    {
+      status: "delivered",
+      title: "Çatdırıldı",
+      subtitle: "Nuş olsun!",
+      icon: CheckCircle2,
+    },
   ],
 };
 
@@ -48,11 +118,14 @@ export default function OrderTracking() {
   const { goBack, openModal } = useUIStore();
   const currentOrder = useOrderStore((s) => s.currentOrder);
 
-  const orderType = ((currentOrder?.orderType) ?? "dine_in") as OrderType;
+  const orderType = (currentOrder?.orderType ?? "dine_in") as OrderType;
   const STEPS = STEPS_BY_TYPE[orderType] ?? STEPS_BY_TYPE.dine_in;
 
   const currentStatusIndex = currentOrder
-    ? Math.max(0, STEPS.findIndex((s) => s.status === currentOrder.status))
+    ? Math.max(
+        0,
+        STEPS.findIndex((s) => s.status === currentOrder.status),
+      )
     : 0;
 
   const progressPercent = ((currentStatusIndex + 1) / STEPS.length) * 100;

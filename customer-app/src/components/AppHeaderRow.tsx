@@ -44,10 +44,11 @@ export default function AppHeaderRow({ className = "pt-12 pb-3" }: Props) {
               exit={{ rotate: 30, opacity: 0, scale: 0.7 }}
               transition={{ duration: 0.18 }}
             >
-              {isDark
-                ? <Sun size={16} className="text-warning" />
-                : <Moon size={16} className="text-text-secondary" />
-              }
+              {isDark ? (
+                <Sun size={16} className="text-warning" />
+              ) : (
+                <Moon size={16} className="text-text-secondary" />
+              )}
             </motion.div>
           </AnimatePresence>
         </motion.button>
@@ -93,11 +94,19 @@ export default function AppHeaderRow({ className = "pt-12 pb-3" }: Props) {
               whileTap={{ scale: 0.88 }}
               onClick={() => setScreen("profile")}
               className="w-9 h-9 rounded-full p-[2px] shrink-0"
-              style={{ background: "linear-gradient(135deg,#00c2e8,#a78bfa,#f59e0b)" }}
+              style={{
+                background: "linear-gradient(135deg,#00c2e8,#a78bfa,#f59e0b)",
+              }}
             >
               <div className="w-full h-full rounded-full bg-[#191540] flex items-center justify-center">
                 <span className="font-outfit text-[11px] font-black text-white tracking-tighter select-none">
-                  {userInfo.name.trim().split(" ").map(w => w[0] ?? "").join("").toUpperCase().slice(0, 2) || "Q"}
+                  {userInfo.name
+                    .trim()
+                    .split(" ")
+                    .map((w) => w[0] ?? "")
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2) || "Q"}
                 </span>
               </div>
             </motion.button>

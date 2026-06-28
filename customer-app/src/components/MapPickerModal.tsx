@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
 import type L from 'leaflet';
 import { motion } from 'framer-motion';
 import { MapPin, X, Navigation, Check, Loader2 } from 'lucide-react';
+import { SPRING } from '@/utils/motion';
 
 const BAKU: [number, number] = [40.4093, 49.8671];
 
@@ -55,8 +56,6 @@ function MoveEndHandler({ onMove }: { onMove: (lat: number, lng: number) => void
   });
   return null;
 }
-
-const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
 export default function MapPickerModal({ open, onClose, onConfirm, initialCenter }: Props) {
   const mapRef = useRef<L.Map | null>(null);

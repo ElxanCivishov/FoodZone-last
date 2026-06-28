@@ -4,7 +4,6 @@ import FloatingCart from "@/components/FloatingCart";
 import Toast from "@/components/Toast";
 import WaiterCallFAB from "@/components/WaiterCallFAB";
 import AddressesScreen from "@/screens/AddressesScreen";
-import AdminDashboard from "@/screens/AdminDashboard";
 import CartDrawer from "@/screens/CartDrawer";
 import CheckoutScreen from "@/screens/CheckoutScreen";
 import CouponsScreen from "@/screens/CouponsScreen";
@@ -84,8 +83,6 @@ function ScreenRouter() {
     case "login":
     case "register":
       return <LoginScreen />;
-    case "admin":
-      return <AdminDashboard />;
     default:
       return <HomeScreen />;
   }
@@ -100,7 +97,7 @@ export default function App() {
   }, [isDark]);
 
   return (
-    <div className="min-h-screen w-full bg-[#e8edf2] flex items-center justify-center p-0 md:p-6">
+    <div className="min-h-screen w-full bg-[#e8edf2] flex items-center justify-center p-0 md:p-6" style={{ minHeight: '100svh' }}>
       <div className="mobile-frame md:max-h-[932px]">
         <div className="relative w-full h-full" id="app-root">
           <AnimatePresence mode="wait">
