@@ -20,17 +20,7 @@ export default function AppInfoCard() {
 
   const showInstall = !isInstalled && (canInstall || isIOSSafari);
 
-  const handleIOSInstall = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "FoodZone", url: window.location.href });
-      } catch {
-        setShowGuide(true);
-      }
-    } else {
-      setShowGuide(true);
-    }
-  };
+  const handleIOSInstall = () => setShowGuide(true);
 
   return (
     <>

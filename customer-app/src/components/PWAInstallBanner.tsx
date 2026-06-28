@@ -1,9 +1,9 @@
+import IOSInstallGuide from "@/components/IOSInstallGuide";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useT } from "@/hooks/useT";
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, Share, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { useT } from "@/hooks/useT";
-import IOSInstallGuide from "@/components/IOSInstallGuide";
 
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isIOSSafari =
@@ -16,17 +16,7 @@ export default function PWAInstallBanner() {
   const [showGuide, setShowGuide] = useState(false);
   const t = useT();
 
-  const handleIOSInstall = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "FoodZone", url: window.location.href });
-      } catch {
-        setShowGuide(true);
-      }
-    } else {
-      setShowGuide(true);
-    }
-  };
+  const handleIOSInstall = () => setShowGuide(true);
 
   useEffect(() => {
     if (isInstalled || dismissed) return;
