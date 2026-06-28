@@ -11,6 +11,10 @@ const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isIOSSafari =
   isIOS && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+function shareToInstall() {
+  navigator.share?.({ title: "FoodZone", url: window.location.href });
+}
+
 export default function AppInfoCard() {
   const t = useT();
   const { canInstall, isInstalled, promptInstall } = usePWAInstall();
@@ -38,12 +42,16 @@ export default function AppInfoCard() {
         ) : showInstall ? (
           <motion.button
             whileTap={{ scale: 0.98 }}
-            onClick={isIOSSafari ? undefined : promptInstall}
+            onClick={isIOSSafari ? shareToInstall : promptInstall}
             className="w-full text-left border-b border-border-light"
           >
             <div className="flex items-center gap-3 px-4 py-3.5">
               <IconDot>
-                <Download size={16} className="text-primary" />
+                {isIOSSafari ? (
+                  <Share size={16} className="text-primary" />
+                ) : (
+                  <Download size={16} className="text-primary" />
+                )}
               </IconDot>
               <div className="flex-1 min-w-0">
                 <p className="text-[14px] font-medium text-text-primary">
@@ -57,11 +65,9 @@ export default function AppInfoCard() {
                   )}
                 </p>
               </div>
-              {!isIOSSafari && (
-                <span className="text-[12px] font-bold text-white bg-primary rounded-full px-3 py-1 shrink-0">
-                  {t.pwa.install}
-                </span>
-              )}
+              <span className="text-[12px] font-bold text-white bg-primary rounded-full px-3 py-1 shrink-0">
+                {isIOSSafari ? t.pwa.share : t.pwa.install}
+              </span>
             </div>
           </motion.button>
         ) : null}

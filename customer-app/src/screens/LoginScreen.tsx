@@ -1,50 +1,58 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { useUIStore } from '@/store';
-import PhoneInput, { DEFAULT_COUNTRY } from '@/components/PhoneInput';
-import type { Country } from '@/components/PhoneInput';
-import { useT } from '@/hooks/useT';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { useUIStore } from "@/store";
+import PhoneInput, { DEFAULT_COUNTRY } from "@/components/PhoneInput";
+import type { Country } from "@/components/PhoneInput";
+import { useT } from "@/hooks/useT";
 
-const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
+const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
-type Mode = 'login' | 'register';
+type Mode = "login" | "register";
 
 export default function LoginScreen() {
   const { goBack, setScreen, addToast, login, isDark } = useUIStore();
   const t = useT();
-  const [mode, setMode] = useState<Mode>('login');
+  const [mode, setMode] = useState<Mode>("login");
   const [showPass, setShowPass] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    password: "",
+  });
   const [phoneCountry, setPhoneCountry] = useState<Country>(DEFAULT_COUNTRY);
 
-  const update = (field: keyof typeof form) =>
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm(prev => ({ ...prev, [field]: e.target.value }));
+  const update =
+    (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     login({
-      name:    form.name  || t.auth.defaultUser,
-      phone:   form.phone ? `${phoneCountry.prefix} ${form.phone}` : '',
-      email:   form.email,
-      address: '',
+      name: form.name || t.auth.defaultUser,
+      phone: form.phone ? `${phoneCountry.prefix} ${form.phone}` : "",
+      email: form.email,
+      address: "",
     });
-    addToast(mode === 'login' ? t.auth.loginSuccess : t.auth.registerSuccess, 'success');
-    setScreen('home');
+    addToast(
+      mode === "login" ? t.auth.loginSuccess : t.auth.registerSuccess,
+      "success",
+    );
+    setScreen("home");
   };
 
   return (
     <motion.div
-      initial={{ x: '100%' }}
+      initial={{ x: "100%" }}
       animate={{ x: 0 }}
-      exit={{ x: '100%' }}
+      exit={{ x: "100%" }}
       transition={SPRING}
-      className="absolute inset-0 flex flex-col overflow-x-hidden overflow-y-auto"
+      className="absolute inset-0 flex flex-col overflow-x-hidden overflow-y-auto no-scrollbar"
       style={{
         background: isDark
-          ? 'linear-gradient(135deg, #0f0c29 0%, #302b63 60%, #24243e 100%)'
-          : 'linear-gradient(135deg, #00c2e8 0%, #00c2a8 100%)',
+          ? "linear-gradient(135deg, #0f0c29 0%, #302b63 60%, #24243e 100%)"
+          : "linear-gradient(135deg, #00c2e8 0%, #00c2a8 100%)",
       }}
     >
       {/* Deco circles */}
@@ -68,14 +76,29 @@ export default function LoginScreen() {
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 18 }}
+          transition={{
+            delay: 0.1,
+            type: "spring",
+            stiffness: 300,
+            damping: 18,
+          }}
           className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-xl mb-4"
         >
           <svg width="44" height="44" viewBox="0 0 56 56" fill="none">
             <circle cx="28" cy="28" r="28" fill="#e0f8ff" />
-            <path d="M16 36c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#00c2e8" strokeWidth="3" strokeLinecap="round" />
+            <path
+              d="M16 36c0-6.627 5.373-12 12-12s12 5.373 12 12"
+              stroke="#00c2e8"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
             <circle cx="28" cy="20" r="5" fill="#00c2e8" />
-            <path d="M22 36h12M19 40h18" stroke="#00c2a8" strokeWidth="2.5" strokeLinecap="round" />
+            <path
+              d="M22 36h12M19 40h18"
+              stroke="#00c2a8"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
           </svg>
         </motion.div>
         <motion.h1
@@ -92,7 +115,7 @@ export default function LoginScreen() {
           transition={{ delay: 0.35 }}
           className="text-white/75 text-[13px] mt-1"
         >
-          {mode === 'login' ? t.auth.loginSubtitle : t.auth.registerSubtitle}
+          {mode === "login" ? t.auth.loginSubtitle : t.auth.registerSubtitle}
         </motion.p>
       </div>
 
@@ -105,42 +128,48 @@ export default function LoginScreen() {
       >
         {/* Mode toggle */}
         <div className="flex bg-surface-elevated dark:bg-[#22223a] rounded-xl p-1 mb-6">
-          {(['login', 'register'] as Mode[]).map((m) => (
+          {(["login", "register"] as Mode[]).map((m) => (
             <button
               key={m}
               onClick={() => setMode(m)}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                mode === m ? 'bg-primary text-white shadow-primary-glow' : 'text-text-secondary'
+                mode === m
+                  ? "bg-primary text-white shadow-primary-glow"
+                  : "text-text-secondary"
               }`}
             >
-              {m === 'login' ? t.auth.login : t.auth.register}
+              {m === "login" ? t.auth.login : t.auth.register}
             </button>
           ))}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           {/* Register-only fields */}
           <AnimatePresence>
-            {mode === 'register' && (
+            {mode === "register" && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
+                animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.22 }}
                 className="space-y-4 overflow-hidden"
               >
                 {/* Name */}
                 <div>
-                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.fullName}</label>
+                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">
+                    {t.auth.fullName}
+                  </label>
                   <div className="relative">
-                    <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                    <User
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+                    />
                     <input
                       type="text"
                       required
                       placeholder={t.auth.fullNamePlaceholder}
                       value={form.name}
-                      onChange={update('name')}
+                      onChange={update("name")}
                       className="w-full pl-11 pr-4 py-3.5 bg-surface-elevated dark:bg-[#22223a] rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                     />
                   </div>
@@ -148,12 +177,14 @@ export default function LoginScreen() {
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.phone}</label>
+                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">
+                    {t.auth.phone}
+                  </label>
                   <PhoneInput
                     value={form.phone}
                     country={phoneCountry}
                     onCountryChange={setPhoneCountry}
-                    onChange={(v) => setForm(p => ({ ...p, phone: v }))}
+                    onChange={(v) => setForm((p) => ({ ...p, phone: v }))}
                   />
                 </div>
               </motion.div>
@@ -162,15 +193,20 @@ export default function LoginScreen() {
 
           {/* Email */}
           <div>
-            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.email}</label>
+            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">
+              {t.auth.email}
+            </label>
             <div className="relative">
-              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
+              <Mail
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+              />
               <input
                 type="email"
                 required
                 placeholder="example@mail.com"
                 value={form.email}
-                onChange={update('email')}
+                onChange={update("email")}
                 className="w-full pl-11 pr-4 py-3.5 bg-surface-elevated dark:bg-[#22223a] rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
             </div>
@@ -178,20 +214,25 @@ export default function LoginScreen() {
 
           {/* Password */}
           <div>
-            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.password}</label>
+            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">
+              {t.auth.password}
+            </label>
             <div className="relative">
-              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
+              <Lock
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary"
+              />
               <input
-                type={showPass ? 'text' : 'password'}
+                type={showPass ? "text" : "password"}
                 required
                 placeholder="••••••••"
                 value={form.password}
-                onChange={update('password')}
+                onChange={update("password")}
                 className="w-full pl-11 pr-12 py-3.5 bg-surface-elevated dark:bg-[#22223a] rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
               <button
                 type="button"
-                onClick={() => setShowPass(v => !v)}
+                onClick={() => setShowPass((v) => !v)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary"
               >
                 {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -204,23 +245,25 @@ export default function LoginScreen() {
             whileTap={{ scale: 0.97 }}
             type="submit"
             className="w-full py-4 rounded-xl font-semibold text-[15px] text-white shadow-primary-glow mt-2"
-            style={{ background: 'linear-gradient(135deg, #00c2e8, #00c2a8)' }}
+            style={{ background: "linear-gradient(135deg, #00c2e8, #00c2a8)" }}
           >
-            {mode === 'login' ? t.auth.login : t.auth.createAccount}
+            {mode === "login" ? t.auth.login : t.auth.createAccount}
           </motion.button>
         </form>
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-5">
           <div className="flex-1 h-px bg-border" />
-          <span className="text-[12px] text-text-tertiary font-medium">{t.auth.or}</span>
+          <span className="text-[12px] text-text-tertiary font-medium">
+            {t.auth.or}
+          </span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
         {/* Guest */}
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={() => setScreen('home')}
+          onClick={() => setScreen("home")}
           className="w-full py-3.5 rounded-xl text-[14px] font-semibold text-text-secondary dark:text-white/60 border-2 border-border dark:border-white/10 hover:border-primary hover:text-primary transition-colors"
         >
           {t.auth.continueAsGuest}

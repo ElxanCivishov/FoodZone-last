@@ -8,6 +8,10 @@ const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isIOSSafari =
   isIOS && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+function shareToInstall() {
+  navigator.share?.({ title: "FoodZone", url: window.location.href });
+}
+
 export default function PWAInstallBanner() {
   const { canInstall, isInstalled, promptInstall } = usePWAInstall();
   const [dismissed, setDismissed] = useState(false);
@@ -57,7 +61,8 @@ export default function PWAInstallBanner() {
               {isIOSSafari ? (
                 <p className="text-white/80 text-[11px] mt-0.5 leading-snug">
                   {t.pwa.iosPrefix}{" "}
-                  <Share size={10} className="inline -mt-0.5" /> {t.pwa.iosSuffix}
+                  <Share size={10} className="inline -mt-0.5" />{" "}
+                  {t.pwa.iosSuffix}
                 </p>
               ) : (
                 <p className="text-white/80 text-[11px] mt-0.5">
@@ -67,7 +72,16 @@ export default function PWAInstallBanner() {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {!isIOSSafari && (
+              {isIOSSafari ? (
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
+                  onClick={shareToInstall}
+                  className="flex items-center gap-1.5 bg-white text-[#00a8d4] text-[12px] font-bold px-3 py-1.5 rounded-xl"
+                >
+                  <Share size={13} />
+                  {t.pwa.share}
+                </motion.button>
+              ) : (
                 <motion.button
                   whileTap={{ scale: 0.92 }}
                   onClick={handleInstall}
