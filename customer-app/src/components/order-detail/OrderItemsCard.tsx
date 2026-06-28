@@ -1,14 +1,8 @@
+import { CartItem } from "@/types";
 import { motion } from "framer-motion";
 import { SPRING } from "./constants";
 
-interface OrderItem {
-  product: { id: string; name: string; image: string };
-  selectedSize: { label: string };
-  quantity: number;
-  unitPrice: number;
-}
-
-export default function OrderItemsCard({ items }: { items: OrderItem[] }) {
+export default function OrderItemsCard({ items }: { items: CartItem[] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}

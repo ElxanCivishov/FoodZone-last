@@ -45,7 +45,9 @@ function MetaBadge({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 export default function PromoBanner() {
   const [promoIdx, setPromoIdx] = useState(0);
-  const timerRef = useRef<number | undefined>(undefined);
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(
+    undefined,
+  );
 
   const resetTimer = () => {
     clearInterval(timerRef.current);
@@ -74,7 +76,8 @@ export default function PromoBanner() {
       dragElastic={0.18}
       onDragEnd={(_, info) => {
         if (info.offset.x < -40) goTo((promoIdx + 1) % PROMOS.length);
-        else if (info.offset.x > 40) goTo((promoIdx - 1 + PROMOS.length) % PROMOS.length);
+        else if (info.offset.x > 40)
+          goTo((promoIdx - 1 + PROMOS.length) % PROMOS.length);
       }}
     >
       <AnimatePresence mode="wait">
@@ -94,7 +97,12 @@ export default function PromoBanner() {
           />
           <motion.div
             animate={{ y: [0, 15, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
             className="absolute -bottom-[40%] -left-[10%] w-[160px] h-[160px] rounded-full bg-white/8"
           />
 
@@ -110,16 +118,32 @@ export default function PromoBanner() {
             </div>
             <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1">
               <Star size={12} className="text-yellow-300 fill-yellow-300" />
-              <span className="text-white text-[12px] font-bold">{INFO.rating}</span>
-              <span className="text-white/70 text-[11px]">({INFO.reviews})</span>
+              <span className="text-white text-[12px] font-bold">
+                {INFO.rating}
+              </span>
+              <span className="text-white/70 text-[11px]">
+                ({INFO.reviews})
+              </span>
             </div>
           </div>
 
           <div className="relative z-10 flex items-center gap-2 flex-wrap">
-            <MetaBadge icon={<Clock size={11} />} text={`${INFO.minTime}-${INFO.maxTime} dəq`} />
-            <MetaBadge icon={<ShoppingBag size={11} />} text={`min ${INFO.minOrder} AZN`} />
-            <MetaBadge icon={<Info size={11} />} text={`${INFO.deliveryFee} AZN çatdırılma`} />
-            <MetaBadge icon={<Percent size={11} />} text={`${INFO.serviceFee}% servis`} />
+            <MetaBadge
+              icon={<Clock size={11} />}
+              text={`${INFO.minTime}-${INFO.maxTime} dəq`}
+            />
+            <MetaBadge
+              icon={<ShoppingBag size={11} />}
+              text={`min ${INFO.minOrder} AZN`}
+            />
+            <MetaBadge
+              icon={<Info size={11} />}
+              text={`${INFO.deliveryFee} AZN çatdırılma`}
+            />
+            <MetaBadge
+              icon={<Percent size={11} />}
+              text={`${INFO.serviceFee}% servis`}
+            />
           </div>
         </motion.div>
       </AnimatePresence>
