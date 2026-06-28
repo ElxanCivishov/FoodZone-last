@@ -142,6 +142,14 @@ const T = {
       install: 'Yüklə',
       share: 'Paylaş',
     },
+    iosGuide: {
+      title: 'Ana ekrana əlavə et',
+      sub: 'Aşağıdakı addımları izlə',
+      step1: 'Brauzer yuxarısındakı paylaşma düyməsinə tap et',
+      step2: '«Ana Ekrana Əlavə Et» seçiminə tap et',
+      step3: 'Sağ yuxarıdakı «Əlavə Et» düyməsinə tap et',
+      done: 'Anladım',
+    },
     splash: { tagline: 'Ən yaxşı yeməklər bir yerdə' },
     cart: {
       viewCart: 'Səbəti görüntülə',
@@ -579,6 +587,14 @@ const T = {
       subtitle: 'Faster access from your home screen',
       install: 'Install',
       share: 'Share',
+    },
+    iosGuide: {
+      title: 'Add to Home Screen',
+      sub: 'Follow these steps',
+      step1: 'Tap the Share button at the top of your browser',
+      step2: 'Tap “Add to Home Screen”',
+      step3: 'Tap “Add” in the top right corner',
+      done: 'Got it',
     },
     splash: { tagline: 'The best food in one place' },
     cart: {
@@ -1018,6 +1034,14 @@ const T = {
       install: 'Установить',
       share: 'Поделиться',
     },
+    iosGuide: {
+      title: 'Добавить на экран «Домой»',
+      sub: 'Следуйте этим шагам',
+      step1: 'Нажмите кнопку «Поделиться» вверху браузера',
+      step2: 'Выберите «На экран Домой»',
+      step3: 'Нажмите «Добавить» в правом верхнем углу',
+      done: 'Понятно',
+    },
     splash: { tagline: 'Лучшая еда в одном месте' },
     cart: {
       viewCart: 'Открыть корзину',
@@ -1455,6 +1479,14 @@ const T = {
       subtitle: 'Ana ekranda daha hızlı erişim',
       install: 'Yükle',
       share: 'Paylaş',
+    },
+    iosGuide: {
+      title: 'Ana Ekrana Ekle',
+      sub: 'Bu adımları takip et',
+      step1: 'Tarayıcının üstündeki Paylaş düğmesine dokun',
+      step2: '«Ana Ekrana Ekle» seçeneğine dokun',
+      step3: 'Sağ üstteki «Ekle» düğmesine dokun',
+      done: 'Anladım',
     },
     splash: { tagline: 'En iyi yemekler bir arada' },
     cart: {
