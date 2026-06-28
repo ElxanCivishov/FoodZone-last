@@ -14,8 +14,16 @@ import { useT } from "@/hooks/useT";
 
 export default function SettingsScreen() {
   const t = useT();
-  const { goBack, setScreen, openModal, language, logout, isLoggedIn, isDark, toggleDark } =
-    useUIStore();
+  const {
+    goBack,
+    setScreen,
+    openModal,
+    language,
+    logout,
+    isLoggedIn,
+    isDark,
+    toggleDark,
+  } = useUIStore();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [emailNotif, setEmailNotif] = useState(false);
@@ -33,7 +41,7 @@ export default function SettingsScreen() {
       transition={SPRING}
       className="absolute inset-0 bg-canvas flex flex-col"
     >
-      <div className="bg-white px-4 pt-12 pb-4 border-b border-border-light flex items-center gap-3">
+      <div className="bg-white px-4 py-4 border-b border-border-light flex items-center gap-3">
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={goBack}
@@ -48,9 +56,15 @@ export default function SettingsScreen() {
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 pb-24 space-y-4">
         <NotificationsCard />
-        <EmailCard checked={emailNotif} onToggle={() => setEmailNotif((v) => !v)} />
+        <EmailCard
+          checked={emailNotif}
+          onToggle={() => setEmailNotif((v) => !v)}
+        />
         <AppearanceCard isDark={isDark} onToggle={toggleDark} />
-        <LanguageCard language={language} onOpen={() => openModal("language")} />
+        <LanguageCard
+          language={language}
+          onOpen={() => openModal("language")}
+        />
         <AppInfoCard />
         {isLoggedIn && (
           <DangerZoneCard onDelete={() => setShowDeleteConfirm(true)} />

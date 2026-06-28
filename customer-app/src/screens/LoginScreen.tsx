@@ -40,7 +40,7 @@ export default function LoginScreen() {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={SPRING}
-      className="absolute inset-0 flex flex-col overflow-hidden"
+      className="absolute inset-0 flex flex-col overflow-x-hidden overflow-y-auto"
       style={{
         background: isDark
           ? 'linear-gradient(135deg, #0f0c29 0%, #302b63 60%, #24243e 100%)'
@@ -101,7 +101,7 @@ export default function LoginScreen() {
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, ...SPRING }}
-        className="mx-4 rounded-3xl bg-white dark:bg-[#1a1a2e] p-6 shadow-xl relative z-10"
+        className="mx-4 mb-8 rounded-3xl bg-white dark:bg-[#1a1a2e] p-6 shadow-xl relative z-10"
       >
         {/* Mode toggle */}
         <div className="flex bg-surface-elevated dark:bg-[#22223a] rounded-xl p-1 mb-6">

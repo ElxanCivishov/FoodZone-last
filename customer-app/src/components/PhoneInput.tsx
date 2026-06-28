@@ -64,17 +64,22 @@ export default function PhoneInput({
     setOpen(true);
   };
 
-  /* ── Close on outside click ── */
+  /* ── Close on outside click or scroll ── */
   useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
       const t = e.target as Node;
       const inWrap = wrapRef.current?.contains(t);
       const inPortal = document.getElementById('phone-dd')?.contains(t);
       if (!inWrap && !inPortal) setOpen(false);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const handleScroll = () => setOpen(false);
+    document.addEventListener('mousedown', handleClick);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
   }, [open]);
 
   /* ── Typing ── */

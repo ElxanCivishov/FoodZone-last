@@ -56,7 +56,7 @@ export default function AddressesScreen() {
       className="absolute inset-0 bg-canvas flex flex-col"
     >
       {/* Header */}
-      <div className="bg-white px-4 pt-12 pb-4 border-b border-border-light flex items-center gap-3">
+      <div className="bg-white px-4 py-4 border-b border-border-light flex items-center gap-3">
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={goBack}

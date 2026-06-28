@@ -37,7 +37,7 @@ export default function ProfileHero({
 
   return (
     <div
-      className="relative px-5 pt-12 pb-16 shrink-0 overflow-hidden"
+      className="relative px-5 pt-4 pb-16 shrink-0 overflow-hidden"
       style={{
         background:
           "linear-gradient(145deg,#0f0c29 0%,#302b63 55%,#24243e 100%)",
@@ -60,11 +60,15 @@ export default function ProfileHero({
       {/* Glow spots */}
       <div
         className="absolute -top-10 right-0 w-56 h-56 opacity-25"
-        style={{ background: "radial-gradient(circle,#00c2e8,transparent 65%)" }}
+        style={{
+          background: "radial-gradient(circle,#00c2e8,transparent 65%)",
+        }}
       />
       <div
         className="absolute bottom-4 -left-12 w-52 h-52 opacity-20"
-        style={{ background: "radial-gradient(circle,#a78bfa,transparent 65%)" }}
+        style={{
+          background: "radial-gradient(circle,#a78bfa,transparent 65%)",
+        }}
       />
 
       {/* Avatar + info */}

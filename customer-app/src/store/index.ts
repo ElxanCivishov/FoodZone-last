@@ -56,6 +56,21 @@ interface UIState {
   setUserInfo: (info: Partial<UserInfo>) => void;
 }
 
+function detectLanguage(): Language {
+  const supported: Language[] = ['az', 'en', 'ru', 'tr'];
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+  for (const lang of langs) {
+    const code = lang.split('-')[0].toLowerCase() as Language;
+    if (supported.includes(code)) return code;
+  }
+  return 'az';
+}
+
+function resolveLanguage(): Language {
+  const saved = localStorage.getItem('fz_lang') as Language | null;
+  return saved ?? detectLanguage();
+}
+
 export const useUIStore = create<UIState>((set, get) => ({
   currentScreen: 'splash',
   previousScreen: null,
@@ -68,7 +83,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   adminMode: false,
   activeModal: null,
   selectedRestaurant: null,
-  language: (localStorage.getItem('fz_lang') as Language) ?? 'az',
+  language: resolveLanguage(),
   isDark: localStorage.getItem('fz_dark') === '1',
   isQRSession: true,
   tableNumber: 12,

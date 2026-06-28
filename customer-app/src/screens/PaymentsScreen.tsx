@@ -1,14 +1,22 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Plus, CreditCard, Check, X, Eye, EyeOff } from 'lucide-react';
-import { useUIStore } from '@/store';
-import { useT } from '@/hooks/useT';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  Plus,
+  CreditCard,
+  Check,
+  X,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useUIStore } from "@/store";
+import { useT } from "@/hooks/useT";
 
-const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
+const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
 interface Card {
   id: number;
-  type: 'visa' | 'mastercard' | 'wallet';
+  type: "visa" | "mastercard" | "wallet";
   label: string;
   last4: string | null;
   expires: string | null;
@@ -17,26 +25,52 @@ interface Card {
 }
 
 const INITIAL_CARDS: Card[] = [
-  { id: 1, type: 'visa',       label: 'Visa',        last4: '4242', expires: '12/27', color: ['#1a1a2e', '#16213e'] },
-  { id: 2, type: 'mastercard', label: 'Mastercard',  last4: '8899', expires: '09/26', color: ['#eb5757', '#b83232'] },
-  { id: 3, type: 'wallet',     label: 'FoodZone Pay', last4: null,  expires: null, balance: '42.50', color: ['#00c2e8', '#00c2a8'] },
+  {
+    id: 1,
+    type: "visa",
+    label: "Visa",
+    last4: "4242",
+    expires: "12/27",
+    color: ["#1a1a2e", "#16213e"],
+  },
+  {
+    id: 2,
+    type: "mastercard",
+    label: "Mastercard",
+    last4: "8899",
+    expires: "09/26",
+    color: ["#eb5757", "#b83232"],
+  },
+  {
+    id: 3,
+    type: "wallet",
+    label: "FoodZone Pay",
+    last4: null,
+    expires: null,
+    balance: "42.50",
+    color: ["#00c2e8", "#00c2a8"],
+  },
 ];
 
-function detectType(num: string): 'visa' | 'mastercard' {
-  return num.startsWith('4') ? 'visa' : 'mastercard';
+function detectType(num: string): "visa" | "mastercard" {
+  return num.startsWith("4") ? "visa" : "mastercard";
 }
 
 function formatCardNum(raw: string) {
-  return raw.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+  return raw
+    .replace(/\D/g, "")
+    .slice(0, 16)
+    .replace(/(.{4})/g, "$1 ")
+    .trim();
 }
 
 function formatExpiry(raw: string) {
-  const digits = raw.replace(/\D/g, '').slice(0, 4);
-  if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2);
+  const digits = raw.replace(/\D/g, "").slice(0, 4);
+  if (digits.length >= 3) return digits.slice(0, 2) + "/" + digits.slice(2);
   return digits;
 }
 
-const EMPTY_FORM = { number: '', name: '', expiry: '', cvv: '' };
+const EMPTY_FORM = { number: "", name: "", expiry: "", cvv: "" };
 
 export default function PaymentsScreen() {
   const { goBack } = useUIStore();
@@ -48,17 +82,18 @@ export default function PaymentsScreen() {
   const [showCvv, setShowCvv] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const digits = form.number.replace(/\D/g, '');
+  const digits = form.number.replace(/\D/g, "");
   const cardType = detectType(digits);
-  const previewLast4 = digits.length >= 4 ? digits.slice(-4) : '????';
-  const previewColor: [string, string] = cardType === 'visa' ? ['#1a1a2e', '#16213e'] : ['#eb5757', '#b83232'];
+  const previewLast4 = digits.length >= 4 ? digits.slice(-4) : "????";
+  const previewColor: [string, string] =
+    cardType === "visa" ? ["#1a1a2e", "#16213e"] : ["#eb5757", "#b83232"];
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (digits.length < 16)        e.number = t.checkout.cardNumberError;
-    if (!form.name.trim())         e.name   = t.checkout.cardNameError;
-    if (form.expiry.length < 5)    e.expiry = t.checkout.expiryError;
-    if (form.cvv.length < 3)       e.cvv    = t.checkout.cvvError;
+    if (digits.length < 16) e.number = t.checkout.cardNumberError;
+    if (!form.name.trim()) e.name = t.checkout.cardNameError;
+    if (form.expiry.length < 5) e.expiry = t.checkout.expiryError;
+    if (form.cvv.length < 3) e.cvv = t.checkout.cvvError;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -68,12 +103,12 @@ export default function PaymentsScreen() {
     const newCard: Card = {
       id: Date.now(),
       type: cardType,
-      label: cardType === 'visa' ? 'Visa' : 'Mastercard',
+      label: cardType === "visa" ? "Visa" : "Mastercard",
       last4: previewLast4,
       expires: form.expiry,
       color: previewColor,
     };
-    setCards(prev => [...prev, newCard]);
+    setCards((prev) => [...prev, newCard]);
     setSelected(newCard.id);
     setShowForm(false);
     setForm(EMPTY_FORM);
@@ -89,14 +124,21 @@ export default function PaymentsScreen() {
       className="absolute inset-0 bg-canvas flex flex-col"
     >
       {/* Header */}
-      <div className="bg-white px-4 pt-12 pb-4 border-b border-border-light flex items-center gap-3 shrink-0">
-        <motion.button whileTap={{ scale: 0.88 }} onClick={goBack}
-          className="w-9 h-9 rounded-full bg-surface-elevated flex items-center justify-center">
+      <div className="bg-white px-4 py-4 border-b border-border-light flex items-center gap-3 shrink-0">
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={goBack}
+          className="w-9 h-9 rounded-full bg-surface-elevated flex items-center justify-center"
+        >
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div>
-          <h1 className="font-outfit text-[20px] font-bold text-text-primary">{t.checkout.paymentMethods}</h1>
-          <p className="text-text-secondary text-[13px]">{cards.length} {t.checkout.method}</p>
+          <h1 className="font-outfit text-[20px] font-bold text-text-primary">
+            {t.checkout.paymentMethods}
+          </h1>
+          <p className="text-text-secondary text-[13px]">
+            {cards.length} {t.checkout.method}
+          </p>
         </div>
       </div>
 
@@ -116,23 +158,47 @@ export default function PaymentsScreen() {
             >
               <div
                 className="relative rounded-2xl p-5 overflow-hidden"
-                style={{ background: `linear-gradient(135deg,${card.color[0]},${card.color[1]})`, minHeight: 112 }}
+                style={{
+                  background: `linear-gradient(135deg,${card.color[0]},${card.color[1]})`,
+                  minHeight: 112,
+                }}
               >
                 <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10" />
                 <div className="absolute -left-4 -bottom-8 w-24 h-24 rounded-full bg-white/[0.06]" />
                 <div className="relative z-10 flex items-start justify-between">
                   <div>
-                    <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">{card.label}</p>
-                    {card.last4
-                      ? <p className="text-white text-[17px] font-bold tracking-[3px] mt-1">•••• {card.last4}</p>
-                      : <p className="text-white text-[22px] font-bold mt-1 font-outfit">{card.balance} {t.common.currency}</p>
-                    }
-                    {card.expires && <p className="text-white/50 text-[11px] mt-1">{card.expires}</p>}
+                    <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">
+                      {card.label}
+                    </p>
+                    {card.last4 ? (
+                      <p className="text-white text-[17px] font-bold tracking-[3px] mt-1">
+                        •••• {card.last4}
+                      </p>
+                    ) : (
+                      <p className="text-white text-[22px] font-bold mt-1 font-outfit">
+                        {card.balance} {t.common.currency}
+                      </p>
+                    )}
+                    {card.expires && (
+                      <p className="text-white/50 text-[11px] mt-1">
+                        {card.expires}
+                      </p>
+                    )}
                   </div>
-                  <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
-                    selected === card.id ? 'border-white bg-white' : 'border-white/40 bg-white/10'
-                  }`}>
-                    {selected === card.id && <Check size={13} className="text-gray-800" strokeWidth={3} />}
+                  <div
+                    className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
+                      selected === card.id
+                        ? "border-white bg-white"
+                        : "border-white/40 bg-white/10"
+                    }`}
+                  >
+                    {selected === card.id && (
+                      <Check
+                        size={13}
+                        className="text-gray-800"
+                        strokeWidth={3}
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="relative z-10 mt-3">
@@ -158,8 +224,12 @@ export default function PaymentsScreen() {
                 <Plus size={18} className="text-primary" />
               </div>
               <div className="text-left">
-                <p className="text-[14px] font-semibold text-primary">{t.checkout.addNewCard}</p>
-                <p className="text-[12px] text-text-secondary mt-0.5">{t.checkout.acceptedCards}</p>
+                <p className="text-[14px] font-semibold text-primary">
+                  {t.checkout.addNewCard}
+                </p>
+                <p className="text-[12px] text-text-secondary mt-0.5">
+                  {t.checkout.acceptedCards}
+                </p>
               </div>
             </motion.button>
           )}
@@ -177,10 +247,18 @@ export default function PaymentsScreen() {
             >
               {/* Form header */}
               <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border-light">
-                <p className="font-outfit text-[15px] font-bold text-text-primary">{t.checkout.newCard}</p>
-                <motion.button whileTap={{ scale: 0.88 }}
-                  onClick={() => { setShowForm(false); setForm(EMPTY_FORM); setErrors({}); }}
-                  className="w-8 h-8 rounded-full bg-surface-elevated flex items-center justify-center">
+                <p className="font-outfit text-[15px] font-bold text-text-primary">
+                  {t.checkout.newCard}
+                </p>
+                <motion.button
+                  whileTap={{ scale: 0.88 }}
+                  onClick={() => {
+                    setShowForm(false);
+                    setForm(EMPTY_FORM);
+                    setErrors({});
+                  }}
+                  className="w-8 h-8 rounded-full bg-surface-elevated flex items-center justify-center"
+                >
                   <X size={14} className="text-text-secondary" />
                 </motion.button>
               </div>
@@ -189,21 +267,25 @@ export default function PaymentsScreen() {
               <div className="px-4 pt-4">
                 <div
                   className="relative rounded-2xl p-4 overflow-hidden"
-                  style={{ background: `linear-gradient(135deg,${previewColor[0]},${previewColor[1]})`, minHeight: 96 }}
+                  style={{
+                    background: `linear-gradient(135deg,${previewColor[0]},${previewColor[1]})`,
+                    minHeight: 96,
+                  }}
                 >
                   <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
                   <div className="relative z-10 flex items-start justify-between">
                     <div>
                       <p className="text-white/60 text-[10px] font-semibold uppercase tracking-widest">
-                        {cardType === 'visa' ? 'Visa' : 'Mastercard'}
+                        {cardType === "visa" ? "Visa" : "Mastercard"}
                       </p>
                       <p className="text-white text-[15px] font-bold tracking-[2px] mt-1">
                         {digits.length > 0
                           ? `•••• •••• •••• ${previewLast4}`
-                          : '•••• •••• •••• ••••'}
+                          : "•••• •••• •••• ••••"}
                       </p>
                       <p className="text-white/50 text-[11px] mt-1">
-                        {form.name || t.checkout.cardHolderPreview} · {form.expiry || 'MM/YY'}
+                        {form.name || t.checkout.cardHolderPreview} ·{" "}
+                        {form.expiry || "MM/YY"}
                       </p>
                     </div>
                     <CreditCard size={22} className="text-white/30 mt-1" />
@@ -215,86 +297,128 @@ export default function PaymentsScreen() {
               <div className="px-4 pb-4 pt-3 space-y-3">
                 {/* Card number */}
                 <div>
-                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{t.checkout.cardNumber} *</p>
+                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">
+                    {t.checkout.cardNumber} *
+                  </p>
                   <input
                     type="text"
                     inputMode="numeric"
                     placeholder="0000 0000 0000 0000"
                     value={form.number}
                     onChange={(e) => {
-                      setForm(f => ({ ...f, number: formatCardNum(e.target.value) }));
-                      setErrors(er => ({ ...er, number: '' }));
+                      setForm((f) => ({
+                        ...f,
+                        number: formatCardNum(e.target.value),
+                      }));
+                      setErrors((er) => ({ ...er, number: "" }));
                     }}
                     className={`w-full h-11 px-3.5 rounded-xl border text-[14px] font-mono text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary transition-colors ${
-                      errors.number ? 'border-coral bg-coral/5' : 'border-border-light bg-surface-elevated'
+                      errors.number
+                        ? "border-coral bg-coral/5"
+                        : "border-border-light bg-surface-elevated"
                     }`}
                   />
-                  {errors.number && <p className="text-coral text-[11px] mt-1">{errors.number}</p>}
+                  {errors.number && (
+                    <p className="text-coral text-[11px] mt-1">
+                      {errors.number}
+                    </p>
+                  )}
                 </div>
 
                 {/* Name */}
                 <div>
-                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{t.checkout.cardName} *</p>
+                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">
+                    {t.checkout.cardName} *
+                  </p>
                   <input
                     type="text"
                     placeholder={t.checkout.cardHolderPreview}
                     value={form.name}
                     onChange={(e) => {
-                      setForm(f => ({ ...f, name: e.target.value.toUpperCase() }));
-                      setErrors(er => ({ ...er, name: '' }));
+                      setForm((f) => ({
+                        ...f,
+                        name: e.target.value.toUpperCase(),
+                      }));
+                      setErrors((er) => ({ ...er, name: "" }));
                     }}
                     className={`w-full h-11 px-3.5 rounded-xl border text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary transition-colors ${
-                      errors.name ? 'border-coral bg-coral/5' : 'border-border-light bg-surface-elevated'
+                      errors.name
+                        ? "border-coral bg-coral/5"
+                        : "border-border-light bg-surface-elevated"
                     }`}
                   />
-                  {errors.name && <p className="text-coral text-[11px] mt-1">{errors.name}</p>}
+                  {errors.name && (
+                    <p className="text-coral text-[11px] mt-1">{errors.name}</p>
+                  )}
                 </div>
 
                 {/* Expiry + CVV */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{t.checkout.expiry} *</p>
+                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">
+                      {t.checkout.expiry} *
+                    </p>
                     <input
                       type="text"
                       inputMode="numeric"
                       placeholder="MM/YY"
                       value={form.expiry}
                       onChange={(e) => {
-                        setForm(f => ({ ...f, expiry: formatExpiry(e.target.value) }));
-                        setErrors(er => ({ ...er, expiry: '' }));
+                        setForm((f) => ({
+                          ...f,
+                          expiry: formatExpiry(e.target.value),
+                        }));
+                        setErrors((er) => ({ ...er, expiry: "" }));
                       }}
                       className={`w-full h-11 px-3.5 rounded-xl border text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary transition-colors ${
-                        errors.expiry ? 'border-coral bg-coral/5' : 'border-border-light bg-surface-elevated'
+                        errors.expiry
+                          ? "border-coral bg-coral/5"
+                          : "border-border-light bg-surface-elevated"
                       }`}
                     />
-                    {errors.expiry && <p className="text-coral text-[11px] mt-1">{errors.expiry}</p>}
+                    {errors.expiry && (
+                      <p className="text-coral text-[11px] mt-1">
+                        {errors.expiry}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{"CVV *"}</p>
+                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">
+                      {"CVV *"}
+                    </p>
                     <div className="relative">
                       <input
-                        type={showCvv ? 'text' : 'password'}
+                        type={showCvv ? "text" : "password"}
                         inputMode="numeric"
                         placeholder="•••"
                         maxLength={4}
                         value={form.cvv}
                         onChange={(e) => {
-                          setForm(f => ({ ...f, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }));
-                          setErrors(er => ({ ...er, cvv: '' }));
+                          setForm((f) => ({
+                            ...f,
+                            cvv: e.target.value.replace(/\D/g, "").slice(0, 4),
+                          }));
+                          setErrors((er) => ({ ...er, cvv: "" }));
                         }}
                         className={`w-full h-11 px-3.5 pr-9 rounded-xl border text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary transition-colors ${
-                          errors.cvv ? 'border-coral bg-coral/5' : 'border-border-light bg-surface-elevated'
+                          errors.cvv
+                            ? "border-coral bg-coral/5"
+                            : "border-border-light bg-surface-elevated"
                         }`}
                       />
                       <button
                         type="button"
-                        onClick={() => setShowCvv(v => !v)}
+                        onClick={() => setShowCvv((v) => !v)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary"
                       >
                         {showCvv ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
                     </div>
-                    {errors.cvv && <p className="text-coral text-[11px] mt-1">{errors.cvv}</p>}
+                    {errors.cvv && (
+                      <p className="text-coral text-[11px] mt-1">
+                        {errors.cvv}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -303,7 +427,9 @@ export default function PaymentsScreen() {
                   whileTap={{ scale: 0.97 }}
                   onClick={handleAdd}
                   className="w-full h-11 rounded-xl text-[14px] font-bold text-white flex items-center justify-center gap-2 shadow-primary-glow"
-                  style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
+                  style={{
+                    background: "linear-gradient(135deg,#00c2e8,#00c2a8)",
+                  }}
                 >
                   <Check size={16} />
                   {t.checkout.addCard}
@@ -321,7 +447,7 @@ export default function PaymentsScreen() {
             whileTap={{ scale: 0.97 }}
             onClick={goBack}
             className="w-full h-12 rounded-2xl text-[15px] font-bold text-white shadow-primary-glow"
-            style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
+            style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
           >
             {t.checkout.confirmSelection}
           </motion.button>

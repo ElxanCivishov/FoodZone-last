@@ -1,16 +1,27 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, CreditCard, Lock, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react';
-import { useUIStore, useOrderStore } from '@/store';
-import { useT } from '@/hooks/useT';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  CreditCard,
+  Lock,
+  CheckCircle2,
+  Loader2,
+  ShieldCheck,
+} from "lucide-react";
+import { useUIStore, useOrderStore } from "@/store";
+import { useT } from "@/hooks/useT";
 
-const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
+const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
 function formatCardNumber(v: string) {
-  return v.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+  return v
+    .replace(/\D/g, "")
+    .slice(0, 16)
+    .replace(/(.{4})/g, "$1 ")
+    .trim();
 }
 function formatExpiry(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 4);
+  const d = v.replace(/\D/g, "").slice(0, 4);
   return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
 }
 
@@ -19,20 +30,21 @@ export default function PaymentScreen() {
   const { currentOrder, payOrder } = useOrderStore();
   const t = useT();
 
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry]         = useState('');
-  const [cvv, setCvv]               = useState('');
-  const [name, setName]             = useState('');
-  const [errors, setErrors]         = useState<Record<string, string>>({});
-  const [loading, setLoading]       = useState(false);
-  const [paid, setPaid]             = useState(false);
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [name, setName] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [paid, setPaid] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (cardNumber.replace(/\s/g, '').length < 16) e.card   = t.checkout.cardNumberError;
-    if (expiry.length < 5)                          e.expiry = t.checkout.expiryError;
-    if (cvv.length < 3)                             e.cvv    = t.checkout.cvvError;
-    if (!name.trim())                               e.name   = t.checkout.cardNameError;
+    if (cardNumber.replace(/\s/g, "").length < 16)
+      e.card = t.checkout.cardNumberError;
+    if (expiry.length < 5) e.expiry = t.checkout.expiryError;
+    if (cvv.length < 3) e.cvv = t.checkout.cvvError;
+    if (!name.trim()) e.name = t.checkout.cardNameError;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -44,22 +56,22 @@ export default function PaymentScreen() {
       if (currentOrder) payOrder(currentOrder.id);
       setLoading(false);
       setPaid(true);
-      setTimeout(() => setScreen('orderSuccess'), 1500);
+      setTimeout(() => setScreen("orderSuccess"), 1500);
     }, 1800);
   };
 
-  const amount = currentOrder?.total?.toFixed(2) ?? '0.00';
+  const amount = currentOrder?.total?.toFixed(2) ?? "0.00";
 
   return (
     <motion.div
-      initial={{ x: '100%' }}
+      initial={{ x: "100%" }}
       animate={{ x: 0 }}
-      exit={{ x: '100%' }}
+      exit={{ x: "100%" }}
       transition={SPRING}
       className="absolute inset-0 bg-canvas flex flex-col"
     >
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1a2e] px-4 pt-12 pb-4 flex items-center gap-3 border-b border-border-light">
+      <div className="bg-white dark:bg-[#1a1a2e] px-4 py-4 flex items-center gap-3 border-b border-border-light">
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={goBack}
@@ -68,12 +80,18 @@ export default function PaymentScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div className="flex-1">
-          <h2 className="font-outfit text-[17px] font-bold text-text-primary">{t.checkout.cardPayment}</h2>
-          <p className="text-[12px] text-text-secondary">{t.checkout.sslConnection}</p>
+          <h2 className="font-outfit text-[17px] font-bold text-text-primary">
+            {t.checkout.cardPayment}
+          </h2>
+          <p className="text-[12px] text-text-secondary">
+            {t.checkout.sslConnection}
+          </p>
         </div>
         <div className="flex items-center gap-1">
           <Lock size={13} className="text-success" />
-          <span className="text-[11px] font-semibold text-success">{t.checkout.secure}</span>
+          <span className="text-[11px] font-semibold text-success">
+            {t.checkout.secure}
+          </span>
         </div>
       </div>
 
@@ -84,13 +102,20 @@ export default function PaymentScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05, ...SPRING }}
           className="rounded-2xl p-5 text-white flex items-center justify-between"
-          style={{ background: 'linear-gradient(135deg, #00c2e8, #667eea)' }}
+          style={{ background: "linear-gradient(135deg, #00c2e8, #667eea)" }}
         >
           <div>
-            <p className="text-[12px] text-white/70 font-medium">{t.checkout.amountDue}</p>
-            <p className="font-outfit text-[32px] font-bold mt-0.5">{amount} <span className="text-[16px]">{t.common.currency}</span></p>
+            <p className="text-[12px] text-white/70 font-medium">
+              {t.checkout.amountDue}
+            </p>
+            <p className="font-outfit text-[32px] font-bold mt-0.5">
+              {amount} <span className="text-[16px]">{t.common.currency}</span>
+            </p>
             {currentOrder && (
-              <p className="text-[11px] text-white/60 mt-1">{t.checkout.orderPrefix}{currentOrder.id.slice(-6)}</p>
+              <p className="text-[11px] text-white/60 mt-1">
+                {t.checkout.orderPrefix}
+                {currentOrder.id.slice(-6)}
+              </p>
             )}
           </div>
           <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
@@ -115,11 +140,14 @@ export default function PaymentScreen() {
                 value={cardNumber}
                 onChange={(e) => {
                   setCardNumber(formatCardNumber(e.target.value));
-                  setErrors((er) => ({ ...er, card: '' }));
+                  setErrors((er) => ({ ...er, card: "" }));
                 }}
                 className={inputCls(!!errors.card)}
               />
-              <CreditCard size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+              <CreditCard
+                size={16}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-tertiary"
+              />
             </div>
           </Field>
 
@@ -133,7 +161,7 @@ export default function PaymentScreen() {
                 value={expiry}
                 onChange={(e) => {
                   setExpiry(formatExpiry(e.target.value));
-                  setErrors((er) => ({ ...er, expiry: '' }));
+                  setErrors((er) => ({ ...er, expiry: "" }));
                 }}
                 className={inputCls(!!errors.expiry)}
               />
@@ -146,8 +174,8 @@ export default function PaymentScreen() {
                 value={cvv}
                 maxLength={4}
                 onChange={(e) => {
-                  setCvv(e.target.value.replace(/\D/g, '').slice(0, 4));
-                  setErrors((er) => ({ ...er, cvv: '' }));
+                  setCvv(e.target.value.replace(/\D/g, "").slice(0, 4));
+                  setErrors((er) => ({ ...er, cvv: "" }));
                 }}
                 className={inputCls(!!errors.cvv)}
               />
@@ -162,7 +190,7 @@ export default function PaymentScreen() {
               value={name}
               onChange={(e) => {
                 setName(e.target.value.toUpperCase());
-                setErrors((er) => ({ ...er, name: '' }));
+                setErrors((er) => ({ ...er, name: "" }));
               }}
               className={inputCls(!!errors.name)}
             />
@@ -177,7 +205,9 @@ export default function PaymentScreen() {
           className="flex items-center gap-2 px-1"
         >
           <ShieldCheck size={14} className="text-text-tertiary shrink-0" />
-          <p className="text-[11px] text-text-tertiary">{t.checkout.securityNote}</p>
+          <p className="text-[11px] text-text-tertiary">
+            {t.checkout.securityNote}
+          </p>
         </motion.div>
       </div>
 
@@ -200,7 +230,9 @@ export default function PaymentScreen() {
               onClick={handlePay}
               disabled={loading}
               className="w-full py-4 rounded-xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 shadow-primary-glow disabled:opacity-70"
-              style={{ background: 'linear-gradient(135deg, #00c2e8, #00c2a8)' }}
+              style={{
+                background: "linear-gradient(135deg, #00c2e8, #00c2a8)",
+              }}
             >
               {loading ? (
                 <Loader2 size={20} className="animate-spin" />
@@ -218,10 +250,20 @@ export default function PaymentScreen() {
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{label}</p>
+      <p className="text-[12px] font-semibold text-text-secondary mb-1.5">
+        {label}
+      </p>
       {children}
       {error && <p className="text-coral text-[11px] mt-1">{error}</p>}
     </div>
@@ -230,6 +272,8 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 
 function inputCls(hasError: boolean) {
   return `w-full h-11 px-3.5 rounded-xl border text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary transition-colors ${
-    hasError ? 'border-coral bg-coral/5' : 'border-border-light bg-surface-elevated'
+    hasError
+      ? "border-coral bg-coral/5"
+      : "border-border-light bg-surface-elevated"
   }`;
 }

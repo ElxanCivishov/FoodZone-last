@@ -114,7 +114,7 @@ export default function CheckoutScreen() {
       className="absolute inset-0 bg-canvas flex flex-col"
     >
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1a2e] px-4 pt-12 pb-4 flex items-center gap-3 border-b border-border-light shrink-0">
+      <div className="bg-white dark:bg-[#1a1a2e] px-4 py-4 flex items-center gap-3 border-b border-border-light shrink-0">
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={goBack}

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Wifi, ShoppingBag, Sun, Moon } from "lucide-react";
+import { MapPin, Wifi, ShoppingBag, Sun, Moon, Globe } from "lucide-react";
 import { useUIStore, useCartStore } from "@/store";
+import { LANG_CODES } from "@/utils/lang";
 
 interface Props {
   className?: string;
@@ -15,6 +16,7 @@ export default function AppHeaderRow({ className = "pt-4 pb-3" }: Props) {
     setScreen,
     isLoggedIn,
     userInfo,
+    language,
   } = useUIStore();
 
   const cartItemCount = useCartStore((s) =>
@@ -51,6 +53,17 @@ export default function AppHeaderRow({ className = "pt-4 pb-3" }: Props) {
               )}
             </motion.div>
           </AnimatePresence>
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          onClick={() => openModal("language")}
+          className="h-9 px-2.5 rounded-full bg-white dark:bg-[#22223a] shadow-xs border border-border-light flex items-center gap-1.5"
+        >
+          <Globe size={14} className="text-primary" />
+          <span className="text-[11px] font-bold text-primary">
+            {LANG_CODES[language] ?? "AZ"}
+          </span>
         </motion.button>
 
         <motion.button

@@ -82,7 +82,7 @@ export default function OrderTracking() {
       className="absolute inset-0 bg-canvas flex flex-col"
     >
       {/* Header */}
-      <div className="bg-white px-4 pt-12 pb-4 flex items-center justify-between border-b border-border-light">
+      <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-border-light">
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={goBack}
@@ -232,11 +232,13 @@ export default function OrderTracking() {
                     {item.product.name}
                   </p>
                   <p className="text-[12px] text-text-secondary mt-0.5">
-                    {item.quantity} × {item.unitPrice.toFixed(2)} {t.common.currency}
+                    {item.quantity} × {item.unitPrice.toFixed(2)}{" "}
+                    {t.common.currency}
                   </p>
                 </div>
                 <span className="text-sm font-bold text-text-primary self-center">
-                  {(item.unitPrice * item.quantity).toFixed(2)} {t.common.currency}
+                  {(item.unitPrice * item.quantity).toFixed(2)}{" "}
+                  {t.common.currency}
                 </span>
               </div>
             ))}
@@ -256,7 +258,9 @@ export default function OrderTracking() {
               </div>
               {currentOrder.discount > 0 && (
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-text-secondary">{t.checkout.discount}</span>
+                  <span className="text-text-secondary">
+                    {t.checkout.discount}
+                  </span>
                   <span className="text-success font-medium">
                     -{currentOrder.discount.toFixed(2)} {t.common.currency}
                   </span>

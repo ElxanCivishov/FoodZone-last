@@ -1,46 +1,30 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Share, X } from "lucide-react";
+import { Download, Share, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useT } from "@/hooks/useT";
 
-const DISMISS_KEY = "fz_pwa_dismissed_until";
-const DISMISS_DAYS = 7;
-
-// iOS Safari-də beforeinstallprompt yoxdur, ayrı mesaj göstəririk
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isIOSSafari =
   isIOS && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-function isDismissed() {
-  const until = localStorage.getItem(DISMISS_KEY);
-  return until ? Date.now() < Number(until) : false;
-}
-
-function dismiss() {
-  localStorage.setItem(
-    DISMISS_KEY,
-    String(Date.now() + DISMISS_DAYS * 24 * 60 * 60 * 1000),
-  );
-}
-
 export default function PWAInstallBanner() {
   const { canInstall, isInstalled, promptInstall } = usePWAInstall();
+  const [dismissed, setDismissed] = useState(false);
   const [visible, setVisible] = useState(false);
   const t = useT();
 
   useEffect(() => {
-    if (isInstalled || isDismissed()) return;
-    // Splash geçdikdən sonra biraz gecikmə ilə göstər
-    const t = setTimeout(() => {
+    if (isInstalled || dismissed) return;
+    const timer = setTimeout(() => {
       if (canInstall || isIOSSafari) setVisible(true);
     }, 3000);
-    return () => clearTimeout(t);
-  }, [canInstall, isInstalled]);
+    return () => clearTimeout(timer);
+  }, [canInstall, isInstalled, dismissed]);
 
   const handleDismiss = () => {
-    dismiss();
     setVisible(false);
+    setDismissed(true);
   };
 
   const handleInstall = async () => {
@@ -60,14 +44,12 @@ export default function PWAInstallBanner() {
           style={{ background: "linear-gradient(135deg,#00c2e8,#00a8d4)" }}
         >
           <div className="flex items-center gap-3 p-4">
-            {/* App icon */}
             <img
               src="/icons/icon-96.png"
               alt="FoodZone"
               className="w-12 h-12 rounded-xl shrink-0"
             />
 
-            {/* Text */}
             <div className="flex-1 min-w-0">
               <p className="text-white font-bold text-[14px] leading-tight">
                 {t.pwa.title}
@@ -84,15 +66,16 @@ export default function PWAInstallBanner() {
               )}
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-2 shrink-0">
               {!isIOSSafari && (
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
                   onClick={handleInstall}
-                  className="bg-white text-[#00c2e8] text-[12px] font-bold px-3 py-1.5 rounded-xl"
+                  className="flex items-center gap-1.5 bg-white text-[#00a8d4] text-[12px] font-bold px-3 py-1.5 rounded-xl"
                 >
+                  <Download size={13} />
                   {t.pwa.install}
-                </button>
+                </motion.button>
               )}
               <button
                 onClick={handleDismiss}

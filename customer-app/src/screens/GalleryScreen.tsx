@@ -1,19 +1,19 @@
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, Images } from 'lucide-react';
-import { useUIStore } from '@/store';
-import { useT } from '@/hooks/useT';
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, X, Images } from "lucide-react";
+import { useUIStore } from "@/store";
+import { useT } from "@/hooks/useT";
 
-const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
+const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
-type GalCat = 'all' | 'food' | 'atmosphere' | 'kitchen' | 'drinks';
+type GalCat = "all" | "food" | "atmosphere" | "kitchen" | "drinks";
 
 const CATS: { id: GalCat; label: string; emoji: string }[] = [
-  { id: 'all',        label: 'Hamısı',    emoji: '🖼️' },
-  { id: 'food',       label: 'Yemək',     emoji: '🍣' },
-  { id: 'atmosphere', label: 'Atmosfer',  emoji: '✨' },
-  { id: 'kitchen',    label: 'Mətbəx',    emoji: '👨‍🍳' },
-  { id: 'drinks',     label: 'İçkilər',   emoji: '🍵' },
+  { id: "all", label: "Hamısı", emoji: "🖼️" },
+  { id: "food", label: "Yemək", emoji: "🍣" },
+  { id: "atmosphere", label: "Atmosfer", emoji: "✨" },
+  { id: "kitchen", label: "Mətbəx", emoji: "👨‍🍳" },
+  { id: "drinks", label: "İçkilər", emoji: "🍵" },
 ];
 
 interface GalleryItem {
@@ -27,40 +27,172 @@ interface GalleryItem {
 }
 
 const ITEMS: GalleryItem[] = [
-  { id: 1,  cat: 'food',       title: 'Dragon Roll',       sub: 'Xüsusi sushi',      grad: 'linear-gradient(135deg,#f093fb,#f5576c)',  emoji: '🍣',  tall: true  },
-  { id: 2,  cat: 'atmosphere', title: 'Giriş',             sub: 'Restoran cəphəsi',  grad: 'linear-gradient(135deg,#667eea,#764ba2)',  emoji: '🏮',  tall: false },
-  { id: 3,  cat: 'food',       title: 'Sashimi Seçimi',    sub: '12 parça',          grad: 'linear-gradient(135deg,#4facfe,#00f2fe)',  emoji: '🐟',  tall: false },
-  { id: 4,  cat: 'kitchen',    title: 'Açıq Mətbəx',       sub: 'Peşəkar komanda',   grad: 'linear-gradient(135deg,#43e97b,#38f9d7)',  emoji: '👨‍🍳', tall: true  },
-  { id: 5,  cat: 'food',       title: 'Ramen',             sub: 'Tonkotsu',          grad: 'linear-gradient(135deg,#fa709a,#fee140)',  emoji: '🍜',  tall: false },
-  { id: 6,  cat: 'atmosphere', title: 'VIP Zal',           sub: 'Xüsusi tədbir',     grad: 'linear-gradient(135deg,#30cfd0,#667eea)',  emoji: '✨',  tall: true  },
-  { id: 7,  cat: 'drinks',     title: 'Sake Koleksiyası',  sub: 'İdxal',             grad: 'linear-gradient(135deg,#ffecd2,#fcb69f)',  emoji: '🍶',  tall: false },
-  { id: 8,  cat: 'food',       title: 'Nigiri Set',        sub: '8 parça',           grad: 'linear-gradient(135deg,#a18cd1,#fbc2eb)',  emoji: '🍱',  tall: true  },
-  { id: 9,  cat: 'kitchen',    title: 'Hazırlıq Prosesi',  sub: 'Hər gün səhər',     grad: 'linear-gradient(135deg,#f7971e,#ffd200)',  emoji: '🔪',  tall: false },
-  { id: 10, cat: 'atmosphere', title: 'Terras',            sub: 'Açıq hava',         grad: 'linear-gradient(135deg,#11998e,#38ef7d)',  emoji: '🌿',  tall: false },
-  { id: 11, cat: 'drinks',     title: 'Matcha Çayı',       sub: 'Ənənəvi üsul',      grad: 'linear-gradient(135deg,#56ab2f,#a8e063)',  emoji: '🍵',  tall: true  },
-  { id: 12, cat: 'food',       title: 'Tempura',           sub: 'Taze sebzə',        grad: 'linear-gradient(135deg,#ff9a9e,#fecfef)',  emoji: '🦐',  tall: false },
-  { id: 13, cat: 'atmosphere', title: 'Şam Yeməyi',        sub: 'Romantik atmosfer', grad: 'linear-gradient(135deg,#2d3561,#c05c7e)',  emoji: '🕯️',  tall: false },
-  { id: 14, cat: 'drinks',     title: 'Umeshu',            sub: 'Gavalı likyoru',    grad: 'linear-gradient(135deg,#ee9ca7,#ffdde1)',  emoji: '🫙',  tall: true  },
-  { id: 15, cat: 'kitchen',    title: 'Sushi Master',      sub: '20 il təcrübə',     grad: 'linear-gradient(135deg,#1a1a2e,#16213e)',  emoji: '🥢',  tall: false },
-  { id: 16, cat: 'food',       title: 'Mochi Deserti',     sub: 'Günün şirniyi',     grad: 'linear-gradient(135deg,#e0c3fc,#8ec5fc)',  emoji: '🍡',  tall: true  },
+  {
+    id: 1,
+    cat: "food",
+    title: "Dragon Roll",
+    sub: "Xüsusi sushi",
+    grad: "linear-gradient(135deg,#f093fb,#f5576c)",
+    emoji: "🍣",
+    tall: true,
+  },
+  {
+    id: 2,
+    cat: "atmosphere",
+    title: "Giriş",
+    sub: "Restoran cəphəsi",
+    grad: "linear-gradient(135deg,#667eea,#764ba2)",
+    emoji: "🏮",
+    tall: false,
+  },
+  {
+    id: 3,
+    cat: "food",
+    title: "Sashimi Seçimi",
+    sub: "12 parça",
+    grad: "linear-gradient(135deg,#4facfe,#00f2fe)",
+    emoji: "🐟",
+    tall: false,
+  },
+  {
+    id: 4,
+    cat: "kitchen",
+    title: "Açıq Mətbəx",
+    sub: "Peşəkar komanda",
+    grad: "linear-gradient(135deg,#43e97b,#38f9d7)",
+    emoji: "👨‍🍳",
+    tall: true,
+  },
+  {
+    id: 5,
+    cat: "food",
+    title: "Ramen",
+    sub: "Tonkotsu",
+    grad: "linear-gradient(135deg,#fa709a,#fee140)",
+    emoji: "🍜",
+    tall: false,
+  },
+  {
+    id: 6,
+    cat: "atmosphere",
+    title: "VIP Zal",
+    sub: "Xüsusi tədbir",
+    grad: "linear-gradient(135deg,#30cfd0,#667eea)",
+    emoji: "✨",
+    tall: true,
+  },
+  {
+    id: 7,
+    cat: "drinks",
+    title: "Sake Koleksiyası",
+    sub: "İdxal",
+    grad: "linear-gradient(135deg,#ffecd2,#fcb69f)",
+    emoji: "🍶",
+    tall: false,
+  },
+  {
+    id: 8,
+    cat: "food",
+    title: "Nigiri Set",
+    sub: "8 parça",
+    grad: "linear-gradient(135deg,#a18cd1,#fbc2eb)",
+    emoji: "🍱",
+    tall: true,
+  },
+  {
+    id: 9,
+    cat: "kitchen",
+    title: "Hazırlıq Prosesi",
+    sub: "Hər gün səhər",
+    grad: "linear-gradient(135deg,#f7971e,#ffd200)",
+    emoji: "🔪",
+    tall: false,
+  },
+  {
+    id: 10,
+    cat: "atmosphere",
+    title: "Terras",
+    sub: "Açıq hava",
+    grad: "linear-gradient(135deg,#11998e,#38ef7d)",
+    emoji: "🌿",
+    tall: false,
+  },
+  {
+    id: 11,
+    cat: "drinks",
+    title: "Matcha Çayı",
+    sub: "Ənənəvi üsul",
+    grad: "linear-gradient(135deg,#56ab2f,#a8e063)",
+    emoji: "🍵",
+    tall: true,
+  },
+  {
+    id: 12,
+    cat: "food",
+    title: "Tempura",
+    sub: "Taze sebzə",
+    grad: "linear-gradient(135deg,#ff9a9e,#fecfef)",
+    emoji: "🦐",
+    tall: false,
+  },
+  {
+    id: 13,
+    cat: "atmosphere",
+    title: "Şam Yeməyi",
+    sub: "Romantik atmosfer",
+    grad: "linear-gradient(135deg,#2d3561,#c05c7e)",
+    emoji: "🕯️",
+    tall: false,
+  },
+  {
+    id: 14,
+    cat: "drinks",
+    title: "Umeshu",
+    sub: "Gavalı likyoru",
+    grad: "linear-gradient(135deg,#ee9ca7,#ffdde1)",
+    emoji: "🫙",
+    tall: true,
+  },
+  {
+    id: 15,
+    cat: "kitchen",
+    title: "Sushi Master",
+    sub: "20 il təcrübə",
+    grad: "linear-gradient(135deg,#1a1a2e,#16213e)",
+    emoji: "🥢",
+    tall: false,
+  },
+  {
+    id: 16,
+    cat: "food",
+    title: "Mochi Deserti",
+    sub: "Günün şirniyi",
+    grad: "linear-gradient(135deg,#e0c3fc,#8ec5fc)",
+    emoji: "🍡",
+    tall: true,
+  },
 ];
 
 export default function GalleryScreen() {
   const t = useT();
   const { goBack } = useUIStore();
-  const [activeCat, setActiveCat] = useState<GalCat>('all');
-  const [lightbox, setLightbox] = useState<{ item: GalleryItem; idx: number } | null>(null);
+  const [activeCat, setActiveCat] = useState<GalCat>("all");
+  const [lightbox, setLightbox] = useState<{
+    item: GalleryItem;
+    idx: number;
+  } | null>(null);
 
   const filtered = useMemo(
-    () => activeCat === 'all' ? ITEMS : ITEMS.filter(i => i.cat === activeCat),
+    () =>
+      activeCat === "all" ? ITEMS : ITEMS.filter((i) => i.cat === activeCat),
     [activeCat],
   );
 
-  const leftCol  = filtered.filter((_, i) => i % 2 === 0);
+  const leftCol = filtered.filter((_, i) => i % 2 === 0);
   const rightCol = filtered.filter((_, i) => i % 2 === 1);
 
   const openLightbox = (item: GalleryItem) => {
-    const idx = filtered.findIndex(i => i.id === item.id);
+    const idx = filtered.findIndex((i) => i.id === item.id);
     setLightbox({ item, idx });
   };
 
@@ -79,7 +211,7 @@ export default function GalleryScreen() {
       className="absolute inset-0 bg-canvas flex flex-col"
     >
       {/* Header */}
-      <div className="bg-white px-4 pt-12 pb-3 border-b border-border-light flex items-center gap-3 shrink-0">
+      <div className="bg-white px-4 pt-4 pb-3 border-b border-border-light flex items-center gap-3 shrink-0">
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={goBack}
@@ -88,8 +220,12 @@ export default function GalleryScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div className="flex-1">
-          <h1 className="font-outfit text-[20px] font-bold text-text-primary">{t.gallery.title}</h1>
-          <p className="text-text-secondary text-[12px]">{filtered.length} {t.common.photo}</p>
+          <h1 className="font-outfit text-[20px] font-bold text-text-primary">
+            {t.gallery.title}
+          </h1>
+          <p className="text-text-secondary text-[12px]">
+            {filtered.length} {t.common.photo}
+          </p>
         </div>
         <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center">
           <Images size={16} className="text-primary" />
@@ -108,8 +244,8 @@ export default function GalleryScreen() {
                 onClick={() => setActiveCat(cat.id)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all shrink-0 ${
                   active
-                    ? 'bg-primary text-white shadow-primary-glow'
-                    : 'bg-surface-elevated text-text-secondary'
+                    ? "bg-primary text-white shadow-primary-glow"
+                    : "bg-surface-elevated text-text-secondary"
                 }`}
               >
                 <span className="text-[13px]">{cat.emoji}</span>
@@ -134,13 +270,23 @@ export default function GalleryScreen() {
             {/* Left column */}
             <div className="flex-1 flex flex-col gap-3">
               {leftCol.map((item, i) => (
-                <GalleryCard key={item.id} item={item} index={i * 2} onPress={openLightbox} />
+                <GalleryCard
+                  key={item.id}
+                  item={item}
+                  index={i * 2}
+                  onPress={openLightbox}
+                />
               ))}
             </div>
             {/* Right column */}
             <div className="flex-1 flex flex-col gap-3 mt-6">
               {rightCol.map((item, i) => (
-                <GalleryCard key={item.id} item={item} index={i * 2 + 1} onPress={openLightbox} />
+                <GalleryCard
+                  key={item.id}
+                  item={item}
+                  index={i * 2 + 1}
+                  onPress={openLightbox}
+                />
               ))}
             </div>
           </motion.div>
@@ -165,8 +311,14 @@ export default function GalleryScreen() {
 
 /* ─── Gallery card ─── */
 function GalleryCard({
-  item, index, onPress,
-}: { item: GalleryItem; index: number; onPress: (i: GalleryItem) => void }) {
+  item,
+  index,
+  onPress,
+}: {
+  item: GalleryItem;
+  index: number;
+  onPress: (i: GalleryItem) => void;
+}) {
   return (
     <motion.button
       initial={{ opacity: 0, y: 20 }}
@@ -182,22 +334,29 @@ function GalleryCard({
 
       {/* Emoji */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-5xl drop-shadow-lg select-none">{item.emoji}</span>
+        <span className="text-5xl drop-shadow-lg select-none">
+          {item.emoji}
+        </span>
       </div>
 
       {/* Bottom overlay */}
       <div
         className="absolute bottom-0 left-0 right-0 px-3 py-2.5"
-        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)' }}
+        style={{
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)",
+        }}
       >
-        <p className="text-white text-[12px] font-bold leading-tight">{item.title}</p>
+        <p className="text-white text-[12px] font-bold leading-tight">
+          {item.title}
+        </p>
         <p className="text-white/70 text-[10px] mt-0.5">{item.sub}</p>
       </div>
 
       {/* Category badge */}
       <div className="absolute top-2 right-2">
         <span className="text-[9px] font-bold bg-black/30 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
-          {CATS.find(c => c.id === item.cat)?.label}
+          {CATS.find((c) => c.id === item.cat)?.label}
         </span>
       </div>
     </motion.button>
@@ -206,7 +365,11 @@ function GalleryCard({
 
 /* ─── Lightbox ─── */
 function Lightbox({
-  item, total, idx, onClose, onNavigate,
+  item,
+  total,
+  idx,
+  onClose,
+  onNavigate,
 }: {
   item: GalleryItem;
   total: number;
@@ -221,7 +384,7 @@ function Lightbox({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.22 }}
       className="absolute inset-0 z-[400] flex flex-col"
-      style={{ background: 'rgba(0,0,0,0.92)' }}
+      style={{ background: "rgba(0,0,0,0.92)" }}
     >
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 pt-14 pb-4 shrink-0">
@@ -230,7 +393,9 @@ function Lightbox({
           <p className="text-white/50 text-[12px] mt-0.5">{item.sub}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-white/40 text-[13px] font-medium">{idx + 1}/{total}</span>
+          <span className="text-white/40 text-[13px] font-medium">
+            {idx + 1}/{total}
+          </span>
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={onClose}
@@ -253,7 +418,9 @@ function Lightbox({
             className="w-full rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center"
             style={{ height: 340, background: item.grad }}
           >
-            <span className="text-9xl drop-shadow-2xl select-none">{item.emoji}</span>
+            <span className="text-9xl drop-shadow-2xl select-none">
+              {item.emoji}
+            </span>
           </motion.div>
         </AnimatePresence>
 
@@ -283,14 +450,14 @@ function Lightbox({
       {/* Dot indicators */}
       <div className="flex justify-center gap-1.5 py-6 shrink-0">
         {Array.from({ length: Math.min(total, 10) }).map((_, i) => {
-          const dotIdx = total > 10 ? Math.floor(idx / total * 10) : idx;
+          const dotIdx = total > 10 ? Math.floor((idx / total) * 10) : idx;
           return (
             <div
               key={i}
               className={`rounded-full transition-all duration-300 ${
                 i === dotIdx
-                  ? 'w-5 h-1.5 bg-primary'
-                  : 'w-1.5 h-1.5 bg-white/25'
+                  ? "w-5 h-1.5 bg-primary"
+                  : "w-1.5 h-1.5 bg-white/25"
               }`}
             />
           );
@@ -300,7 +467,8 @@ function Lightbox({
       {/* Category tag */}
       <div className="flex justify-center pb-8 shrink-0">
         <span className="px-4 py-1.5 rounded-full bg-white/10 text-white/70 text-[12px] font-semibold backdrop-blur-sm">
-          {CATS.find(c => c.id === item.cat)?.emoji} {CATS.find(c => c.id === item.cat)?.label}
+          {CATS.find((c) => c.id === item.cat)?.emoji}{" "}
+          {CATS.find((c) => c.id === item.cat)?.label}
         </span>
       </div>
     </motion.div>

@@ -1,49 +1,92 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import {
-  Package, Clock, CheckCircle2, XCircle, ChevronRight, Truck,
-  CreditCard, UtensilsCrossed, ShoppingBag, Banknote,
-} from 'lucide-react';
-import { useUIStore, useOrderStore } from '@/store';
-import type { Order, OrderStatus, OrderType } from '@/types';
-import { useT } from '@/hooks/useT';
+  Package,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ChevronRight,
+  Truck,
+  CreditCard,
+  UtensilsCrossed,
+  ShoppingBag,
+  Banknote,
+} from "lucide-react";
+import { useUIStore, useOrderStore } from "@/store";
+import type { Order, OrderStatus, OrderType } from "@/types";
+import { useT } from "@/hooks/useT";
 
-const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
+const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
-const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: typeof Package }> = {
-  payment_pending: { label: 'Ödəniş gözlənilir', color: 'text-warning bg-warning/10',  icon: CreditCard   },
-  new:             { label: 'Qəbul edildi',       color: 'text-info bg-info/10',         icon: Package      },
-  preparing:       { label: 'Hazırlanır',          color: 'text-warning bg-warning/10',  icon: Clock        },
-  ready:           { label: 'Hazırdır',            color: 'text-success bg-success/10',  icon: CheckCircle2 },
-  served:          { label: 'Təqdim edildi',       color: 'text-success bg-success/10',  icon: CheckCircle2 },
-  on_the_way:      { label: 'Yoldadır',            color: 'text-primary bg-primary/10',  icon: Truck        },
-  delivered:       { label: 'Çatdırıldı',          color: 'text-success bg-success/10',  icon: CheckCircle2 },
-  completed:       { label: 'Tamamlandı',          color: 'text-success bg-success/10',  icon: CheckCircle2 },
-  cancelled:       { label: 'Ləğv edildi',         color: 'text-coral bg-coral/10',      icon: XCircle      },
+const STATUS_CONFIG: Record<
+  OrderStatus,
+  { label: string; color: string; icon: typeof Package }
+> = {
+  payment_pending: {
+    label: "Ödəniş gözlənilir",
+    color: "text-warning bg-warning/10",
+    icon: CreditCard,
+  },
+  new: { label: "Qəbul edildi", color: "text-info bg-info/10", icon: Package },
+  preparing: {
+    label: "Hazırlanır",
+    color: "text-warning bg-warning/10",
+    icon: Clock,
+  },
+  ready: {
+    label: "Hazırdır",
+    color: "text-success bg-success/10",
+    icon: CheckCircle2,
+  },
+  served: {
+    label: "Təqdim edildi",
+    color: "text-success bg-success/10",
+    icon: CheckCircle2,
+  },
+  on_the_way: {
+    label: "Yoldadır",
+    color: "text-primary bg-primary/10",
+    icon: Truck,
+  },
+  delivered: {
+    label: "Çatdırıldı",
+    color: "text-success bg-success/10",
+    icon: CheckCircle2,
+  },
+  completed: {
+    label: "Tamamlandı",
+    color: "text-success bg-success/10",
+    icon: CheckCircle2,
+  },
+  cancelled: {
+    label: "Ləğv edildi",
+    color: "text-coral bg-coral/10",
+    icon: XCircle,
+  },
 };
 
 const TYPE_ICON: Record<OrderType, typeof UtensilsCrossed> = {
-  dine_in:   UtensilsCrossed,
+  dine_in: UtensilsCrossed,
   take_away: ShoppingBag,
-  delivery:  Truck,
+  delivery: Truck,
 };
 const TYPE_LABEL: Record<OrderType, string> = {
-  dine_in:   'Masa',
-  take_away: 'Take Away',
-  delivery:  'Çatdırılma',
+  dine_in: "Masa",
+  take_away: "Take Away",
+  delivery: "Çatdırılma",
 };
 
 export default function OrderHistory() {
   const t = useT();
-  const { setScreen }      = useUIStore();
-  const orders             = useOrderStore((s) => s.orders);
-  const setCurrentOrderFn  = useOrderStore((s) => s.setCurrentOrder);
+  const { setScreen } = useUIStore();
+  const orders = useOrderStore((s) => s.orders);
+  const setCurrentOrderFn = useOrderStore((s) => s.setCurrentOrder);
 
   /* payment_pending sifarişlər siyahıda göstərilmir */
-  const visibleOrders = orders.filter((o) => o.status !== 'payment_pending');
+  const visibleOrders = orders.filter((o) => o.status !== "payment_pending");
 
   const viewOrder = (order: Order) => {
     setCurrentOrderFn(order);
-    setScreen('orderDetail');
+    setScreen("orderDetail");
   };
 
   return (
@@ -54,9 +97,13 @@ export default function OrderHistory() {
       transition={SPRING}
       className="absolute inset-0 bg-canvas flex flex-col"
     >
-      <div className="bg-white dark:bg-[#1a1a2e] px-4 pt-12 pb-4 border-b border-border-light">
-        <h1 className="font-outfit text-[20px] font-bold text-text-primary">{t.order.myOrders}</h1>
-        <p className="text-text-secondary text-[13px] mt-0.5">{visibleOrders.length} {t.profile.orders}</p>
+      <div className="bg-white dark:bg-[#1a1a2e] px-4 py-4 border-b border-border-light">
+        <h1 className="font-outfit text-[20px] font-bold text-text-primary">
+          {t.order.myOrders}
+        </h1>
+        <p className="text-text-secondary text-[13px] mt-0.5">
+          {visibleOrders.length} {t.profile.orders}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar p-4">
@@ -65,13 +112,21 @@ export default function OrderHistory() {
             <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center mb-4">
               <Package size={36} className="text-primary" />
             </div>
-            <p className="font-outfit text-[17px] font-bold text-text-primary">{t.order.noOrders}</p>
-            <p className="text-text-secondary text-[13px] mt-1 text-center">{t.order.firstOrder}</p>
+            <p className="font-outfit text-[17px] font-bold text-text-primary">
+              {t.order.noOrders}
+            </p>
+            <p className="text-text-secondary text-[13px] mt-1 text-center">
+              {t.order.firstOrder}
+            </p>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => (useUIStore.getState() as any).setActiveTab('home')}
+              onClick={() =>
+                (useUIStore.getState() as any).setActiveTab("home")
+              }
               className="mt-5 px-6 py-3 rounded-xl text-[14px] font-semibold text-white shadow-primary-glow"
-              style={{ background: 'linear-gradient(135deg, #00c2e8, #00c2a8)' }}
+              style={{
+                background: "linear-gradient(135deg, #00c2e8, #00c2a8)",
+              }}
             >
               {t.order.viewMenu}
             </motion.button>
@@ -79,9 +134,9 @@ export default function OrderHistory() {
         ) : (
           <div className="space-y-3">
             {visibleOrders.map((order, i) => {
-              const cfg      = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.new;
-              const Icon     = cfg.icon;
-              const otype    = (order.orderType ?? 'dine_in') as OrderType;
+              const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.new;
+              const Icon = cfg.icon;
+              const otype = (order.orderType ?? "dine_in") as OrderType;
               const TypeIcon = TYPE_ICON[otype] ?? UtensilsCrossed;
 
               return (
@@ -96,27 +151,32 @@ export default function OrderHistory() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="font-outfit text-[15px] font-bold text-text-primary">
-                        {t.order.orderNo}{order.id.slice(-6)}
+                        {t.order.orderNo}
+                        {order.id.slice(-6)}
                       </p>
-                      <p className="text-[12px] text-text-secondary mt-0.5">{order.createdAt}</p>
+                      <p className="text-[12px] text-text-secondary mt-0.5">
+                        {order.createdAt}
+                      </p>
                     </div>
-                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${cfg.color}`}>
+                    <span
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${cfg.color}`}
+                    >
                       <Icon size={12} />
-                      {order.status === 'payment_pending'
+                      {order.status === "payment_pending"
                         ? t.order.statuses.paymentPending
-                        : order.status === 'new'
+                        : order.status === "new"
                           ? t.order.statuses.new
-                          : order.status === 'preparing'
+                          : order.status === "preparing"
                             ? t.order.statuses.preparing
-                            : order.status === 'ready'
+                            : order.status === "ready"
                               ? t.order.statuses.ready
-                              : order.status === 'served'
+                              : order.status === "served"
                                 ? t.order.statuses.served
-                                : order.status === 'on_the_way'
+                                : order.status === "on_the_way"
                                   ? t.order.statuses.onTheWay
-                                  : order.status === 'cancelled'
+                                  : order.status === "cancelled"
                                     ? t.order.cancelled
-                                    : order.status === 'completed'
+                                    : order.status === "completed"
                                       ? t.waiter.statuses.resolved
                                       : cfg.label}
                     </span>
@@ -126,22 +186,31 @@ export default function OrderHistory() {
                   <div className="flex items-center gap-2 mb-3">
                     <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-elevated text-[11px] font-semibold text-text-secondary">
                       <TypeIcon size={11} />
-                      {otype === 'dine_in'
+                      {otype === "dine_in"
                         ? t.checkout.table
-                        : otype === 'delivery'
+                        : otype === "delivery"
                           ? t.checkout.orderTypes.delivery.label
-                          : 'Take Away'}
+                          : "Take Away"}
                     </span>
-                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                      order.paymentStatus === 'paid'
-                        ? 'bg-success/10 text-success'
-                        : 'bg-warning/10 text-warning'
-                    }`}>
-                      {order.paymentMethod === 'card'
-                        ? <CreditCard size={11} />
-                        : <Banknote size={11} />}
-                      {order.paymentMethod === 'card' ? t.checkout.card : t.checkout.cash} ·{' '}
-                      {order.paymentStatus === 'paid' ? t.order.paid : t.order.pending}
+                    <span
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                        order.paymentStatus === "paid"
+                          ? "bg-success/10 text-success"
+                          : "bg-warning/10 text-warning"
+                      }`}
+                    >
+                      {order.paymentMethod === "card" ? (
+                        <CreditCard size={11} />
+                      ) : (
+                        <Banknote size={11} />
+                      )}
+                      {order.paymentMethod === "card"
+                        ? t.checkout.card
+                        : t.checkout.cash}{" "}
+                      ·{" "}
+                      {order.paymentStatus === "paid"
+                        ? t.order.paid
+                        : t.order.pending}
                     </span>
                   </div>
 
@@ -153,12 +222,15 @@ export default function OrderHistory() {
                           {item.product.name} × {item.quantity}
                         </span>
                         <span className="text-text-primary font-medium shrink-0">
-                          {(item.unitPrice * item.quantity).toFixed(2)} {t.common.currency}
+                          {(item.unitPrice * item.quantity).toFixed(2)}{" "}
+                          {t.common.currency}
                         </span>
                       </div>
                     ))}
                     {order.items.length > 2 && (
-                      <p className="text-[11px] text-text-tertiary">+{order.items.length - 2} {t.order.moreItems}</p>
+                      <p className="text-[11px] text-text-tertiary">
+                        +{order.items.length - 2} {t.order.moreItems}
+                      </p>
                     )}
                   </div>
 

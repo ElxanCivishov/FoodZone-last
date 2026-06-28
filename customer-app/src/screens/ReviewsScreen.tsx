@@ -121,7 +121,7 @@ export default function ReviewsScreen() {
     >
       {/* Header */}
       <div
-        className="relative px-4 pt-12 pb-6 shrink-0 overflow-hidden"
+        className="relative px-4 pt-4 pb-6 shrink-0 overflow-hidden"
         style={{
           background:
             "linear-gradient(145deg,#0f0c29 0%,#302b63 55%,#24243e 100%)",
@@ -173,7 +173,9 @@ export default function ReviewsScreen() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 w-20 shrink-0">
                 <UtensilsCrossed size={11} className="text-white/60" />
-                <span className="text-white/60 text-[11px]">{t.reviewsScreen.meal}</span>
+                <span className="text-white/60 text-[11px]">
+                  {t.reviewsScreen.meal}
+                </span>
               </div>
               <div className="flex-1 h-1.5 rounded-full bg-white/10">
                 <motion.div
@@ -190,7 +192,9 @@ export default function ReviewsScreen() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 w-20 shrink-0">
                 <HandPlatter size={11} className="text-white/60" />
-                <span className="text-white/60 text-[11px]">{t.reviewsScreen.service}</span>
+                <span className="text-white/60 text-[11px]">
+                  {t.reviewsScreen.service}
+                </span>
               </div>
               <div className="flex-1 h-1.5 rounded-full bg-white/10">
                 <motion.div

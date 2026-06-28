@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Heart, Plus, Star } from 'lucide-react';
-import { useUIStore, useCartStore } from '@/store';
-import { allProducts } from '@/data/menuData';
-import type { Product } from '@/types';
-import { useT } from '@/hooks/useT';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, Heart, Plus, Star } from "lucide-react";
+import { useUIStore, useCartStore } from "@/store";
+import { allProducts } from "@/data/menuData";
+import type { Product } from "@/types";
+import { useT } from "@/hooks/useT";
 
-const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
+const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
 const INITIAL_LIKES = new Set([1, 3, 7]);
 
@@ -30,11 +30,13 @@ export default function FavoritesScreen() {
   const quickAdd = (e: React.MouseEvent, p: Product) => {
     e.stopPropagation();
     addItem({
-      product: p, quantity: 1,
-      selectedSize: { id: '8pc', label: '8 pieces', priceModifier: 0 },
-      selectedExtras: [], unitPrice: p.price,
+      product: p,
+      quantity: 1,
+      selectedSize: { id: "8pc", label: "8 pieces", priceModifier: 0 },
+      selectedExtras: [],
+      unitPrice: p.price,
     });
-    addToast(`${p.name} ${t.cart.added}`, 'success');
+    addToast(`${p.name} ${t.cart.added}`, "success");
   };
 
   return (
@@ -46,7 +48,7 @@ export default function FavoritesScreen() {
       className="absolute inset-0 bg-canvas flex flex-col"
     >
       {/* Header */}
-      <div className="bg-white px-4 pt-12 pb-4 flex items-center gap-3 border-b border-border-light">
+      <div className="bg-white px-4 py-4 flex items-center gap-3 border-b border-border-light">
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={goBack}
@@ -55,8 +57,12 @@ export default function FavoritesScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div>
-          <h1 className="font-outfit text-[18px] font-bold text-text-primary">{t.favoritesScreen.title}</h1>
-          <p className="text-[12px] text-text-secondary">{favorites.length} {t.common.item}</p>
+          <h1 className="font-outfit text-[18px] font-bold text-text-primary">
+            {t.favoritesScreen.title}
+          </h1>
+          <p className="text-[12px] text-text-secondary">
+            {favorites.length} {t.common.item}
+          </p>
         </div>
       </div>
 
@@ -66,7 +72,9 @@ export default function FavoritesScreen() {
             <div className="w-20 h-20 rounded-full bg-coral/10 flex items-center justify-center mb-4">
               <Heart size={36} className="text-coral" />
             </div>
-            <p className="font-outfit text-[17px] font-bold text-text-primary">{t.favoritesScreen.empty}</p>
+            <p className="font-outfit text-[17px] font-bold text-text-primary">
+              {t.favoritesScreen.empty}
+            </p>
             <p className="text-text-secondary text-[13px] mt-1">
               {t.favoritesScreen.emptyNote}
             </p>
@@ -88,7 +96,11 @@ export default function FavoritesScreen() {
                   className="bg-white rounded-2xl border border-border-light shadow-xs overflow-hidden cursor-pointer"
                 >
                   <div className="relative aspect-[4/3]">
-                    <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="w-full h-full object-cover"
+                    />
                     <motion.button
                       whileTap={{ scale: 0.8 }}
                       onClick={(e) => unlike(e, p.id)}
@@ -98,14 +110,19 @@ export default function FavoritesScreen() {
                     </motion.button>
                   </div>
                   <div className="p-3">
-                    <h3 className="text-[13px] font-semibold text-text-primary truncate">{p.name}</h3>
+                    <h3 className="text-[13px] font-semibold text-text-primary truncate">
+                      {p.name}
+                    </h3>
                     <div className="flex items-center gap-1 mt-1">
                       <Star size={11} className="text-warning fill-warning" />
-                      <span className="text-[11px] text-text-secondary">{p.rating}</span>
+                      <span className="text-[11px] text-text-secondary">
+                        {p.rating}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-primary font-outfit text-[14px] font-bold">
-                        <span className="text-[10px]">{t.common.currency}</span> {p.price}
+                        <span className="text-[10px]">{t.common.currency}</span>{" "}
+                        {p.price}
                       </p>
                       <motion.button
                         whileTap={{ scale: 0.8 }}
