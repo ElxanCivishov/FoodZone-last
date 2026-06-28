@@ -4,6 +4,7 @@ import { LANG_CODES } from "@/utils/lang";
 import { motion } from "framer-motion";
 import { Globe } from "lucide-react";
 import { SPRING } from "./constants";
+import { useT } from "@/hooks/useT";
 
 const LANG_LABELS: Record<string, string> = {
   az: "Azərbaycan",
@@ -19,9 +20,11 @@ export default function LanguageCard({
   language: string;
   onOpen: () => void;
 }) {
+  const t = useT();
+
   return (
     <div>
-      <SectionLabel>Dil</SectionLabel>
+      <SectionLabel>{t.settings.language}</SectionLabel>
       <motion.button
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -32,7 +35,7 @@ export default function LanguageCard({
       >
         <IconDot><Globe size={16} className="text-primary" /></IconDot>
         <div className="flex-1 text-left">
-          <p className="text-[14px] font-medium text-text-primary">Dil seçimi</p>
+          <p className="text-[14px] font-medium text-text-primary">{t.settings.languageChoice}</p>
           <p className="text-[12px] text-text-secondary">
             {LANG_LABELS[language] ?? "Azərbaycan"}
           </p>

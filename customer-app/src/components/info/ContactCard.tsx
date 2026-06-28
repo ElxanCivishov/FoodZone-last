@@ -3,19 +3,21 @@ import CardShell from "@/components/ui/CardShell";
 import IconDot from "@/components/ui/IconDot";
 import { RESTAURANT_INFO } from "@/data/restaurantInfo";
 import { ChevronRight, ExternalLink, MapPin, Phone } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 export default function ContactCard({
   addToast,
 }: {
   addToast: (m: string, t?: "success" | "error" | "info") => void;
 }) {
+  const t = useT();
   const mapsUrl = `https://www.google.com/maps?q=${RESTAURANT_INFO.coordinates.lat},${RESTAURANT_INFO.coordinates.lng}`;
 
   return (
     <CardShell>
       <CardHeader
         icon={<IconDot><Phone size={15} className="text-primary" /></IconDot>}
-        title="Əlaqə"
+        title={t.info.contact}
         pb="pb-2"
       />
 
@@ -27,7 +29,7 @@ export default function ContactCard({
           <Phone size={13} className="text-success" />
         </IconDot>
         <div className="flex-1">
-          <p className="text-[11px] text-text-tertiary mb-0.5">Telefon</p>
+          <p className="text-[11px] text-text-tertiary mb-0.5">{t.info.phone}</p>
           <p className="text-[14px] font-semibold text-primary">
             {RESTAURANT_INFO.phone}
           </p>
@@ -45,7 +47,7 @@ export default function ContactCard({
           <MapPin size={13} className="text-primary" />
         </IconDot>
         <div className="flex-1">
-          <p className="text-[11px] text-text-tertiary mb-0.5">Ünvan</p>
+          <p className="text-[11px] text-text-tertiary mb-0.5">{t.info.address}</p>
           <p className="text-[14px] font-semibold text-text-primary">
             {RESTAURANT_INFO.address}
           </p>

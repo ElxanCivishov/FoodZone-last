@@ -6,9 +6,11 @@ import { useUIStore } from "@/store";
 import { getTierInfo, tierProgress } from "@/utils/loyalty";
 import { motion } from "framer-motion";
 import { ChevronRight, LogIn, Star } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 export default function ProfileScreen() {
   const { setScreen, openModal, language, userInfo, isLoggedIn } = useUIStore();
+  const t = useT();
 
   const tierInfo = getTierInfo(MOCK_XP);
   const xpProgress = tierProgress(MOCK_XP);
@@ -16,10 +18,10 @@ export default function ProfileScreen() {
     ? `${MOCK_XP} / ${tierInfo.nextMin} XP`
     : `${MOCK_XP} XP`;
 
-  const displayName = userInfo?.name || "Qonaq İstifadəçi";
+  const displayName = userInfo?.name || t.profile.guestUser;
 
   const handleItem = (item: MenuItem) => {
-    if (item.label === "Dil seçimi") {
+    if (item.action === "language") {
       openModal("language");
       return;
     }
@@ -61,10 +63,10 @@ export default function ProfileScreen() {
           </div>
           <div className="flex-1 text-left">
             <p className="text-[15px] font-medium text-text-primary">
-              Rəy bildir
+              {t.profile.feedbackTitle}
             </p>
             <p className="text-[12px] text-text-secondary mt-0.5">
-              Xidmətimizi qiymətləndir
+              {t.profile.feedbackSub}
             </p>
           </div>
           <ChevronRight size={16} className="text-text-tertiary" />
@@ -81,7 +83,7 @@ export default function ProfileScreen() {
             style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
           >
             <LogIn size={16} />
-            Daxil ol / Qeydiyyat
+            {t.profile.loginRegister}
           </motion.button>
         )}
       </div>

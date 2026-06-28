@@ -7,8 +7,11 @@ import { AlertTriangle, Bell, BellOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type NotifPermission, SPRING } from "./constants";
 import Toggle from "./Toggle";
+import { useT } from "@/hooks/useT";
 
 function PermissionBanner({ permission }: { permission: NotifPermission }) {
+  const t = useT();
+
   if (permission === "granted" || permission === "default") return null;
 
   return (
@@ -34,20 +37,19 @@ function PermissionBanner({ permission }: { permission: NotifPermission }) {
             {permission === "denied" ? (
               <>
                 <p className="text-[13px] font-semibold text-error">
-                  Bildiriş icazəsi rədd edilib
+                  {t.settings.permissionDenied}
                 </p>
                 <p className="text-[12px] text-text-secondary mt-0.5">
-                  Brauzer tənzimləmələrindən bu sayt üçün bildirişlərə icazə
-                  verin.
+                  {t.settings.permissionDeniedText}
                 </p>
               </>
             ) : (
               <>
                 <p className="text-[13px] font-semibold text-warning">
-                  Bildirişlər dəstəklənmir
+                  {t.settings.unsupported}
                 </p>
                 <p className="text-[12px] text-text-secondary mt-0.5">
-                  Bu brauzer push bildirişlərini dəstəkləmir.
+                  {t.settings.unsupportedText}
                 </p>
               </>
             )}
@@ -58,24 +60,6 @@ function PermissionBanner({ permission }: { permission: NotifPermission }) {
   );
 }
 
-const SUB_ROWS = [
-  {
-    key: "waiterUpdates" as const,
-    label: "Ofisiant statusu",
-    sub: "Müraciət qəbul/cavab bildirişi",
-  },
-  {
-    key: "orderUpdates" as const,
-    label: "Sifariş statusu",
-    sub: "Hazırlanma, servis bildirişi",
-  },
-  {
-    key: "promos" as const,
-    label: "Kampaniyalar",
-    sub: "Endirim və xüsusi təkliflər",
-  },
-];
-
 type Settings = {
   pushNotif: boolean;
   waiterUpdates: boolean;
@@ -84,6 +68,7 @@ type Settings = {
 };
 
 export default function NotificationsCard() {
+  const t = useT();
   const [permission, setPermission] = useState<NotifPermission>("default");
   const [settings, setSettings] = useState<Settings>({
     pushNotif: false,
@@ -132,10 +117,27 @@ export default function NotificationsCard() {
   const toggle = (key: keyof Settings) => {
     setSettings((s) => ({ ...s, [key]: !s[key] }));
   };
+  const subRows = [
+    {
+      key: "waiterUpdates" as const,
+      label: t.settings.waiterStatus,
+      sub: t.settings.waiterStatusSub,
+    },
+    {
+      key: "orderUpdates" as const,
+      label: t.settings.orderStatus,
+      sub: t.settings.orderStatusSub,
+    },
+    {
+      key: "promos" as const,
+      label: t.settings.promos,
+      sub: t.settings.promosSub,
+    },
+  ];
 
   return (
     <div>
-      <SectionLabel>Bildirişlər</SectionLabel>
+      <SectionLabel>{t.settings.notifications}</SectionLabel>
 
       <PermissionBanner permission={permission} />
 
@@ -157,17 +159,17 @@ export default function NotificationsCard() {
                 )}
               </IconDot>
             }
-            label="Push bildirişlər"
+            label={t.settings.pushNotifications}
             sub={
               permission === "granted" && settings.pushNotif
-                ? "Aktiv"
+                ? t.settings.active
                 : permission === "granted" && !settings.pushNotif
-                  ? "Söndürülüb"
+                  ? t.settings.disabled
                   : permission === "denied"
-                    ? "Brauzer tərəfindən blok edilib"
+                    ? t.settings.blocked
                     : permission === "default"
-                      ? "İcazə tələb olunur"
-                      : "Brauzer dəstəkləmir"
+                      ? t.settings.permissionRequired
+                      : t.settings.browserUnsupported
             }
             right={
               <Toggle
@@ -180,7 +182,7 @@ export default function NotificationsCard() {
         </motion.div>
 
         {/* Sub-toggles */}
-        {SUB_ROWS.map(({ key, label, sub }, i) => {
+        {subRows.map(({ key, label, sub }, i) => {
           const isOn = settings[key];
           const disabled = !settings.pushNotif || isPushDisabled;
           return (
@@ -191,7 +193,7 @@ export default function NotificationsCard() {
               transition={{ delay: 0.1 + i * 0.05, ...SPRING }}
             >
               <SettingsRow
-                border={i < SUB_ROWS.length - 1}
+                border={i < subRows.length - 1}
                 icon={
                   <IconDot>
                     <Bell

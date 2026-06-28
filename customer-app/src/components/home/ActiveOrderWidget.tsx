@@ -4,19 +4,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight, Clock } from "lucide-react";
 
 import { SPRING } from "@/utils/motion";
-
-const STATUS_LABELS: Partial<Record<OrderStatus, string>> = {
-  payment_pending: "Ödəniş gözlənilir",
-  new: "Qəbul edildi",
-  preparing: "Hazırlanır",
-  ready: "Hazırdır!",
-  served: "Servis edildi",
-  on_the_way: "Yolda",
-};
+import { useT } from "@/hooks/useT";
 
 export default function ActiveOrderWidget() {
+  const t = useT();
   const currentOrder = useOrderStore((s) => s.currentOrder);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const statusLabels: Partial<Record<OrderStatus, string>> = {
+    payment_pending: t.order.statuses.paymentPending,
+    new: t.order.statuses.new,
+    preparing: t.order.statuses.preparing,
+    ready: t.order.statuses.ready,
+    served: t.order.statuses.served,
+    on_the_way: t.order.statuses.onTheWay,
+  };
 
   const activeOrder =
     currentOrder &&
@@ -48,10 +49,10 @@ export default function ActiveOrderWidget() {
             </motion.div>
             <div className="flex-1 text-left">
               <p className="text-[13px] font-bold text-primary leading-tight">
-                {STATUS_LABELS[activeOrder.status] ?? "Sifarişiniz"}
+                {statusLabels[activeOrder.status] ?? t.order.yourOrder}
               </p>
               <p className="text-[11px] text-text-secondary mt-0.5">
-                #{activeOrder.id.slice(-5)} • {activeOrder.total.toFixed(2)} AZN
+                #{activeOrder.id.slice(-5)} • {activeOrder.total.toFixed(2)} {t.common.currency}
               </p>
             </div>
             <motion.div

@@ -7,6 +7,7 @@ import {
   HandPlatter,
 } from "lucide-react";
 import { useUIStore } from "@/store";
+import { useT } from "@/hooks/useT";
 
 const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
@@ -108,6 +109,7 @@ function RatingRow({
 
 export default function ReviewsScreen() {
   const { goBack, openModal } = useUIStore();
+  const t = useT();
 
   return (
     <motion.div
@@ -148,10 +150,10 @@ export default function ReviewsScreen() {
           </motion.button>
           <div>
             <h1 className="font-outfit text-[20px] font-bold text-white">
-              Rəylərim
+              {t.reviewsScreen.title}
             </h1>
             <p className="text-white/50 text-[12px] mt-0.5">
-              {REVIEWS.length} rəy bildirilib
+              {REVIEWS.length} {t.reviewsScreen.submitted}
             </p>
           </div>
         </div>
@@ -171,7 +173,7 @@ export default function ReviewsScreen() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 w-20 shrink-0">
                 <UtensilsCrossed size={11} className="text-white/60" />
-                <span className="text-white/60 text-[11px]">Yemək</span>
+                <span className="text-white/60 text-[11px]">{t.reviewsScreen.meal}</span>
               </div>
               <div className="flex-1 h-1.5 rounded-full bg-white/10">
                 <motion.div
@@ -188,7 +190,7 @@ export default function ReviewsScreen() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 w-20 shrink-0">
                 <HandPlatter size={11} className="text-white/60" />
-                <span className="text-white/60 text-[11px]">Xidmət</span>
+                <span className="text-white/60 text-[11px]">{t.reviewsScreen.service}</span>
               </div>
               <div className="flex-1 h-1.5 rounded-full bg-white/10">
                 <motion.div
@@ -235,12 +237,12 @@ export default function ReviewsScreen() {
             {/* Ratings */}
             <div className="px-4 py-3 space-y-2.5">
               <RatingRow
-                label="Yemək"
+                label={t.reviewsScreen.meal}
                 value={r.mealRating}
                 Icon={UtensilsCrossed}
               />
               <RatingRow
-                label="Xidmət"
+                label={t.reviewsScreen.service}
                 value={r.serviceRating}
                 Icon={HandPlatter}
               />
@@ -271,10 +273,10 @@ export default function ReviewsScreen() {
           </div>
           <div className="text-left flex-1">
             <p className="text-[14px] font-semibold text-text-primary">
-              Yeni rəy bildir
+              {t.reviewsScreen.newReview}
             </p>
             <p className="text-[12px] text-text-secondary mt-0.5">
-              Sifarişinizi qiymətləndirin
+              {t.reviewsScreen.rateOrder}
             </p>
           </div>
           <Star size={16} className="text-warning fill-warning" />

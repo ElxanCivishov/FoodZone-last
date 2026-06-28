@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { SPRING, STATS } from "./constants";
+import { useT } from "@/hooks/useT";
 
 const ICON_GRADIENTS = [
   "linear-gradient(135deg,#00c2e8,#00c2a8)",
@@ -8,6 +9,9 @@ const ICON_GRADIENTS = [
 ];
 
 export default function ProfileStats() {
+  const t = useT();
+  const profileText = t.profile as Record<string, string>;
+
   return (
     <div className="relative z-20 -mt-[38px] px-4 shrink-0">
       <div className="flex gap-3">
@@ -15,7 +19,7 @@ export default function ProfileStats() {
           const Icon = s.icon;
           return (
             <motion.div
-              key={s.label}
+              key={s.labelKey}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 + i * 0.08, ...SPRING }}
@@ -31,7 +35,7 @@ export default function ProfileStats() {
                 {s.value}
               </p>
               <p className="text-text-tertiary text-[10px] mt-0.5 font-medium">
-                {s.label}
+                {profileText[s.labelKey]}
               </p>
             </motion.div>
           );

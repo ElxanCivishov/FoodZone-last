@@ -10,8 +10,10 @@ import { useUIStore } from "@/store";
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
 
 export default function SettingsScreen() {
+  const t = useT();
   const { goBack, setScreen, openModal, language, logout, isLoggedIn, isDark, toggleDark } =
     useUIStore();
 
@@ -40,7 +42,7 @@ export default function SettingsScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <h1 className="font-outfit text-[20px] font-bold text-text-primary">
-          Tənzimləmələr
+          {t.settings.title}
         </h1>
       </div>
 

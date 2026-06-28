@@ -1,5 +1,6 @@
 import type { Product } from "@/types";
 import { motion } from "framer-motion";
+import { useT } from "@/hooks/useT";
 
 const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
@@ -12,6 +13,8 @@ export default function NewArrivalsCarousel({
   products,
   onOpen,
 }: NewArrivalsCarouselProps) {
+  const t = useT();
+
   return (
     <div className="px-4">
       <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1">
@@ -47,7 +50,7 @@ export default function NewArrivalsCarousel({
                 {p.desc}
               </p>
               <p className="text-primary font-outfit text-sm font-bold mt-1.5">
-                <span className="text-[10px]">AZN</span> {p.price}
+                <span className="text-[10px]">{t.common.currency}</span> {p.price}
               </p>
             </div>
           </motion.div>

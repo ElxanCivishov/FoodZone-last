@@ -1,6 +1,7 @@
 import type { OrderType, PaymentMethod } from "@/types";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2, Lock } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 interface CheckoutCTAProps {
   orderType: OrderType;
@@ -36,12 +37,14 @@ export default function CheckoutCTA({
   itemsEmpty,
   onOrder,
 }: CheckoutCTAProps) {
+  const t = useT();
+
   if (orderType === "delivery" && !isLoggedIn)
-    return <WarningBox msg="Çatdırılma üçün hesabınıza daxil olun" />;
+    return <WarningBox msg={t.checkout.loginForDelivery} />;
   if (orderType === "delivery" && !hasAddr)
-    return <WarningBox msg="Çatdırılma ünvanı seçin" />;
+    return <WarningBox msg={t.checkout.chooseDeliveryAddress} />;
   if (effectivePayMethod === "card" && !selectedCardId && !showNewCard)
-    return <WarningBox msg="Kart seçin və ya yeni əlavə edin" />;
+    return <WarningBox msg={t.checkout.chooseCard} />;
 
   return (
     <motion.button
@@ -55,10 +58,10 @@ export default function CheckoutCTA({
         <Loader2 size={20} className="animate-spin" />
       ) : effectivePayMethod === "card" ? (
         <>
-          <Lock size={16} /> Ödəniş et — {total.toFixed(2)} AZN
+          <Lock size={16} /> {t.checkout.pay} — {total.toFixed(2)} {t.common.currency}
         </>
       ) : (
-        `Sifariş ver — ${total.toFixed(2)} AZN`
+        `${t.checkout.placeOrder} — ${total.toFixed(2)} ${t.common.currency}`
       )}
     </motion.button>
   );

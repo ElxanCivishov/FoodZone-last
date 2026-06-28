@@ -16,6 +16,7 @@ import { generateOrderId, getCurrentTime } from "@/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
 
 export default function CheckoutScreen() {
   const {
@@ -30,6 +31,7 @@ export default function CheckoutScreen() {
   const { items, getSubtotal, getServiceFee, getTotal, clearCart } =
     useCartStore();
   const { addOrder } = useOrderStore();
+  const t = useT();
 
   const [orderType, setOrderType] = useState<OrderType>(
     isQRSession ? "dine_in" : "take_away",
@@ -57,9 +59,9 @@ export default function CheckoutScreen() {
   const applyPromo = () => {
     if (promoCode.trim().toUpperCase() === "FOOD10") {
       setPromoApplied(true);
-      addToast("Promo kod tətbiq edildi! -10%", "success");
+      addToast(`${t.checkout.promoApplied}`, "success");
     } else {
-      addToast("Yanlış promo kod", "error");
+      addToast(t.coupons.invalid, "error");
     }
   };
 
@@ -67,12 +69,12 @@ export default function CheckoutScreen() {
     SAVED_CARDS.push(card);
     setSelectedCardId(card.id);
     setShowNewCard(false);
-    addToast("Kart əlavə edildi", "success");
+    addToast(t.checkout.addCard, "success");
   };
 
   const handleOrder = () => {
     if (orderType === "delivery" && !isLoggedIn) {
-      addToast("Çatdırılma üçün daxil olun", "error");
+      addToast(t.checkout.loginForDelivery, "error");
       return;
     }
     setLoading(true);
@@ -121,7 +123,7 @@ export default function CheckoutScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <h2 className="font-outfit text-[17px] font-bold text-text-primary">
-          Sifariş növü seç
+          {t.checkout.chooseOrderType}
         </h2>
       </div>
 

@@ -11,8 +11,10 @@ import { RESTAURANT_INFO } from "@/data/restaurantInfo";
 import { useUIStore } from "@/store";
 import { motion } from "framer-motion";
 import { MessageSquare } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 export default function InfoScreen() {
+  const t = useT();
   const { setScreen, openModal, addToast } = useUIStore();
   const today = new Date().getDay();
 
@@ -51,7 +53,7 @@ export default function InfoScreen() {
             style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
           >
             <MessageSquare size={18} />
-            Rəy bildir
+            {t.modal.feedback}
           </motion.button>
         </div>
       </div>

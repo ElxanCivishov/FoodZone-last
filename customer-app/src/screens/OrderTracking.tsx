@@ -11,104 +11,33 @@ import {
   Truck,
   Utensils,
 } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 interface TimelineStep {
   status: OrderStatus;
-  title: string;
-  subtitle: string;
   icon: typeof CheckCircle2;
 }
 
 const STEPS_BY_TYPE: Record<OrderType, TimelineStep[]> = {
   dine_in: [
-    {
-      status: "new",
-      title: "Qəbul edildi",
-      subtitle: "Sifarişiniz sistemə daxil oldu",
-      icon: CheckCircle2,
-    },
-    {
-      status: "preparing",
-      title: "Hazırlanır",
-      subtitle: "Aşpazımız işə başladı",
-      icon: Flame,
-    },
-    {
-      status: "ready",
-      title: "Hazırdır",
-      subtitle: "Sifarişiniz hazırlanıb",
-      icon: Package,
-    },
-    {
-      status: "served",
-      title: "Xidmət edildi",
-      subtitle: "Masanıza gətirildi",
-      icon: Utensils,
-    },
-    {
-      status: "completed",
-      title: "Tamamlandı",
-      subtitle: "Nuş olsun!",
-      icon: Star,
-    },
+    { status: "new", icon: CheckCircle2 },
+    { status: "preparing", icon: Flame },
+    { status: "ready", icon: Package },
+    { status: "served", icon: Utensils },
+    { status: "completed", icon: Star },
   ],
   take_away: [
-    {
-      status: "new",
-      title: "Qəbul edildi",
-      subtitle: "Sifarişiniz sistemə daxil oldu",
-      icon: CheckCircle2,
-    },
-    {
-      status: "preparing",
-      title: "Hazırlanır",
-      subtitle: "Aşpazımız işə başladı",
-      icon: Flame,
-    },
-    {
-      status: "ready",
-      title: "Hazırdır",
-      subtitle: "Götürməyə hazırdır",
-      icon: Package,
-    },
-    {
-      status: "completed",
-      title: "Tamamlandı",
-      subtitle: "Nuş olsun!",
-      icon: Star,
-    },
+    { status: "new", icon: CheckCircle2 },
+    { status: "preparing", icon: Flame },
+    { status: "ready", icon: Package },
+    { status: "completed", icon: Star },
   ],
   delivery: [
-    {
-      status: "new",
-      title: "Qəbul edildi",
-      subtitle: "Sifarişiniz sistemə daxil oldu",
-      icon: CheckCircle2,
-    },
-    {
-      status: "preparing",
-      title: "Hazırlanır",
-      subtitle: "Aşpazımız işə başladı",
-      icon: Flame,
-    },
-    {
-      status: "ready",
-      title: "Hazırdır",
-      subtitle: "Kuryerimiz sifarişinizi təhvil alır",
-      icon: Package,
-    },
-    {
-      status: "on_the_way",
-      title: "Yoldadır",
-      subtitle: "Kuryerimiz sizə doğru gəlir",
-      icon: Truck,
-    },
-    {
-      status: "delivered",
-      title: "Çatdırıldı",
-      subtitle: "Nuş olsun!",
-      icon: CheckCircle2,
-    },
+    { status: "new", icon: CheckCircle2 },
+    { status: "preparing", icon: Flame },
+    { status: "ready", icon: Package },
+    { status: "on_the_way", icon: Truck },
+    { status: "delivered", icon: CheckCircle2 },
   ],
 };
 
@@ -117,6 +46,7 @@ const SPRING = { type: "spring" as const, stiffness: 380, damping: 30 };
 export default function OrderTracking() {
   const { goBack, openModal } = useUIStore();
   const currentOrder = useOrderStore((s) => s.currentOrder);
+  const t = useT();
 
   const orderType = (currentOrder?.orderType ?? "dine_in") as OrderType;
   const STEPS = STEPS_BY_TYPE[orderType] ?? STEPS_BY_TYPE.dine_in;
@@ -131,6 +61,17 @@ export default function OrderTracking() {
   const progressPercent = ((currentStatusIndex + 1) / STEPS.length) * 100;
   const estimatedTime = currentOrder?.estimatedTime ?? 12;
   const orderId = currentOrder?.id ?? "#1001";
+  const stepText = t.order.trackingSteps;
+
+  const getStepText = (status: OrderStatus) => {
+    if (status === "ready") {
+      if (orderType === "delivery") return stepText.readyDelivery;
+      if (orderType === "take_away") return stepText.readyTakeAway;
+      return stepText.readyDineIn;
+    }
+    if (status === "on_the_way") return stepText.onTheWay;
+    return stepText[status as keyof typeof stepText] ?? stepText.new;
+  };
 
   return (
     <motion.div
@@ -150,7 +91,7 @@ export default function OrderTracking() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <h2 className="font-outfit text-[17px] font-bold text-text-primary">
-          Sifariş {orderId}
+          {t.order.trackingTitle} {orderId}
         </h2>
         <div className="w-10" />
       </div>
@@ -175,12 +116,12 @@ export default function OrderTracking() {
               <Clock size={28} className="text-white" />
             </div>
             <p className="text-[13px] text-text-secondary font-medium">
-              Təxmini hazırlanma vaxtı
+              {t.order.preparationTime}
             </p>
             <p className="font-outfit text-[34px] font-bold text-text-primary mt-1 leading-none">
               {estimatedTime}{" "}
               <span className="text-lg font-semibold text-text-secondary">
-                dəq
+                {t.common.minutes}
               </span>
             </p>
           </div>
@@ -216,6 +157,7 @@ export default function OrderTracking() {
                 const active = i === currentStatusIndex;
                 const pending = i > currentStatusIndex;
                 const Icon = step.icon;
+                const copy = getStepText(step.status);
 
                 return (
                   <motion.div
@@ -244,10 +186,10 @@ export default function OrderTracking() {
                       <p
                         className={`text-sm font-semibold ${pending ? "text-text-tertiary" : "text-text-primary"}`}
                       >
-                        {step.title}
+                        {copy.title}
                       </p>
                       <p className="text-[12px] text-text-tertiary mt-0.5">
-                        {step.subtitle}
+                        {copy.subtitle}
                       </p>
                     </div>
 
@@ -273,7 +215,7 @@ export default function OrderTracking() {
             className="bg-white rounded-2xl p-5 shadow-xs border border-border-light"
           >
             <h3 className="font-outfit text-[15px] font-bold text-text-primary mb-4">
-              Sifariş Detalları
+              {t.order.details}
             </h3>
             {currentOrder.items.map((item, i) => (
               <div
@@ -290,42 +232,42 @@ export default function OrderTracking() {
                     {item.product.name}
                   </p>
                   <p className="text-[12px] text-text-secondary mt-0.5">
-                    {item.quantity} × {item.unitPrice.toFixed(2)} AZN
+                    {item.quantity} × {item.unitPrice.toFixed(2)} {t.common.currency}
                   </p>
                 </div>
                 <span className="text-sm font-bold text-text-primary self-center">
-                  {(item.unitPrice * item.quantity).toFixed(2)} AZN
+                  {(item.unitPrice * item.quantity).toFixed(2)} {t.common.currency}
                 </span>
               </div>
             ))}
 
             <div className="mt-3 pt-3 border-t border-border-light space-y-1.5">
               <div className="flex justify-between text-[13px]">
-                <span className="text-text-secondary">Ara cəmi</span>
+                <span className="text-text-secondary">{t.cart.subtotal}</span>
                 <span className="text-text-primary font-medium">
-                  {currentOrder.subtotal.toFixed(2)} AZN
+                  {currentOrder.subtotal.toFixed(2)} {t.common.currency}
                 </span>
               </div>
               <div className="flex justify-between text-[13px]">
-                <span className="text-text-secondary">Xidmət haqqı</span>
+                <span className="text-text-secondary">{t.cart.serviceFee}</span>
                 <span className="text-text-secondary">
-                  {currentOrder.serviceFee.toFixed(2)} AZN
+                  {currentOrder.serviceFee.toFixed(2)} {t.common.currency}
                 </span>
               </div>
               {currentOrder.discount > 0 && (
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-text-secondary">Endirim</span>
+                  <span className="text-text-secondary">{t.checkout.discount}</span>
                   <span className="text-success font-medium">
-                    -{currentOrder.discount.toFixed(2)} AZN
+                    -{currentOrder.discount.toFixed(2)} {t.common.currency}
                   </span>
                 </div>
               )}
               <div className="flex justify-between pt-2 border-t border-border-light">
                 <span className="font-outfit text-[16px] font-bold text-text-primary">
-                  Ümumi
+                  {t.cart.total}
                 </span>
                 <span className="font-outfit text-[16px] font-bold text-primary">
-                  {currentOrder.total.toFixed(2)} AZN
+                  {currentOrder.total.toFixed(2)} {t.common.currency}
                 </span>
               </div>
             </div>
@@ -343,7 +285,7 @@ export default function OrderTracking() {
           style={{ background: "linear-gradient(135deg, #00c2e8, #00c2a8)" }}
         >
           <Star size={18} className="fill-white text-white" />
-          Qiymətləndir
+          {t.order.rate}
         </motion.button>
       </div>
     </motion.div>

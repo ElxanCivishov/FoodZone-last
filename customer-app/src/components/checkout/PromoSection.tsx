@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Tag } from "lucide-react";
 import { Section } from "./CheckoutSection";
+import { useT } from "@/hooks/useT";
 
 interface PromoSectionProps {
   promoCode: string;
@@ -15,12 +16,14 @@ export default function PromoSection({
   onChange,
   onApply,
 }: PromoSectionProps) {
+  const t = useT();
+
   return (
-    <Section title="Promo kod" icon={<Tag size={16} className="text-primary" />}>
+    <Section title={t.checkout.promoCode} icon={<Tag size={16} className="text-primary" />}>
       <div className="flex gap-2">
         <input
           type="text"
-          placeholder="Kodu daxil edin…"
+          placeholder={t.checkout.promoPlaceholder}
           value={promoCode}
           onChange={(e) => onChange(e.target.value.toUpperCase())}
           disabled={promoApplied}
@@ -33,7 +36,7 @@ export default function PromoSection({
           className="px-4 py-3 rounded-xl text-[13px] font-semibold text-white disabled:opacity-50"
           style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
         >
-          {promoApplied ? "✓" : "Tətbiq et"}
+          {promoApplied ? "✓" : t.checkout.apply}
         </motion.button>
       </div>
       <AnimatePresence>
@@ -44,7 +47,7 @@ export default function PromoSection({
             exit={{ opacity: 0 }}
             className="text-success text-[12px] font-semibold mt-2 flex items-center gap-1"
           >
-            <CheckCircle2 size={13} /> FOOD10 — 10% endirim tətbiq edildi
+            <CheckCircle2 size={13} /> {t.checkout.promoApplied}
           </motion.p>
         )}
       </AnimatePresence>

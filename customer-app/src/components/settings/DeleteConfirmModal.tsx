@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import { SPRING } from "./constants";
+import { useT } from "@/hooks/useT";
 
 interface DeleteConfirmModalProps {
   show: boolean;
@@ -14,6 +15,8 @@ export default function DeleteConfirmModal({
   onClose,
   onConfirm,
 }: DeleteConfirmModalProps) {
+  const t = useT();
+
   return createPortal(
     <AnimatePresence>
       {show && (
@@ -39,11 +42,10 @@ export default function DeleteConfirmModal({
                 <AlertTriangle size={26} className="text-red-500" />
               </div>
               <h3 className="font-outfit text-[18px] font-bold text-text-primary text-center">
-                Profili sil?
+                {t.settings.deleteTitle}
               </h3>
               <p className="text-[13px] text-text-secondary text-center mt-2 leading-relaxed">
-                Bu əməliyyat geri qaytarıla bilməz. Hesabınız, sifariş
-                tarixçəniz və bütün məlumatlarınız həmişəlik silinəcək.
+                {t.settings.deleteText}
               </p>
               <div className="flex gap-3 mt-6">
                 <motion.button
@@ -52,7 +54,7 @@ export default function DeleteConfirmModal({
                   className="flex-1 h-12 rounded-2xl border-2 border-border text-[14px] font-semibold text-text-secondary flex items-center justify-center gap-1.5 hover:border-primary hover:text-primary transition-colors"
                 >
                   <X size={15} />
-                  Ləğv et
+                  {t.common.cancel}
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
@@ -61,7 +63,7 @@ export default function DeleteConfirmModal({
                   style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)" }}
                 >
                   <Trash2 size={15} />
-                  Sil
+                  {t.common.delete}
                 </motion.button>
               </div>
             </div>

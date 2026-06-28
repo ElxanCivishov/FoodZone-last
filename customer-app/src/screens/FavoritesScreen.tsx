@@ -4,12 +4,14 @@ import { ChevronLeft, Heart, Plus, Star } from 'lucide-react';
 import { useUIStore, useCartStore } from '@/store';
 import { allProducts } from '@/data/menuData';
 import type { Product } from '@/types';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
 const INITIAL_LIKES = new Set([1, 3, 7]);
 
 export default function FavoritesScreen() {
+  const t = useT();
   const { goBack, openProductModal, addToast } = useUIStore();
   const addItem = useCartStore((s) => s.addItem);
   const [liked, setLiked] = useState<Set<number>>(INITIAL_LIKES);
@@ -32,7 +34,7 @@ export default function FavoritesScreen() {
       selectedSize: { id: '8pc', label: '8 pieces', priceModifier: 0 },
       selectedExtras: [], unitPrice: p.price,
     });
-    addToast(`${p.name} səbətə əlavə edildi!`, 'success');
+    addToast(`${p.name} ${t.cart.added}`, 'success');
   };
 
   return (
@@ -53,8 +55,8 @@ export default function FavoritesScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div>
-          <h1 className="font-outfit text-[18px] font-bold text-text-primary">Seçilmişlər</h1>
-          <p className="text-[12px] text-text-secondary">{favorites.length} məhsul</p>
+          <h1 className="font-outfit text-[18px] font-bold text-text-primary">{t.favoritesScreen.title}</h1>
+          <p className="text-[12px] text-text-secondary">{favorites.length} {t.common.item}</p>
         </div>
       </div>
 
@@ -64,9 +66,9 @@ export default function FavoritesScreen() {
             <div className="w-20 h-20 rounded-full bg-coral/10 flex items-center justify-center mb-4">
               <Heart size={36} className="text-coral" />
             </div>
-            <p className="font-outfit text-[17px] font-bold text-text-primary">Seçilmiş yoxdur</p>
+            <p className="font-outfit text-[17px] font-bold text-text-primary">{t.favoritesScreen.empty}</p>
             <p className="text-text-secondary text-[13px] mt-1">
-              Məhsul kartındakı ürəyə klikləyin
+              {t.favoritesScreen.emptyNote}
             </p>
           </div>
         ) : (
@@ -103,7 +105,7 @@ export default function FavoritesScreen() {
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-primary font-outfit text-[14px] font-bold">
-                        <span className="text-[10px]">AZN</span> {p.price}
+                        <span className="text-[10px]">{t.common.currency}</span> {p.price}
                       </p>
                       <motion.button
                         whileTap={{ scale: 0.8 }}

@@ -4,6 +4,7 @@ import { ChevronLeft, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { useUIStore } from '@/store';
 import PhoneInput, { DEFAULT_COUNTRY } from '@/components/PhoneInput';
 import type { Country } from '@/components/PhoneInput';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
@@ -11,6 +12,7 @@ type Mode = 'login' | 'register';
 
 export default function LoginScreen() {
   const { goBack, setScreen, addToast, login, isDark } = useUIStore();
+  const t = useT();
   const [mode, setMode] = useState<Mode>('login');
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
@@ -23,12 +25,12 @@ export default function LoginScreen() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     login({
-      name:    form.name  || 'İstifadəçi',
+      name:    form.name  || t.auth.defaultUser,
       phone:   form.phone ? `${phoneCountry.prefix} ${form.phone}` : '',
       email:   form.email,
       address: '',
     });
-    addToast(mode === 'login' ? 'Uğurla daxil oldunuz!' : 'Qeydiyyat tamamlandı!', 'success');
+    addToast(mode === 'login' ? t.auth.loginSuccess : t.auth.registerSuccess, 'success');
     setScreen('home');
   };
 
@@ -90,7 +92,7 @@ export default function LoginScreen() {
           transition={{ delay: 0.35 }}
           className="text-white/75 text-[13px] mt-1"
         >
-          {mode === 'login' ? 'Hesabınıza daxil olun' : 'Yeni hesab yaradın'}
+          {mode === 'login' ? t.auth.loginSubtitle : t.auth.registerSubtitle}
         </motion.p>
       </div>
 
@@ -111,7 +113,7 @@ export default function LoginScreen() {
                 mode === m ? 'bg-primary text-white shadow-primary-glow' : 'text-text-secondary'
               }`}
             >
-              {m === 'login' ? 'Daxil ol' : 'Qeydiyyat'}
+              {m === 'login' ? t.auth.login : t.auth.register}
             </button>
           ))}
         </div>
@@ -130,13 +132,13 @@ export default function LoginScreen() {
               >
                 {/* Name */}
                 <div>
-                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">Ad Soyad</label>
+                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.fullName}</label>
                   <div className="relative">
                     <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
                     <input
                       type="text"
                       required
-                      placeholder="Adınızı daxil edin"
+                      placeholder={t.auth.fullNamePlaceholder}
                       value={form.name}
                       onChange={update('name')}
                       className="w-full pl-11 pr-4 py-3.5 bg-surface-elevated dark:bg-[#22223a] rounded-xl text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:ring-2 focus:ring-primary/30 transition-all"
@@ -146,7 +148,7 @@ export default function LoginScreen() {
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">Telefon nömrəsi</label>
+                  <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.phone}</label>
                   <PhoneInput
                     value={form.phone}
                     country={phoneCountry}
@@ -160,7 +162,7 @@ export default function LoginScreen() {
 
           {/* Email */}
           <div>
-            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">E-poçt</label>
+            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.email}</label>
             <div className="relative">
               <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
               <input
@@ -176,7 +178,7 @@ export default function LoginScreen() {
 
           {/* Password */}
           <div>
-            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">Şifrə</label>
+            <label className="block text-[13px] font-semibold text-text-secondary mb-1.5">{t.auth.password}</label>
             <div className="relative">
               <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
               <input
@@ -204,14 +206,14 @@ export default function LoginScreen() {
             className="w-full py-4 rounded-xl font-semibold text-[15px] text-white shadow-primary-glow mt-2"
             style={{ background: 'linear-gradient(135deg, #00c2e8, #00c2a8)' }}
           >
-            {mode === 'login' ? 'Daxil ol' : 'Hesab yarat'}
+            {mode === 'login' ? t.auth.login : t.auth.createAccount}
           </motion.button>
         </form>
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-5">
           <div className="flex-1 h-px bg-border" />
-          <span className="text-[12px] text-text-tertiary font-medium">və ya</span>
+          <span className="text-[12px] text-text-tertiary font-medium">{t.auth.or}</span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
@@ -221,7 +223,7 @@ export default function LoginScreen() {
           onClick={() => setScreen('home')}
           className="w-full py-3.5 rounded-xl text-[14px] font-semibold text-text-secondary dark:text-white/60 border-2 border-border dark:border-white/10 hover:border-primary hover:text-primary transition-colors"
         >
-          Qonaq kimi davam et
+          {t.auth.continueAsGuest}
         </motion.button>
       </motion.div>
     </motion.div>

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, X } from "lucide-react";
 import { CANCEL_REASONS, SPRING } from "./constants";
+import { useT } from "@/hooks/useT";
 
 interface CancelSheetProps {
   show: boolean;
@@ -23,6 +24,8 @@ export default function CancelSheet({
   onSubmit,
   paymentMethod,
 }: CancelSheetProps) {
+  const t = useT();
+
   return (
     <AnimatePresence>
       {show && (
@@ -43,7 +46,7 @@ export default function CancelSheet({
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-outfit text-[17px] font-bold text-text-primary">
-                İmtina səbəbi
+                {t.order.cancelReason}
               </h3>
               <motion.button
                 whileTap={{ scale: 0.88 }}
@@ -61,8 +64,7 @@ export default function CancelSheet({
                   className="text-warning shrink-0 mt-0.5"
                 />
                 <p className="text-[12px] text-warning leading-relaxed">
-                  Ödənişinizin geri qaytarılması üçün restoran ilə əlaqə
-                  saxlamağınız tələb olunur.
+                  {t.order.refundNote}
                 </p>
               </div>
             )}
@@ -95,20 +97,20 @@ export default function CancelSheet({
                       selectedReason === r ? "text-coral" : "text-text-primary"
                     }`}
                   >
-                    {r}
+                    {t.order.cancelReasons[r]}
                   </span>
                 </motion.button>
               ))}
             </div>
 
             <AnimatePresence>
-              {selectedReason === "Digər" && (
+              {selectedReason === "other" && (
                 <motion.input
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 44 }}
                   exit={{ opacity: 0, height: 0 }}
                   type="text"
-                  placeholder="Səbəbi yazın…"
+                  placeholder={t.order.writeReason}
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
                   className="w-full px-3.5 rounded-xl border border-border-light bg-surface-elevated text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-coral mb-3"
@@ -122,18 +124,18 @@ export default function CancelSheet({
                 onClick={onClose}
                 className="flex-1 py-3.5 rounded-xl border border-border-light bg-surface-elevated text-[14px] font-semibold text-text-secondary"
               >
-                Ləğv et
+                {t.common.cancel}
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={onSubmit}
                 disabled={
                   !selectedReason ||
-                  (selectedReason === "Digər" && !customReason.trim())
+                  (selectedReason === "other" && !customReason.trim())
                 }
                 className="flex-1 py-3.5 rounded-xl bg-coral text-white text-[14px] font-semibold disabled:opacity-50"
               >
-                İmtina et
+                {t.order.reject}
               </motion.button>
             </div>
           </motion.div>

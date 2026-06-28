@@ -12,8 +12,10 @@ import type { OrderType } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Receipt, Star, XCircle } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
 
 export default function OrderDetailScreen() {
+  const t = useT();
   const { goBack, setScreen } = useUIStore();
   const { currentOrder, cancelOrder, payOrder } = useOrderStore();
 
@@ -30,13 +32,13 @@ export default function OrderDetailScreen() {
         className="absolute inset-0 bg-canvas flex flex-col items-center justify-center gap-4"
       >
         <Receipt size={40} className="text-text-tertiary" />
-        <p className="text-text-secondary text-[15px]">Sifariş tapılmadı</p>
+        <p className="text-text-secondary text-[15px]">{t.order.notFound}</p>
         <motion.button
           whileTap={{ scale: 0.94 }}
           onClick={goBack}
           className="px-6 py-2.5 rounded-xl bg-primary text-white text-[14px] font-semibold"
         >
-          Geri qayıt
+          {t.order.goBack}
         </motion.button>
       </motion.div>
     );
@@ -55,7 +57,9 @@ export default function OrderDetailScreen() {
 
   const submitCancel = () => {
     const reason =
-      selectedReason === "Digər" ? customReason.trim() : selectedReason;
+      selectedReason === "other"
+        ? customReason.trim()
+        : t.order.cancelReasons[selectedReason as keyof typeof t.order.cancelReasons];
     if (!reason) return;
     cancelOrder(order.id, reason);
     setShowCancelSheet(false);
@@ -139,10 +143,10 @@ export default function OrderDetailScreen() {
                 </div>
                 <div className="text-left flex-1">
                   <p className="text-[14px] font-semibold text-coral">
-                    Sifarişdən imtina et
+                    {t.order.cancelOrder}
                   </p>
                   <p className="text-[12px] text-coral/60">
-                    Sifariş verildikdən 2 dəqiqə ərzində mümkündür
+                    {t.order.cancelWindow}
                   </p>
                 </div>
               </motion.button>
@@ -162,10 +166,10 @@ export default function OrderDetailScreen() {
               </div>
               <div className="text-left">
                 <p className="text-[14px] font-semibold text-text-primary">
-                  Rəy bildir
+                  {t.modal.feedback}
                 </p>
                 <p className="text-[12px] text-text-secondary mt-0.5">
-                  Bu sifarişi qiymətləndir
+                  {t.order.rateThisOrder}
                 </p>
               </div>
             </motion.button>

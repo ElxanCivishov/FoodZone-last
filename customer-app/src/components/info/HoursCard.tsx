@@ -4,6 +4,7 @@ import { RESTAURANT_INFO } from "@/data/restaurantInfo";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Clock } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
 
 export default function HoursCard({
   today,
@@ -12,6 +13,7 @@ export default function HoursCard({
   today: number;
   isOpen: boolean;
 }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   const todayRow = RESTAURANT_INFO.hours.find((h) => h.idx === today);
 
@@ -24,9 +26,9 @@ export default function HoursCard({
       >
         <IconDot><Clock size={15} className="text-primary" /></IconDot>
         <div className="flex-1 text-left">
-          <p className="text-[13px] font-bold text-text-primary">İş Saatları</p>
+          <p className="text-[13px] font-bold text-text-primary">{t.modal.hours}</p>
           <p className="text-[12px] text-text-secondary mt-0.5">
-            Bugün: {todayRow?.time ?? "—"}
+            {t.info.todayPrefix} {todayRow?.time ?? "—"}
           </p>
         </div>
         <span
@@ -34,7 +36,7 @@ export default function HoursCard({
             isOpen ? "bg-success/10 text-success" : "bg-red-50 text-red-400"
           }`}
         >
-          {isOpen ? "Açıq" : "Bağlı"}
+          {isOpen ? t.info.open : t.info.closed}
         </span>
         <motion.div
           animate={{ rotate: expanded ? 180 : 0 }}
@@ -69,7 +71,7 @@ export default function HoursCard({
                       {h.day}
                       {isToday && (
                         <span className="ml-2 text-[10px] bg-primary text-white px-1.5 py-0.5 rounded-full">
-                          Bu gün
+                          {t.modal.today}
                         </span>
                       )}
                     </span>

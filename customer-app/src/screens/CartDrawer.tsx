@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 import { useUIStore, useCartStore, useOrderStore } from "@/store";
 import { generateOrderId, getCurrentTime } from "@/utils";
+import { useT } from "@/hooks/useT";
 
 const SPRING = { type: "spring" as const, stiffness: 350, damping: 30 };
 
 export default function CartDrawer() {
+  const t = useT();
   const {
     cartDrawerOpen,
     closeCartDrawer,
@@ -61,7 +63,7 @@ export default function CartDrawer() {
       });
       clearCart();
       closeCartDrawer();
-      addToast("Sifarişiniz qəbul edildi!", "success");
+      addToast(t.cart.orderAccepted, "success");
       setScreen("tracking");
       setPlacing(false);
     }, 1000);
@@ -99,7 +101,7 @@ export default function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border-light">
               <h2 className="font-outfit text-[18px] font-bold text-text-primary">
-                Səbətim
+                {t.cart.myCart}
               </h2>
               <motion.button
                 whileTap={{ scale: 0.88 }}
@@ -117,16 +119,16 @@ export default function CartDrawer() {
                     <ShoppingBag size={36} className="text-primary" />
                   </div>
                   <p className="font-outfit text-[17px] font-bold text-text-primary">
-                    Səbət boşdur
+                    {t.cart.empty}
                   </p>
                   <p className="text-text-secondary text-[13px] mt-1 text-center">
-                    Menyu bölməsindən əlavə edin
+                    {t.cart.emptyNote}
                   </p>
                   <button
                     onClick={closeCartDrawer}
                     className="mt-4 text-primary text-[13px] font-semibold"
                   >
-                    Menyuya keç
+                    {t.cart.goToMenu}
                   </button>
                 </div>
               ) : (
@@ -186,7 +188,7 @@ export default function CartDrawer() {
                               </motion.button>
                             </div>
                             <span className="text-primary font-outfit text-[13px] font-bold">
-                              {(item.unitPrice * item.quantity).toFixed(2)} AZN
+                              {(item.unitPrice * item.quantity).toFixed(2)} {t.common.currency}
                             </span>
                           </div>
                         </div>
@@ -203,30 +205,30 @@ export default function CartDrawer() {
                 </div>
               )}
             </div>
-            s{/* Summary + CTA */}
+            {/* Summary + CTA */}
             {items.length > 0 && (
               <div className="border-t border-border-light">
                 <div className="mx-4 mt-3 p-4 bg-surface-elevated rounded-xl">
                   <div className="flex justify-between text-[13px] mb-1.5">
-                    <span className="text-text-secondary">Ara cəmi</span>
+                    <span className="text-text-secondary">{t.cart.subtotal}</span>
                     <span className="font-medium text-text-primary">
-                      {subtotal.toFixed(2)} AZN
+                      {subtotal.toFixed(2)} {t.common.currency}
                     </span>
                   </div>
                   <div className="flex justify-between text-[13px] mb-2">
                     <span className="text-text-secondary">
-                      Xidmət haqqı (10%)
+                      {t.cart.serviceFee} (10%)
                     </span>
                     <span className="text-text-secondary">
-                      {fee.toFixed(2)} AZN
+                      {fee.toFixed(2)} {t.common.currency}
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-border-light pt-2">
                     <span className="font-outfit text-[15px] font-bold text-text-primary">
-                      Ümumi
+                      {t.cart.total}
                     </span>
                     <span className="font-outfit text-[15px] font-bold text-primary">
-                      {total.toFixed(2)} AZN
+                      {total.toFixed(2)} {t.common.currency}
                     </span>
                   </div>
                 </div>
@@ -241,7 +243,7 @@ export default function CartDrawer() {
                       background: "linear-gradient(135deg, #00c2e8, #00c2a8)",
                     }}
                   >
-                    Sifariş növü seç <ChevronRight size={18} />
+                    {t.cart.chooseOrderType} <ChevronRight size={18} />
                   </motion.button>
 
                   {/* Secondary: quick table order (only in QR session) */}
@@ -253,11 +255,11 @@ export default function CartDrawer() {
                       className="w-full py-3.5 rounded-xl text-[14px] font-semibold flex items-center justify-center gap-2 border-2 border-primary/30 bg-primary-light text-primary"
                     >
                       {placing ? (
-                        "Sifariş verilir…"
+                        t.checkout.placingOrder
                       ) : (
                         <>
                           <UtensilsCrossed size={15} />
-                          Tez sifariş ver (Masa {tableNumber})
+                          {t.cart.quickOrder} ({t.checkout.table} {tableNumber})
                         </>
                       )}
                     </motion.button>

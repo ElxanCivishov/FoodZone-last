@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Coffee, Package, UtensilsCrossed, GlassWater, Sunrise, LayoutGrid } from 'lucide-react';
 import { MENU_GROUPS, menuProducts } from '@/data/menuData';
+import { useT } from '@/hooks/useT';
 
 const GROUP_ICONS: Record<string, React.FC<{ size?: number; className?: string }>> = {
   LayoutGrid, Package, Coffee, UtensilsCrossed, GlassWater, Sunrise,
@@ -19,6 +20,8 @@ interface Props {
 }
 
 export default function CategoryBottomSheet({ isOpen, activeGroupId, onClose, onSelect }: Props) {
+  const t = useT();
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -44,7 +47,7 @@ export default function CategoryBottomSheet({ isOpen, activeGroupId, onClose, on
 
             {/* Başlıq */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border-light">
-              <h3 className="font-outfit text-[17px] font-bold text-text-primary">Kateqoriyalar</h3>
+              <h3 className="font-outfit text-[17px] font-bold text-text-primary">{t.common.categories}</h3>
               <motion.button
                 whileTap={{ scale: 0.88 }} onClick={onClose}
                 className="w-8 h-8 rounded-full bg-surface-elevated flex items-center justify-center"
@@ -82,7 +85,7 @@ export default function CategoryBottomSheet({ isOpen, activeGroupId, onClose, on
                       <p className={`text-[15px] font-semibold ${isActive ? 'text-primary' : 'text-text-primary'}`}>
                         {g.label}
                       </p>
-                      <p className="text-[12px] text-text-tertiary mt-0.5">{count} məhsul</p>
+                      <p className="text-[12px] text-text-tertiary mt-0.5">{count} {t.common.item}</p>
                     </div>
 
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${

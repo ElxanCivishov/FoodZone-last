@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Tag, Check, X, ChevronRight } from 'lucide-react';
 import { useUIStore } from '@/store';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
@@ -15,6 +16,7 @@ const EXPIRED_COUPONS = [
 ];
 
 export default function CouponsScreen() {
+  const t = useT();
   const { goBack, addToast } = useUIStore();
   const [code, setCode] = useState('');
   const [tab, setTab] = useState<'active' | 'expired'>('active');
@@ -24,10 +26,10 @@ export default function CouponsScreen() {
     if (!code.trim()) return;
     const found = ACTIVE_COUPONS.find(c => c.code === code.toUpperCase());
     if (found) {
-      addToast(`"${found.code}" kodu tətbiq edildi!`, 'success');
+      addToast(`"${found.code}" ${t.coupons.applied}`, 'success');
       setCode('');
     } else {
-      addToast('Geçərsiz kupon kodu', 'error');
+      addToast(t.coupons.invalid, 'error');
     }
   };
 
@@ -49,8 +51,8 @@ export default function CouponsScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div>
-          <h1 className="font-outfit text-[20px] font-bold text-text-primary">Kuponlarım</h1>
-          <p className="text-text-secondary text-[13px]">{ACTIVE_COUPONS.length} aktiv kupon</p>
+          <h1 className="font-outfit text-[20px] font-bold text-text-primary">{t.coupons.title}</h1>
+          <p className="text-text-secondary text-[13px]">{ACTIVE_COUPONS.length} {t.coupons.activeCoupon}</p>
         </div>
       </div>
 
@@ -62,7 +64,7 @@ export default function CouponsScreen() {
               <Tag size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
               <input
                 type="text"
-                placeholder="Kupon kodunu daxil edin"
+                placeholder={t.coupons.placeholder}
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 className="w-full h-12 pl-10 pr-4 rounded-xl border border-border-light bg-white text-[14px] font-semibold text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary transition-colors"
@@ -74,22 +76,22 @@ export default function CouponsScreen() {
               className="px-5 h-12 rounded-xl text-[14px] font-bold text-white shadow-primary-glow shrink-0"
               style={{ background: 'linear-gradient(135deg, #00c2e8, #00c2a8)' }}
             >
-              Tətbiq et
+              {t.checkout.apply}
             </motion.button>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="flex mx-4 bg-white rounded-xl p-1 shadow-xs border border-border-light mb-4">
-          {(['active', 'expired'] as const).map((t) => (
+          {(['active', 'expired'] as const).map((tabId) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabId}
+              onClick={() => setTab(tabId)}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                tab === t ? 'bg-primary text-white shadow-primary-glow' : 'text-text-secondary'
+                tab === tabId ? 'bg-primary text-white shadow-primary-glow' : 'text-text-secondary'
               }`}
             >
-              {t === 'active' ? 'Aktiv' : 'Müddəti bitmiş'}
+              {tabId === 'active' ? t.coupons.active : t.coupons.expired}
             </button>
           ))}
         </div>
@@ -120,13 +122,13 @@ export default function CouponsScreen() {
                           <span className="px-2.5 py-0.5 rounded-full bg-primary-light text-primary text-[11px] font-bold tracking-wide font-outfit">
                             {coupon.code}
                           </span>
-                          <span className="text-[13px] font-bold text-text-primary">{coupon.value} endirim</span>
+                          <span className="text-[13px] font-bold text-text-primary">{coupon.value} {t.coupons.discount}</span>
                         </div>
                         <p className="text-[12px] text-text-secondary mt-1.5">{coupon.desc}</p>
                         <div className="flex items-center gap-3 mt-2 text-[11px] text-text-tertiary">
-                          <span>Min sifariş: {coupon.min} AZN</span>
+                          <span>{t.coupons.minOrder} {coupon.min} {t.common.currency}</span>
                           <span>•</span>
-                          <span>Son tarix: {coupon.expires}</span>
+                          <span>{t.coupons.expires} {coupon.expires}</span>
                         </div>
                       </div>
                       {!isExpired && (
@@ -152,7 +154,7 @@ export default function CouponsScreen() {
 
           {tab === 'expired' && EXPIRED_COUPONS.length === 0 && (
             <div className="text-center py-12 text-text-tertiary text-[14px]">
-              Müddəti bitmiş kupon yoxdur
+              {t.coupons.noExpired}
             </div>
           )}
         </div>

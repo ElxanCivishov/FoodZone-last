@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { UtensilsCrossed } from "lucide-react";
 import { InfoBox, Section } from "./CheckoutSection";
 import { ORDER_TYPES } from "./checkoutTypes";
+import { useT } from "@/hooks/useT";
 
 interface OrderTypeSectionProps {
   orderType: OrderType;
@@ -15,9 +16,16 @@ export default function OrderTypeSection({
   tableNumber,
   onChange,
 }: OrderTypeSectionProps) {
+  const t = useT();
+  const orderTypeText = {
+    dine_in: t.checkout.orderTypes.dineIn,
+    take_away: t.checkout.orderTypes.takeAway,
+    delivery: t.checkout.orderTypes.delivery,
+  } as const;
+
   return (
     <Section
-      title="Sifariş növü"
+      title={t.checkout.orderType}
       icon={<UtensilsCrossed size={16} className="text-primary" />}
     >
       <div className="grid gap-2 grid-cols-3">
@@ -44,24 +52,24 @@ export default function OrderTypeSection({
                   active ? "text-primary" : "text-text-secondary"
                 }`}
               >
-                {t.label}
+                {orderTypeText[t.id].label}
               </p>
               <p
                 className={`text-[10px] text-center leading-tight ${
                   active ? "text-primary/70" : "text-text-tertiary"
                 }`}
               >
-                {t.sub}
+                {orderTypeText[t.id].sub}
               </p>
             </motion.button>
           );
         })}
       </div>
       {orderType === "dine_in" && (
-        <InfoBox>Masa {tableNumber} — sifariş masaya gətiriləcək</InfoBox>
+        <InfoBox>{t.checkout.table} {tableNumber} — {t.checkout.tableNote}</InfoBox>
       )}
       {orderType === "take_away" && (
-        <InfoBox>Sifariş hazır olduqda sizi məlumatlandıracağıq</InfoBox>
+        <InfoBox>{t.checkout.pickupNote}</InfoBox>
       )}
     </Section>
   );

@@ -4,6 +4,7 @@ import { Banknote, CreditCard, Plus } from "lucide-react";
 import { Section } from "./CheckoutSection";
 import { type SavedCard, SAVED_CARDS } from "./checkoutTypes";
 import NewCardForm from "./NewCardForm";
+import { useT } from "@/hooks/useT";
 
 interface PaymentSectionProps {
   orderType: OrderType;
@@ -32,23 +33,25 @@ export default function PaymentSection({
   onCardAdded,
   onCancelNewCard,
 }: PaymentSectionProps) {
+  const t = useT();
+
   return (
     <Section
-      title="Ödəniş üsulu"
+      title={t.checkout.paymentMethod}
       icon={<CreditCard size={16} className="text-primary" />}
     >
       {orderType === "delivery" && deliveryOnlyCard ? (
         <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-xl">
           <CreditCard size={14} className="text-primary shrink-0" />
           <p className="text-[13px] text-primary font-medium">
-            Çatdırılma üçün yalnız kart qəbul edilir
+            {t.checkout.cardOnlyDelivery}
           </p>
         </div>
       ) : (
         <div className="flex gap-2">
           {(["cash", "card"] as PaymentMethod[]).map((m) => {
             const Icon = m === "cash" ? Banknote : CreditCard;
-            const label = m === "cash" ? "Nağd" : "Kart";
+            const label = m === "cash" ? t.checkout.cash : t.checkout.card;
             const active = payMethod === m;
             return (
               <motion.button
@@ -89,7 +92,7 @@ export default function PaymentSection({
           >
             <div className="mt-3 space-y-2">
               <p className="text-[12px] font-semibold text-text-secondary">
-                Saxlanmış kartlar
+                {t.checkout.savedCards}
               </p>
               {SAVED_CARDS.map((card) => {
                 const active = selectedCardId === card.id && !showNewCard;
@@ -145,7 +148,7 @@ export default function PaymentSection({
                     <Plus size={14} className="text-primary" />
                   </div>
                   <span className="text-[13px] font-semibold text-primary">
-                    Yeni kart əlavə et
+                    {t.checkout.addNewCard}
                   </span>
                 </motion.button>
               )}

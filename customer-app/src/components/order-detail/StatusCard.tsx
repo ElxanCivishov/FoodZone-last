@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { SPRING, type StatusConfigEntry, type TimelineStep } from "./constants";
 import type { OrderStatus, OrderType } from "@/types";
+import { useT } from "@/hooks/useT";
 
 interface StatusCardProps {
   status: OrderStatus;
@@ -22,7 +23,28 @@ export default function StatusCard({
   steps,
   currentStatusIndex,
 }: StatusCardProps) {
+  const t = useT();
   const StatusIcon = cfg.icon;
+  const statusLabels: Record<OrderStatus, string> = {
+    payment_pending: t.order.paymentPending,
+    new: t.order.trackingSteps.new.title,
+    preparing: t.order.trackingSteps.preparing.title,
+    ready: t.order.trackingSteps.readyDineIn.title,
+    served: t.order.trackingSteps.served.title,
+    on_the_way: t.order.trackingSteps.onTheWay.title,
+    delivered: t.order.trackingSteps.delivered.title,
+    completed: t.order.trackingSteps.completed.title,
+    cancelled: t.order.cancelled,
+  };
+  const getStepText = (stepStatus: OrderStatus) => {
+    if (stepStatus === "ready") {
+      if (orderType === "delivery") return t.order.trackingSteps.readyDelivery;
+      if (orderType === "take_away") return t.order.trackingSteps.readyTakeAway;
+      return t.order.trackingSteps.readyDineIn;
+    }
+    if (stepStatus === "on_the_way") return t.order.trackingSteps.onTheWay;
+    return t.order.trackingSteps[stepStatus as keyof typeof t.order.trackingSteps] ?? t.order.trackingSteps.new;
+  };
 
   return (
     <motion.div
@@ -38,11 +60,11 @@ export default function StatusCard({
           <StatusIcon size={18} className={cfg.color} />
         </div>
         <div>
-          <p className="text-[16px] font-bold text-text-primary">{cfg.label}</p>
+          <p className="text-[16px] font-bold text-text-primary">{statusLabels[status]}</p>
           <p className="text-[12px] text-text-secondary">
-            {orderType === "dine_in" && `Masa ${tableNumber}`}
+            {orderType === "dine_in" && `${t.checkout.table} ${tableNumber}`}
             {orderType === "take_away" && "Take Away"}
-            {orderType === "delivery" && "Çatdırılma"} • ~{estimatedTime} dəq
+            {orderType === "delivery" && t.checkout.orderTypes.delivery.label} • ~{estimatedTime} {t.common.minutes}
           </p>
         </div>
       </div>
@@ -65,6 +87,7 @@ export default function StatusCard({
               const active = i === currentStatusIndex;
               const pending = i > currentStatusIndex;
               const Icon = step.icon;
+              const copy = getStepText(step.status);
               return (
                 <motion.div
                   key={step.status}
@@ -89,10 +112,10 @@ export default function StatusCard({
                     <p
                       className={`text-[13px] font-semibold ${pending ? "text-text-tertiary" : "text-text-primary"}`}
                     >
-                      {step.title}
+                      {copy.title}
                     </p>
                     <p className="text-[11px] text-text-tertiary mt-0.5">
-                      {step.subtitle}
+                      {copy.subtitle}
                     </p>
                   </div>
                   {done && (

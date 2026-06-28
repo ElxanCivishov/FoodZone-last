@@ -149,7 +149,7 @@ export default function OrderSuccessScreen() {
           >
             <AlertCircle size={18} className="text-warning shrink-0" />
             <p className="text-[13px] text-warning font-medium flex-1">
-              Sifariş ödəniş gözləyir. Təsdiqlənmək üçün ödəyin.
+              {t.order.pendingPaymentWarning}
             </p>
           </motion.div>
         )}
@@ -169,7 +169,7 @@ export default function OrderSuccessScreen() {
               style={{ background: 'linear-gradient(135deg,#f6a623,#f5576c)' }}
             >
               <CreditCard size={18} />
-              İndi Ödə — {currentOrder?.total?.toFixed(2)} AZN
+              {t.order.payNow} — {currentOrder?.total?.toFixed(2)} {t.common.currency}
             </motion.button>
           ) : (
             <motion.button

@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
 import { XCircle } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 export default function CancellationBanner({ reason }: { reason: string }) {
+  const t = useT();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -10,10 +13,10 @@ export default function CancellationBanner({ reason }: { reason: string }) {
     >
       <div className="flex items-center gap-2 mb-1">
         <XCircle size={15} className="text-coral shrink-0" />
-        <p className="text-[14px] font-bold text-coral">Ləğv edildi</p>
+        <p className="text-[14px] font-bold text-coral">{t.order.cancelled}</p>
       </div>
       <p className="text-[12px] text-coral/70">
-        <span className="font-semibold">Səbəb:</span> {reason}
+        <span className="font-semibold">{t.order.reason}</span> {reason}
       </p>
     </motion.div>
   );

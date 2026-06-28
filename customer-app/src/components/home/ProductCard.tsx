@@ -1,6 +1,7 @@
 import type { Product } from "@/types";
 import { motion } from "framer-motion";
 import { Heart, Plus, Star } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
@@ -23,6 +24,8 @@ export default function ProductCard({
   onQuickAdd,
   onOpen,
 }: ProductCardProps) {
+  const t = useT();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -79,11 +82,11 @@ export default function ProductCard({
         <div className="flex items-center justify-between mt-2">
           <div>
             <p className="text-primary font-outfit text-[15px] font-bold leading-none">
-              <span className="text-[10px]">AZN</span> {product.price}
+              <span className="text-[10px]">{t.common.currency}</span> {product.price}
             </p>
             {product.originalPrice && (
               <p className="text-text-tertiary text-[11px] line-through leading-none mt-0.5">
-                AZN {product.originalPrice}
+                {t.common.currency} {product.originalPrice}
               </p>
             )}
           </div>

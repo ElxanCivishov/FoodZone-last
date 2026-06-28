@@ -19,10 +19,10 @@ const TYPE_META: Record<WaiterRequestType, { icon: typeof Bell; color: string; b
   other:  { icon: HelpCircle,  color: 'text-text-secondary', bg: 'bg-surface-elevated' },
 };
 
-const STATUS_META: Record<WaiterRequestStatus, { label: string; icon: typeof Clock; color: string; bg: string }> = {
-  pending:  { label: 'Gözlənilir', icon: Hourglass,    color: 'text-warning',  bg: 'bg-warning/10' },
-  accepted: { label: 'Qəbul edildi', icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-  resolved: { label: 'Tamamlandı',  icon: CheckCircle2, color: 'text-text-secondary', bg: 'bg-surface-elevated' },
+const STATUS_META: Record<WaiterRequestStatus, { icon: typeof Clock; color: string; bg: string }> = {
+  pending:  { icon: Hourglass,    color: 'text-warning',  bg: 'bg-warning/10' },
+  accepted: { icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
+  resolved: { icon: CheckCircle2, color: 'text-text-secondary', bg: 'bg-surface-elevated' },
 };
 
 function formatTime(iso: string) {
@@ -32,14 +32,14 @@ function formatTime(iso: string) {
   return `${hh}:${mm}`;
 }
 
-function formatDate(iso: string) {
+function formatDate(iso: string, todayLabel: string, yesterdayLabel: string) {
   const d = new Date(iso);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
 
-  if (d.toDateString() === today.toDateString()) return 'Bu gün';
-  if (d.toDateString() === yesterday.toDateString()) return 'Dünən';
+  if (d.toDateString() === today.toDateString()) return todayLabel;
+  if (d.toDateString() === yesterday.toDateString()) return yesterdayLabel;
   return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
 }
 
@@ -49,7 +49,7 @@ export default function WaiterRequestsScreen() {
   const t = useT();
 
   const grouped = requests.reduce<Record<string, typeof requests>>((acc, req) => {
-    const key = formatDate(req.createdAt);
+    const key = formatDate(req.createdAt, t.modal.today, t.common.yesterday);
     if (!acc[key]) acc[key] = [];
     acc[key].push(req);
     return acc;
@@ -80,7 +80,7 @@ export default function WaiterRequestsScreen() {
           <div>
             <h1 className="font-outfit text-xl font-bold text-white">{t.waiter.title}</h1>
             <p className="text-white/70 text-[12px] mt-0.5">
-              {requests.length > 0 ? `${requests.length} müraciət` : 'Müraciət göndərilməyib'}
+              {requests.length > 0 ? `${requests.length} ${t.modal.request}` : t.waiter.noRequestsSent}
             </p>
           </div>
         </div>
@@ -99,9 +99,9 @@ export default function WaiterRequestsScreen() {
               <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center">
                 <Bell size={32} className="text-primary" />
               </div>
-              <p className="font-outfit text-lg font-bold text-text-primary">Müraciət yoxdur</p>
+              <p className="font-outfit text-lg font-bold text-text-primary">{t.waiter.noRequests}</p>
               <p className="text-text-secondary text-[13px] max-w-[220px]">
-                Ofisiant çağırmaq, hesab istəmək və ya başqa köməklik üçün aşağıdakı düyməyə basın
+                {t.waiter.emptyNote}
               </p>
               <motion.button
                 whileTap={{ scale: 0.96 }}
@@ -150,7 +150,7 @@ export default function WaiterRequestsScreen() {
                                 <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${statusMeta.bg}`}>
                                   <StatusIcon size={11} className={statusMeta.color} />
                                   <span className={`text-[11px] font-bold ${statusMeta.color}`}>
-                                    {statusMeta.label}
+                                    {t.waiter.statuses[req.status]}
                                   </span>
                                 </div>
                               </div>
@@ -162,7 +162,7 @@ export default function WaiterRequestsScreen() {
                               <div className="flex items-center gap-1 mt-1.5">
                                 <Clock size={11} className="text-text-tertiary" />
                                 <span className="text-text-tertiary text-[12px]">
-                                  {formatTime(req.createdAt)} · Masa {req.tableNumber}
+                                  {formatTime(req.createdAt)} · {t.modal.table} {req.tableNumber}
                                 </span>
                               </div>
                             </div>
@@ -185,7 +185,7 @@ export default function WaiterRequestsScreen() {
                 style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
               >
                 <Bell size={16} />
-                Yeni müraciət
+                {t.waiter.newRequest}
               </motion.button>
             </div>
           )}

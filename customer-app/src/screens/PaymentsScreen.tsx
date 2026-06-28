@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Plus, CreditCard, Check, X, Eye, EyeOff } from 'lucide-react';
 import { useUIStore } from '@/store';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
@@ -39,6 +40,7 @@ const EMPTY_FORM = { number: '', name: '', expiry: '', cvv: '' };
 
 export default function PaymentsScreen() {
   const { goBack } = useUIStore();
+  const t = useT();
   const [cards, setCards] = useState<Card[]>(INITIAL_CARDS);
   const [selected, setSelected] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -53,10 +55,10 @@ export default function PaymentsScreen() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (digits.length < 16)        e.number = 'Kart nömrəsi 16 rəqəm olmalıdır';
-    if (!form.name.trim())         e.name   = 'Ad soyad tələb olunur';
-    if (form.expiry.length < 5)    e.expiry = 'Düzgün tarix daxil edin (MM/YY)';
-    if (form.cvv.length < 3)       e.cvv    = 'CVV 3 rəqəm olmalıdır';
+    if (digits.length < 16)        e.number = t.checkout.cardNumberError;
+    if (!form.name.trim())         e.name   = t.checkout.cardNameError;
+    if (form.expiry.length < 5)    e.expiry = t.checkout.expiryError;
+    if (form.cvv.length < 3)       e.cvv    = t.checkout.cvvError;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -93,8 +95,8 @@ export default function PaymentsScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div>
-          <h1 className="font-outfit text-[20px] font-bold text-text-primary">Ödəniş üsulları</h1>
-          <p className="text-text-secondary text-[13px]">{cards.length} üsul</p>
+          <h1 className="font-outfit text-[20px] font-bold text-text-primary">{t.checkout.paymentMethods}</h1>
+          <p className="text-text-secondary text-[13px]">{cards.length} {t.checkout.method}</p>
         </div>
       </div>
 
@@ -123,7 +125,7 @@ export default function PaymentsScreen() {
                     <p className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">{card.label}</p>
                     {card.last4
                       ? <p className="text-white text-[17px] font-bold tracking-[3px] mt-1">•••• {card.last4}</p>
-                      : <p className="text-white text-[22px] font-bold mt-1 font-outfit">{card.balance} AZN</p>
+                      : <p className="text-white text-[22px] font-bold mt-1 font-outfit">{card.balance} {t.common.currency}</p>
                     }
                     {card.expires && <p className="text-white/50 text-[11px] mt-1">{card.expires}</p>}
                   </div>
@@ -156,8 +158,8 @@ export default function PaymentsScreen() {
                 <Plus size={18} className="text-primary" />
               </div>
               <div className="text-left">
-                <p className="text-[14px] font-semibold text-primary">Yeni kart əlavə et</p>
-                <p className="text-[12px] text-text-secondary mt-0.5">Visa, Mastercard qəbul edilir</p>
+                <p className="text-[14px] font-semibold text-primary">{t.checkout.addNewCard}</p>
+                <p className="text-[12px] text-text-secondary mt-0.5">{t.checkout.acceptedCards}</p>
               </div>
             </motion.button>
           )}
@@ -175,7 +177,7 @@ export default function PaymentsScreen() {
             >
               {/* Form header */}
               <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border-light">
-                <p className="font-outfit text-[15px] font-bold text-text-primary">Yeni kart</p>
+                <p className="font-outfit text-[15px] font-bold text-text-primary">{t.checkout.newCard}</p>
                 <motion.button whileTap={{ scale: 0.88 }}
                   onClick={() => { setShowForm(false); setForm(EMPTY_FORM); setErrors({}); }}
                   className="w-8 h-8 rounded-full bg-surface-elevated flex items-center justify-center">
@@ -201,7 +203,7 @@ export default function PaymentsScreen() {
                           : '•••• •••• •••• ••••'}
                       </p>
                       <p className="text-white/50 text-[11px] mt-1">
-                        {form.name || 'Ad Soyad'} · {form.expiry || 'MM/YY'}
+                        {form.name || t.checkout.cardHolderPreview} · {form.expiry || 'MM/YY'}
                       </p>
                     </div>
                     <CreditCard size={22} className="text-white/30 mt-1" />
@@ -213,7 +215,7 @@ export default function PaymentsScreen() {
               <div className="px-4 pb-4 pt-3 space-y-3">
                 {/* Card number */}
                 <div>
-                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">Kart nömrəsi *</p>
+                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{t.checkout.cardNumber} *</p>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -232,10 +234,10 @@ export default function PaymentsScreen() {
 
                 {/* Name */}
                 <div>
-                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">Kartdakı ad *</p>
+                  <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{t.checkout.cardName} *</p>
                   <input
                     type="text"
-                    placeholder="AD SOYAD"
+                    placeholder={t.checkout.cardHolderPreview}
                     value={form.name}
                     onChange={(e) => {
                       setForm(f => ({ ...f, name: e.target.value.toUpperCase() }));
@@ -251,7 +253,7 @@ export default function PaymentsScreen() {
                 {/* Expiry + CVV */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">Son tarix *</p>
+                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{t.checkout.expiry} *</p>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -268,7 +270,7 @@ export default function PaymentsScreen() {
                     {errors.expiry && <p className="text-coral text-[11px] mt-1">{errors.expiry}</p>}
                   </div>
                   <div>
-                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">CVV *</p>
+                    <p className="text-[12px] font-semibold text-text-secondary mb-1.5">{"CVV *"}</p>
                     <div className="relative">
                       <input
                         type={showCvv ? 'text' : 'password'}
@@ -304,7 +306,7 @@ export default function PaymentsScreen() {
                   style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
                 >
                   <Check size={16} />
-                  Kartı əlavə et
+                  {t.checkout.addCard}
                 </motion.button>
               </div>
             </motion.div>
@@ -321,7 +323,7 @@ export default function PaymentsScreen() {
             className="w-full h-12 rounded-2xl text-[15px] font-bold text-white shadow-primary-glow"
             style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
           >
-            Seçimi təsdiqlə
+            {t.checkout.confirmSelection}
           </motion.button>
         </div>
       )}

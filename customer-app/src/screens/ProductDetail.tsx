@@ -12,6 +12,7 @@ import {
 import { useUIStore, useCartStore } from "@/store";
 import { sizeOptions, extraOptions } from "@/data/menuData";
 import type { SizeOption, ExtraOption } from "@/types";
+import { useT } from "@/hooks/useT";
 
 const SPRING_DRAWER = { type: "spring" as const, stiffness: 350, damping: 30 };
 
@@ -24,6 +25,7 @@ export default function ProductDetail() {
     addToast,
   } = useUIStore();
   const addItem = useCartStore((s) => s.addItem);
+  const t = useT();
 
   const [selectedSize, setSelectedSize] = useState<SizeOption>(sizeOptions[1]);
   const [selectedExtras, setSelectedExtras] = useState<ExtraOption[]>([]);
@@ -56,7 +58,7 @@ export default function ProductDetail() {
       unitPrice,
     });
     setAdded(true);
-    addToast(`${selectedProduct.name} səbətə əlavə edildi!`, "success");
+    addToast(`${selectedProduct.name} ${t.cart.added}`, "success");
     setTimeout(() => {
       setAdded(false);
       closeProductModal();
@@ -151,17 +153,17 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 <p className="text-[13px] text-text-secondary mt-1">
-                  ({selectedProduct.reviews} rəy)
+                  ({selectedProduct.reviews} {t.common.review})
                 </p>
                 <div className="flex items-baseline gap-2 mt-3">
                   <span className="font-outfit text-[22px] font-bold text-primary">
                     {selectedProduct.price.toFixed(2)}
-                    <span className="text-[13px] ml-0.5">AZN</span>
+                    <span className="text-[13px] ml-0.5">{t.common.currency}</span>
                   </span>
                   {selectedProduct.originalPrice && (
                     <>
                       <span className="text-[15px] text-text-tertiary line-through">
-                        {selectedProduct.originalPrice.toFixed(2)} AZN
+                        {selectedProduct.originalPrice.toFixed(2)} {t.common.currency}
                       </span>
                       <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-600 text-[11px] font-bold">
                         -{Math.round((1 - selectedProduct.price / selectedProduct.originalPrice) * 100)}%
@@ -175,7 +177,7 @@ export default function ProductDetail() {
 
                 {/* Size */}
                 <h3 className="font-outfit text-[15px] font-bold text-text-primary mt-6 mb-3">
-                  Ölçü
+                  {t.product.size}
                 </h3>
                 <div className="space-y-2">
                   {sizeOptions.map((size) => (
@@ -210,7 +212,7 @@ export default function ProductDetail() {
                         </span>
                       </div>
                       <span className="text-[13px] text-text-secondary">
-                        +{size.priceModifier} AZN
+                        +{size.priceModifier} {t.common.currency}
                       </span>
                     </motion.button>
                   ))}
@@ -218,7 +220,7 @@ export default function ProductDetail() {
 
                 {/* Extras */}
                 <h3 className="font-outfit text-[15px] font-bold text-text-primary mt-6 mb-3">
-                  Əlavələr
+                  {t.product.extras}
                 </h3>
                 <div className="space-y-2">
                   {extraOptions.map((extra) => {
@@ -255,7 +257,7 @@ export default function ProductDetail() {
                           </span>
                         </div>
                         <span className="text-[13px] text-text-secondary">
-                          +{extra.price} AZN
+                          +{extra.price} {t.common.currency}
                         </span>
                       </motion.button>
                     );
@@ -309,7 +311,7 @@ export default function ProductDetail() {
                         exit={{ opacity: 0 }}
                         className="flex items-center gap-2"
                       >
-                        <Check size={18} strokeWidth={2.5} /> Əlavə edildi!
+                        <Check size={18} strokeWidth={2.5} /> {t.product.added}
                       </motion.span>
                     ) : (
                       <motion.span
@@ -319,8 +321,8 @@ export default function ProductDetail() {
                         exit={{ opacity: 0 }}
                         className="flex items-center gap-2"
                       >
-                        <ShoppingBag size={17} /> Səbətə əlavə et —{" "}
-                        {total.toFixed(2)} AZN
+                        <ShoppingBag size={17} /> {t.product.addToCart} —{" "}
+                        {total.toFixed(2)} {t.common.currency}
                       </motion.span>
                     )}
                   </AnimatePresence>

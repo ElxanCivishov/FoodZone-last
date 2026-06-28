@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useUIStore } from '@/store';
+import { useT } from '@/hooks/useT';
 
 export default function SplashScreen() {
   const { setScreen, setActiveTab } = useUIStore();
+  const t = useT();
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -65,7 +67,7 @@ export default function SplashScreen() {
           transition={{ delay: 0.55, duration: 0.6, ease: 'easeOut' }}
           className="text-white/80 text-[15px] font-medium mt-2"
         >
-          Ən yaxşı yeməklər bir yerdə
+          {t.splash.tagline}
         </motion.p>
 
         {/* Progress bar */}

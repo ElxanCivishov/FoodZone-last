@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 interface AddNewButtonProps {
   onClick: () => void;
 }
 
 export default function AddNewButton({ onClick }: AddNewButtonProps) {
+  const t = useT();
+
   return (
     <motion.button
       initial={{ opacity: 0, y: 12 }}
@@ -20,10 +23,10 @@ export default function AddNewButton({ onClick }: AddNewButtonProps) {
       </div>
       <div className="text-left">
         <p className="text-[14px] font-semibold text-primary">
-          Yeni ünvan əlavə et
+          {t.address.addNew}
         </p>
         <p className="text-[12px] text-text-secondary mt-0.5">
-          Məlumatları daxil edin
+          {t.address.enterDetails}
         </p>
       </div>
     </motion.button>

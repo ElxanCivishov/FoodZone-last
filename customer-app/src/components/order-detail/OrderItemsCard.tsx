@@ -1,8 +1,11 @@
 import { CartItem } from "@/types";
 import { motion } from "framer-motion";
 import { SPRING } from "./constants";
+import { useT } from "@/hooks/useT";
 
 export default function OrderItemsCard({ items }: { items: CartItem[] }) {
+  const t = useT();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -12,7 +15,7 @@ export default function OrderItemsCard({ items }: { items: CartItem[] }) {
     >
       <div className="px-4 py-3 border-b border-border-light">
         <p className="font-outfit text-[15px] font-bold text-text-primary">
-          Sifarişin tərkibi
+          {t.order.items}
         </p>
       </div>
       {items.map((item, i) => (
@@ -40,7 +43,7 @@ export default function OrderItemsCard({ items }: { items: CartItem[] }) {
               x{item.quantity}
             </p>
             <p className="text-primary font-bold text-[13px]">
-              {(item.unitPrice * item.quantity).toFixed(2)} AZN
+              {(item.unitPrice * item.quantity).toFixed(2)} {t.common.currency}
             </p>
           </div>
         </div>

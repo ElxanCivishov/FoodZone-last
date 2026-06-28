@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 import { useState } from "react";
 import { formatCardNum, formatExpiry, type SavedCard, SPRING } from "./checkoutTypes";
+import { useT } from "@/hooks/useT";
 
 interface NewCardFormProps {
   onAdd: (card: SavedCard) => void;
@@ -37,6 +38,7 @@ function CardInput({
 }
 
 export default function NewCardForm({ onAdd, onClose }: NewCardFormProps) {
+  const t = useT();
   const [cardForm, setCardForm] = useState({
     number: "",
     name: "",
@@ -49,10 +51,10 @@ export default function NewCardForm({ onAdd, onClose }: NewCardFormProps) {
   const validate = () => {
     const digits = cardForm.number.replace(/\s/g, "");
     const e: Record<string, string> = {};
-    if (digits.length < 16) e.number = "Kart nömrəsi 16 rəqəm olmalıdır";
-    if (!cardForm.name.trim()) e.name = "Ad soyad tələb olunur";
-    if (cardForm.expiry.length < 5) e.expiry = "MM/YY formatında daxil edin";
-    if (cardForm.cvv.length < 3) e.cvv = "CVV 3 rəqəm";
+    if (digits.length < 16) e.number = t.checkout.cardNumberError;
+    if (!cardForm.name.trim()) e.name = t.checkout.cardNameError;
+    if (cardForm.expiry.length < 5) e.expiry = t.checkout.expiryError;
+    if (cardForm.cvv.length < 3) e.cvv = t.checkout.cvvError;
     setCardErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -87,7 +89,7 @@ export default function NewCardForm({ onAdd, onClose }: NewCardFormProps) {
       className="bg-surface-elevated rounded-xl p-3 space-y-3"
     >
       <div className="flex items-center justify-between">
-        <p className="text-[13px] font-bold text-text-primary">Yeni kart</p>
+        <p className="text-[13px] font-bold text-text-primary">{t.checkout.newCard}</p>
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={handleClose}
@@ -98,7 +100,7 @@ export default function NewCardForm({ onAdd, onClose }: NewCardFormProps) {
       </div>
 
       <CardInput
-        label="Kart nömrəsi"
+        label={t.checkout.cardNumber}
         error={cardErrors.number}
         input={
           <input
@@ -116,12 +118,12 @@ export default function NewCardForm({ onAdd, onClose }: NewCardFormProps) {
       />
 
       <CardInput
-        label="Kartdakı ad"
+        label={t.checkout.cardName}
         error={cardErrors.name}
         input={
           <input
             type="text"
-            placeholder="AD SOYAD"
+            placeholder={t.checkout.cardHolderPreview}
             value={cardForm.name}
             onChange={(e) => {
               setCardForm((f) => ({ ...f, name: e.target.value.toUpperCase() }));
@@ -134,7 +136,7 @@ export default function NewCardForm({ onAdd, onClose }: NewCardFormProps) {
 
       <div className="grid grid-cols-2 gap-2">
         <CardInput
-          label="Son tarix"
+          label={t.checkout.expiry}
           error={cardErrors.expiry}
           input={
             <input
@@ -188,7 +190,7 @@ export default function NewCardForm({ onAdd, onClose }: NewCardFormProps) {
         className="w-full h-10 rounded-xl text-[13px] font-bold text-white flex items-center justify-center gap-1.5"
         style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
       >
-        <Check size={14} /> Kartı əlavə et
+        <Check size={14} /> {t.checkout.addCard}
       </motion.button>
     </motion.div>
   );

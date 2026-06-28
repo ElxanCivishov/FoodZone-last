@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { GROUP_ICONS, RECENT_TAGS } from "./constants";
 import MenuProductCard from "./MenuProductCard";
+import { useT } from "@/hooks/useT";
 
 interface SearchResultsGridProps {
   query: string;
@@ -28,12 +29,14 @@ export default function SearchResultsGrid({
   onQuickAdd,
   onOpen,
 }: SearchResultsGridProps) {
+  const t = useT();
+
   if (!query.trim()) {
     return (
       <div className="p-4 space-y-5">
         <div>
           <p className="font-outfit text-[14px] font-bold text-text-primary mb-3">
-            Son axtarışlar
+            {t.search.recent}
           </p>
           <div className="flex flex-wrap gap-2">
             {RECENT_TAGS.map((tag) => (
@@ -51,7 +54,7 @@ export default function SearchResultsGrid({
         </div>
         <div>
           <p className="font-outfit text-[14px] font-bold text-text-primary mb-3">
-            Kateqoriyalar
+            {t.common.categories}
           </p>
           <div className="grid grid-cols-2 gap-2">
             {MENU_GROUPS.filter((g) => g.id !== "all").map((g) => {
@@ -86,10 +89,10 @@ export default function SearchResultsGrid({
       <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
         <Search size={48} className="text-text-tertiary mb-4" strokeWidth={1.5} />
         <p className="text-text-primary font-semibold text-[16px]">
-          Nəticə tapılmadı
+          {t.search.noResults}
         </p>
         <p className="text-text-secondary text-[13px] mt-1.5">
-          "<span className="font-medium text-text-primary">{query}</span>" üçün nəticə yoxdur
+          "<span className="font-medium text-text-primary">{query}</span>" {t.search.noResultsFor}
         </p>
       </div>
     );
@@ -98,7 +101,7 @@ export default function SearchResultsGrid({
   return (
     <div className="p-4">
       <p className="text-[12px] text-text-tertiary mb-3 font-medium">
-        {results.length} nəticə tapıldı
+        {results.length} {t.search.resultsFound}
       </p>
       <div className="grid grid-cols-2 gap-3">
         {results.map((p, i) => (

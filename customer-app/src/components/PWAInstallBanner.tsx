@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Share, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useT } from "@/hooks/useT";
 
 const DISMISS_KEY = "fz_pwa_dismissed_until";
 const DISMISS_DAYS = 7;
@@ -26,6 +27,7 @@ function dismiss() {
 export default function PWAInstallBanner() {
   const { canInstall, isInstalled, promptInstall } = usePWAInstall();
   const [visible, setVisible] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     if (isInstalled || isDismissed()) return;
@@ -68,17 +70,16 @@ export default function PWAInstallBanner() {
             {/* Text */}
             <div className="flex-1 min-w-0">
               <p className="text-white font-bold text-[14px] leading-tight">
-                FoodZone tətbiqini yüklə
+                {t.pwa.title}
               </p>
               {isIOSSafari ? (
                 <p className="text-white/80 text-[11px] mt-0.5 leading-snug">
-                  Aşağıdakı{" "}
-                  <Share size={10} className="inline -mt-0.5" /> düyməsini tap
-                  → «Ana Ekrana Əlavə Et»
+                  {t.pwa.iosPrefix}{" "}
+                  <Share size={10} className="inline -mt-0.5" /> {t.pwa.iosSuffix}
                 </p>
               ) : (
                 <p className="text-white/80 text-[11px] mt-0.5">
-                  Daha sürətli, offline işləyir
+                  {t.pwa.subtitle}
                 </p>
               )}
             </div>
@@ -90,7 +91,7 @@ export default function PWAInstallBanner() {
                   onClick={handleInstall}
                   className="bg-white text-[#00c2e8] text-[12px] font-bold px-3 py-1.5 rounded-xl"
                 >
-                  Yüklə
+                  {t.pwa.install}
                 </button>
               )}
               <button

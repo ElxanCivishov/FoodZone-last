@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Pencil, Zap } from "lucide-react";
 import type { getTierInfo } from "@/utils/loyalty";
+import { useT } from "@/hooks/useT";
 
 function getInitials(name: string) {
   return (
@@ -32,6 +33,7 @@ export default function ProfileHero({
   onEditProfile,
 }: ProfileHeroProps) {
   const avatarLetters = getInitials(displayName);
+  const t = useT();
 
   return (
     <div
@@ -107,7 +109,7 @@ export default function ProfileHero({
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10">
               <span className="text-[11px] leading-none">🪑</span>
               <span className="text-white/80 text-[11px] font-semibold leading-none">
-                Masa 12
+                {t.profile.tableNumber}
               </span>
             </div>
             <div
@@ -127,7 +129,7 @@ export default function ProfileHero({
       <div className="relative z-10 mt-5">
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-white/40 text-[10px] font-semibold uppercase tracking-widest">
-            Loyallıq xalı
+            {t.profile.loyaltyPoints}
           </span>
           <span className="text-white/60 text-[10px] font-bold">{xpLabel}</span>
         </div>

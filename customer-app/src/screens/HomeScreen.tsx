@@ -12,6 +12,7 @@ import type { Category, Product } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/hooks/useT";
 
 export default function HomeScreen() {
   const {
@@ -23,6 +24,7 @@ export default function HomeScreen() {
   } = useUIStore();
   const addToast = useUIStore((s) => s.addToast);
   const addItem = useCartStore((s) => s.addItem);
+  const t = useT();
 
   const [activeCategory, setActiveCategory] = useState<Category>("all");
   const [scrolled, setScrolled] = useState(false);
@@ -58,7 +60,7 @@ export default function HomeScreen() {
       selectedExtras: [],
       unitPrice: product.price,
     });
-    addToast(`${product.name} səbətə əlavə edildi!`, "success");
+    addToast(`${product.name} ${t.cart.added}`, "success");
     setJustAdded((prev) => new Set([...prev, product.id]));
     setTimeout(() => {
       setJustAdded((prev) => {
@@ -117,7 +119,7 @@ export default function HomeScreen() {
             className="w-full flex items-center gap-2.5 h-11 px-4 rounded-full bg-white border border-border-light shadow-xs text-text-tertiary text-[14px]"
           >
             <Search size={16} className="shrink-0" />
-            Yemək axtar…
+            {t.home.searchPlaceholder}
           </motion.button>
         </div>
       </div>
@@ -136,7 +138,7 @@ export default function HomeScreen() {
 
         {/* Popular */}
         <SectionHeader
-          title="Populyar"
+          title={t.home.popular}
           onViewAll={() => {
             setMenuInitialGroup(null);
             setActiveTab("search" as any);
@@ -152,7 +154,7 @@ export default function HomeScreen() {
 
         {/* New Arrivals */}
         <SectionHeader
-          title="Yeni Gələnlər"
+          title={t.home.newArrivals}
           onViewAll={() => {
             setMenuInitialGroup(null);
             setActiveTab("search" as any);
@@ -166,7 +168,7 @@ export default function HomeScreen() {
         {/* Set Menus */}
         <div id="sets-section">
           <SectionHeader
-            title="Set Menyular"
+            title={t.home.sets}
             onViewAll={() => {
               setMenuInitialGroup("sets");
               setActiveTab("search" as any);

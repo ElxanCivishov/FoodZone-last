@@ -5,6 +5,7 @@ import { LANG_CODES } from "@/utils/lang";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { GROUPS, SPRING, type MenuItem } from "./constants";
+import { useT } from "@/hooks/useT";
 
 interface ProfileMenuGroupsProps {
   language: string;
@@ -16,20 +17,22 @@ export default function ProfileMenuGroups({
   onItem,
 }: ProfileMenuGroupsProps) {
   let delay = 0.08;
+  const t = useT();
+  const profileText = t.profile as Record<string, string>;
 
   return (
     <>
       {GROUPS.map((group) => (
-        <div key={group.title}>
-          <SectionLabel size="xs">{group.title}</SectionLabel>
+        <div key={group.titleKey}>
+          <SectionLabel size="xs">{profileText[group.titleKey]}</SectionLabel>
           <CardShell shadow>
             {group.items.map((item, i) => {
               const Icon = item.icon;
-              const isLang = item.label === "Dil seçimi";
+              const isLang = item.action === "language";
               const d = (delay += 0.04);
               return (
                 <motion.button
-                  key={item.label}
+                  key={item.labelKey}
                   initial={{ opacity: 0, x: -14 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: d, ...SPRING }}
@@ -45,7 +48,7 @@ export default function ProfileMenuGroups({
                     <Icon size={16} className="text-primary" />
                   </IconDot>
                   <span className="flex-1 text-[15px] font-medium text-text-primary">
-                    {item.label}
+                    {profileText[item.labelKey]}
                   </span>
                   {isLang ? (
                     <span className="text-[12px] font-bold text-primary bg-primary-light rounded-full px-2 py-0.5">

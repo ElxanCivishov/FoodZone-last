@@ -2,11 +2,14 @@ import IconDot from "@/components/ui/IconDot";
 import SectionLabel from "@/components/ui/SectionLabel";
 import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 export default function DangerZoneCard({ onDelete }: { onDelete: () => void }) {
+  const t = useT();
+
   return (
     <div>
-      <SectionLabel>Təhlükəli zona</SectionLabel>
+      <SectionLabel>{t.settings.dangerZone}</SectionLabel>
       <div className="bg-white rounded-2xl border border-red-100 shadow-xs overflow-hidden">
         <motion.button
           whileTap={{ scale: 0.98 }}
@@ -17,9 +20,9 @@ export default function DangerZoneCard({ onDelete }: { onDelete: () => void }) {
             <Trash2 size={16} className="text-red-500" />
           </IconDot>
           <div className="flex-1">
-            <p className="text-[15px] font-semibold text-red-500">Profili sil</p>
+            <p className="text-[15px] font-semibold text-red-500">{t.settings.deleteProfile}</p>
             <p className="text-[12px] text-text-tertiary mt-0.5">
-              Hesabınız və bütün məlumatlarınız silinəcək
+              {t.settings.deleteProfileSub}
             </p>
           </div>
         </motion.button>

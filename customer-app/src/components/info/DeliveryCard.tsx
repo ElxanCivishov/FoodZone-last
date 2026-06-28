@@ -2,24 +2,26 @@ import CardHeader from "@/components/ui/CardHeader";
 import CardShell from "@/components/ui/CardShell";
 import IconDot from "@/components/ui/IconDot";
 import { RESTAURANT_INFO } from "@/data/restaurantInfo";
+import { useT } from "@/hooks/useT";
 import { ShoppingBag, Timer, Truck } from "lucide-react";
 
 export default function DeliveryCard() {
+  const t = useT();
   const rows = [
     {
       icon: <ShoppingBag size={14} className="text-primary" />,
-      label: "Minimum sifariş",
-      value: `${RESTAURANT_INFO.minOrder} AZN`,
+      label: t.info.minOrder,
+      value: `${RESTAURANT_INFO.minOrder} ${t.common.currency}`,
     },
     {
       icon: <Truck size={14} className="text-primary" />,
-      label: "Çatdırılma haqqı",
-      value: `${RESTAURANT_INFO.deliveryFee} AZN`,
+      label: t.info.deliveryFee,
+      value: `${RESTAURANT_INFO.deliveryFee} ${t.common.currency}`,
     },
     {
       icon: <Timer size={14} className="text-primary" />,
-      label: "Çatdırılma vaxtı",
-      value: `${RESTAURANT_INFO.minTime}–${RESTAURANT_INFO.maxTime} dəq`,
+      label: t.info.deliveryTime,
+      value: `${RESTAURANT_INFO.minTime}–${RESTAURANT_INFO.maxTime} ${t.common.minutes}`,
     },
   ];
 
@@ -27,7 +29,7 @@ export default function DeliveryCard() {
     <CardShell>
       <CardHeader
         icon={<IconDot><Truck size={15} className="text-primary" /></IconDot>}
-        title="Çatdırılma"
+        title={t.info.delivery}
       />
       <div className="divide-y divide-border-light">
         {rows.map((row) => (

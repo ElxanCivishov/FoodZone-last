@@ -21,48 +21,49 @@ export { SPRING } from "@/utils/motion";
 export const MOCK_XP = 240; // TODO: fetch from Customer API
 
 export const STATS = [
-  { icon: Package, label: "Sifariş", value: "12" },
-  { icon: Star, label: "Rəy", value: "8" },
-  { icon: Award, label: "Xal", value: "240" },
+  { icon: Package, labelKey: "orders", value: "12" },
+  { icon: Star, labelKey: "reviewCount", value: "8" },
+  { icon: Award, labelKey: "points", value: "240" },
 ];
 
 export type MenuItem = {
   icon: React.ElementType;
-  label: string;
+  labelKey: string;
   screen?: Screen;
   badge?: string;
+  action?: "language";
 };
 
-export const GROUPS: { title: string; items: MenuItem[] }[] = [
+export const GROUPS: { titleKey: string; items: MenuItem[] }[] = [
   {
-    title: "Fəaliyyət",
+    titleKey: "activity",
     items: [
-      { icon: Receipt, label: "Sifariş Tarixçəsi", screen: "orderHistory" },
-      { icon: Heart, label: "Seçilmişlər", screen: "favorites" },
-      { icon: Bell, label: "Ofisiant Müraciətləri", screen: "waiterRequests" },
+      { icon: Receipt, labelKey: "orderHistory", screen: "orderHistory" },
+      { icon: Heart, labelKey: "favorites", screen: "favorites" },
+      { icon: Bell, labelKey: "waiterRequests", screen: "waiterRequests" },
     ],
   },
   {
-    title: "Hesab",
+    titleKey: "account",
     items: [
-      { icon: CreditCard, label: "Ödəniş üsulları", screen: "payments" },
-      { icon: Tag, label: "Kuponlarım", screen: "coupons" },
-      { icon: MapPin, label: "Ünvanlarım", screen: "addresses" },
+      { icon: CreditCard, labelKey: "payments", screen: "payments" },
+      { icon: Tag, labelKey: "coupons", screen: "coupons" },
+      { icon: MapPin, labelKey: "addresses", screen: "addresses" },
     ],
   },
   {
-    title: "Rəy və Dəstək",
+    titleKey: "feedbackSupport",
     items: [
-      { icon: Star, label: "Rəylərim", screen: "reviews" },
-      { icon: MessageSquare, label: "Dəstək Müraciətləri", screen: "supportRequests" },
-      { icon: HelpCircle, label: "Dəstək", screen: "help" },
+      { icon: Star, labelKey: "myReviews", screen: "reviews" },
+      { icon: MessageSquare, labelKey: "supportRequests", screen: "supportRequests" },
+      { icon: HelpCircle, labelKey: "help", screen: "help" },
     ],
   },
   {
-    title: "Tənzimləmələr",
+    titleKey: "preferences",
     items: [
-      { icon: Globe, label: "Dil seçimi", badge: "AZ" },
-      { icon: Settings, label: "Tənzimləmələr", screen: "settings" },
+      { icon: Globe, labelKey: "language", badge: "AZ", action: "language" },
+      { icon: Settings, labelKey: "settings", screen: "settings" },
     ],
   },
 ];

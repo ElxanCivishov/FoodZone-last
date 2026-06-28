@@ -1,6 +1,7 @@
 import type { MenuItem } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock3, Heart, Plus, Star, Thermometer } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
@@ -21,6 +22,7 @@ export default function MenuProductCard({
   onQuickAdd,
   onOpen,
 }: MenuProductCardProps) {
+  const t = useT();
   const isTea = item.groupId === "teas";
 
   return (
@@ -93,11 +95,11 @@ export default function MenuProductCard({
         <div className="flex items-center justify-between mt-2">
           <div>
             <p className="text-primary font-outfit text-[15px] font-bold leading-none">
-              <span className="text-[10px]">AZN</span> {item.price}
+              <span className="text-[10px]">{t.common.currency}</span> {item.price}
             </p>
             {item.originalPrice && (
               <p className="text-text-tertiary text-[11px] line-through leading-none mt-0.5">
-                AZN {item.originalPrice}
+                {t.common.currency} {item.originalPrice}
               </p>
             )}
           </div>

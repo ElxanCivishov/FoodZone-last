@@ -1,5 +1,6 @@
 import { RESTAURANT_INFO } from "@/data/restaurantInfo";
 import { Clock, Star, Truck, Users } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 export default function HeroSection({
   isOpen,
@@ -8,6 +9,8 @@ export default function HeroSection({
   isOpen: boolean;
   todayHours: string;
 }) {
+  const t = useT();
+
   return (
     <div
       className="relative mx-0 pt-14 pb-6 px-5"
@@ -35,7 +38,7 @@ export default function HeroSection({
             isOpen ? "bg-success/20 text-success" : "bg-white/10 text-white/50"
           }`}
         >
-          {isOpen ? "● Açıqdır" : "● Bağlıdır"}
+          {isOpen ? t.info.openNow : t.info.closedNow}
         </span>
       </div>
 
@@ -59,14 +62,14 @@ export default function HeroSection({
           {RESTAURANT_INFO.rating}
         </span>
         <span className="text-white/40 text-[12px]">
-          ({RESTAURANT_INFO.reviewCount} rəy)
+          ({RESTAURANT_INFO.reviewCount} {t.common.review})
         </span>
       </div>
 
       <div className="flex gap-2">
         <StatPill
           icon={<Users size={12} />}
-          label={`${RESTAURANT_INFO.tableCount} masa`}
+          label={`${RESTAURANT_INFO.tableCount} ${t.checkout.table}`}
         />
         <StatPill
           icon={<Clock size={12} />}
@@ -74,7 +77,7 @@ export default function HeroSection({
         />
         <StatPill
           icon={<Truck size={12} />}
-          label={`${RESTAURANT_INFO.deliveryFee} AZN`}
+          label={`${RESTAURANT_INFO.deliveryFee} ${t.common.currency}`}
         />
       </div>
     </div>

@@ -13,21 +13,22 @@ import {
   Send,
 } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
 
 const SPRING = { type: "spring" as const, stiffness: 340, damping: 28 };
 
 const TOPICS: {
   id: SupportTopic;
   icon: typeof MessageSquare;
-  label: string;
 }[] = [
-  { id: "order", icon: MessageSquare, label: "Sifariş problemi" },
-  { id: "payment", icon: CreditCard, label: "Ödəniş məsələsi" },
-  { id: "waiter", icon: AlertCircle, label: "Xidmət şikayəti" },
-  { id: "other", icon: HelpCircle, label: "Digər" },
+  { id: "order", icon: MessageSquare },
+  { id: "payment", icon: CreditCard },
+  { id: "waiter", icon: AlertCircle },
+  { id: "other", icon: HelpCircle },
 ];
 
 export default function HelpScreen() {
+  const t = useT();
   const { goBack, addToast } = useUIStore();
   const { addRequest } = useSupportRequestStore();
 
@@ -40,11 +41,11 @@ export default function HelpScreen() {
 
   const handleSend = () => {
     if (!topic) {
-      addToast("Mövzu seçin", "error");
+      addToast(t.support.chooseTopic, "error");
       return;
     }
     if (message.trim().length < 10) {
-      addToast("Mesajı ətraflı yazın", "error");
+      addToast(t.support.writeDetailed, "error");
       return;
     }
     setSending(true);
@@ -78,10 +79,10 @@ export default function HelpScreen() {
         </motion.button>
         <div>
           <h1 className="font-outfit text-[20px] font-bold text-text-primary">
-            Dəstək
+            {t.support.title}
           </h1>
           <p className="text-text-secondary text-[12px] mt-0.5">
-            Müraciətinizi göndərin, tez cavab alın
+            {t.support.subtitle}
           </p>
         </div>
       </div>
@@ -100,7 +101,7 @@ export default function HelpScreen() {
           </div>
           <div className="flex-1">
             <p className="text-[14px] font-semibold text-text-primary">
-              Zəng edin
+              {t.support.call}
             </p>
             <p className="text-[12px] text-text-secondary mt-0.5">
               +994 12 555 00 00
@@ -126,10 +127,10 @@ export default function HelpScreen() {
             </div>
             <div className="flex-1 text-left">
               <p className="text-[14px] font-semibold text-text-primary">
-                Dəstək müraciəti
+                {t.support.requestTitle}
               </p>
               <p className="text-[12px] text-text-secondary mt-0.5">
-                24 saat ərzində cavab
+                {t.support.replyWithin}
               </p>
             </div>
             <motion.div
@@ -168,10 +169,10 @@ export default function HelpScreen() {
                         <CheckCircle2 size={28} className="text-white" />
                       </div>
                       <p className="font-outfit text-[16px] font-bold text-text-primary text-center">
-                        Müraciətiniz qəbul edildi
+                        {t.support.accepted}
                       </p>
                       <p className="text-text-secondary text-[13px] text-center">
-                        Aşağıda statusunu izləyə bilərsiniz
+                        {t.support.trackBelow}
                       </p>
                     </motion.div>
                   ) : (
@@ -185,10 +186,10 @@ export default function HelpScreen() {
                       {/* Topic pills */}
                       <div>
                         <p className="text-[12px] font-semibold text-text-tertiary mb-2">
-                          Mövzu
+                          {t.support.topic}
                         </p>
                         <div className="grid grid-cols-2 gap-2">
-                          {TOPICS.map(({ id, icon: Icon, label }) => {
+                          {TOPICS.map(({ id, icon: Icon }) => {
                             const active = topic === id;
                             return (
                               <motion.button
@@ -213,7 +214,7 @@ export default function HelpScreen() {
                                 <span
                                   className={`text-[12px] font-semibold leading-tight ${active ? "text-primary" : "text-text-secondary"}`}
                                 >
-                                  {label}
+                                  {t.support.topics[id]}
                                 </span>
                               </motion.button>
                             );
@@ -224,11 +225,11 @@ export default function HelpScreen() {
                       {/* Message */}
                       <div className="relative">
                         <p className="text-[12px] font-semibold text-text-tertiary mb-2">
-                          Mesaj
+                          {t.support.message}
                         </p>
                         <textarea
                           rows={3}
-                          placeholder="Probleminizi ətraflı izah edin…"
+                          placeholder={t.support.messagePlaceholder}
                           value={message}
                           maxLength={MAX}
                           onChange={(e) => setMessage(e.target.value)}
@@ -259,12 +260,12 @@ export default function HelpScreen() {
                               }}
                               className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                             />
-                            Göndərilir…
+                            {t.common.sending}
                           </>
                         ) : (
                           <>
                             <Send size={15} />
-                            Göndər
+                            {t.common.send}
                           </>
                         )}
                       </motion.button>

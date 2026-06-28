@@ -34,7 +34,7 @@ export default function BottomNav() {
     },
     {
       key: "search",
-      label: "Menyu",
+      label: t.nav.menu,
       icon: LayoutGrid,
       isActive: activeTab === "search" && !infoActive,
       onClick: () => setActiveTab("search" as NavTab),

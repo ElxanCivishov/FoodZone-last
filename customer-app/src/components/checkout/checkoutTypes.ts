@@ -4,9 +4,9 @@ import { Briefcase, Home, Map, ShoppingBag, Truck, UtensilsCrossed } from "lucid
 export { SPRING } from "@/utils/motion";
 
 export const ORDER_TYPES = [
-  { id: "dine_in" as OrderType, label: "Masa", sub: "Masaya gətirilir", icon: UtensilsCrossed },
-  { id: "take_away" as OrderType, label: "Take Away", sub: "Özünüz alırsınız", icon: ShoppingBag },
-  { id: "delivery" as OrderType, label: "Çatdırılma", sub: "Ünvanınıza göndərilir", icon: Truck },
+  { id: "dine_in" as OrderType, icon: UtensilsCrossed },
+  { id: "take_away" as OrderType, icon: ShoppingBag },
+  { id: "delivery" as OrderType, icon: Truck },
 ];
 
 export const ADDR_ICONS: Record<string, typeof Home> = {

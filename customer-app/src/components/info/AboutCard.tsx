@@ -3,13 +3,16 @@ import CardShell from "@/components/ui/CardShell";
 import IconDot from "@/components/ui/IconDot";
 import { RESTAURANT_INFO } from "@/data/restaurantInfo";
 import { Info } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 export default function AboutCard() {
+  const t = useT();
+
   return (
     <CardShell>
       <CardHeader
         icon={<IconDot><Info size={15} className="text-primary" /></IconDot>}
-        title="Haqqımızda"
+        title={t.info.about}
       />
 
       <div className="px-4 py-4">
@@ -22,21 +25,21 @@ export default function AboutCard() {
             <p className="font-outfit text-[18px] font-bold text-primary">
               {RESTAURANT_INFO.founded}
             </p>
-            <p className="text-[11px] text-text-tertiary mt-0.5">İl</p>
+            <p className="text-[11px] text-text-tertiary mt-0.5">{t.info.year}</p>
           </div>
           <div className="w-px h-10 bg-border-light" />
           <div className="flex-1 text-center">
             <p className="font-outfit text-[18px] font-bold text-primary">
               {RESTAURANT_INFO.tableCount}
             </p>
-            <p className="text-[11px] text-text-tertiary mt-0.5">Masa</p>
+            <p className="text-[11px] text-text-tertiary mt-0.5">{t.checkout.table}</p>
           </div>
           <div className="w-px h-10 bg-border-light" />
           <div className="flex-1 text-center">
             <p className="font-outfit text-[18px] font-bold text-primary">
               {RESTAURANT_INFO.reviewCount}+
             </p>
-            <p className="text-[11px] text-text-tertiary mt-0.5">Rəy</p>
+            <p className="text-[11px] text-text-tertiary mt-0.5">{t.common.review}</p>
           </div>
         </div>
       </div>

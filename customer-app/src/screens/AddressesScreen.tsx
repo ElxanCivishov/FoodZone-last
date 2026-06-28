@@ -6,6 +6,7 @@ import { useUIStore } from "@/store";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, MapPin } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
 
 const INITIAL: Address[] = [
   {
@@ -25,6 +26,7 @@ const INITIAL: Address[] = [
 ];
 
 export default function AddressesScreen() {
+  const t = useT();
   const { goBack, addToast } = useUIStore();
   const [addresses, setAddresses] = useState<Address[]>(INITIAL);
   const [selected, setSelected] = useState(1);
@@ -35,14 +37,14 @@ export default function AddressesScreen() {
     setAddresses((prev) => [...prev, { id: newId, ...addr }]);
     setSelected(newId);
     setShowForm(false);
-    addToast("Ünvan əlavə edildi!", "success");
+    addToast(t.address.added, "success");
   };
 
   const handleDelete = (id: number) => {
     setAddresses((prev) => prev.filter((a) => a.id !== id));
     if (selected === id)
       setSelected(addresses.find((a) => a.id !== id)?.id ?? 0);
-    addToast("Ünvan silindi", "success");
+    addToast(t.address.deleted, "success");
   };
 
   return (
@@ -64,10 +66,10 @@ export default function AddressesScreen() {
         </motion.button>
         <div>
           <h1 className="font-outfit text-[20px] font-bold text-text-primary">
-            Ünvanlarım
+            {t.address.title}
           </h1>
           <p className="text-text-secondary text-[13px]">
-            {addresses.length} ünvan
+            {addresses.length} {t.address.count}
           </p>
         </div>
       </div>
@@ -109,7 +111,7 @@ export default function AddressesScreen() {
             style={{ background: "linear-gradient(135deg, #00c2e8, #00c2a8)" }}
           >
             <MapPin size={16} />
-            Bu ünvanı seç
+            {t.address.select}
           </motion.button>
         </div>
       )}

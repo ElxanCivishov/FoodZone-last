@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X, Images } from 'lucide-react';
 import { useUIStore } from '@/store';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
@@ -45,6 +46,7 @@ const ITEMS: GalleryItem[] = [
 ];
 
 export default function GalleryScreen() {
+  const t = useT();
   const { goBack } = useUIStore();
   const [activeCat, setActiveCat] = useState<GalCat>('all');
   const [lightbox, setLightbox] = useState<{ item: GalleryItem; idx: number } | null>(null);
@@ -86,8 +88,8 @@ export default function GalleryScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div className="flex-1">
-          <h1 className="font-outfit text-[20px] font-bold text-text-primary">Qalereya</h1>
-          <p className="text-text-secondary text-[12px]">{filtered.length} şəkil</p>
+          <h1 className="font-outfit text-[20px] font-bold text-text-primary">{t.gallery.title}</h1>
+          <p className="text-text-secondary text-[12px]">{filtered.length} {t.common.photo}</p>
         </div>
         <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center">
           <Images size={16} className="text-primary" />

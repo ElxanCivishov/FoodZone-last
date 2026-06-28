@@ -35,9 +35,9 @@ const LANGUAGES = [
 ];
 
 const COLOR_MODES = [
-  { id: "light", label: "Açıq", icon: Sun },
-  { id: "dark", label: "Tünd", icon: Moon },
-  { id: "system", label: "Sistem", icon: Monitor },
+  { id: "light", icon: Sun },
+  { id: "dark", icon: Moon },
+  { id: "system", icon: Monitor },
 ];
 
 const WAITERS = [
@@ -120,9 +120,11 @@ function WifiSheet({
   close: () => void;
   addToast: (m: string, t?: "success" | "error" | "info") => void;
 }) {
+  const t = useT();
+
   return (
     <div className="pb-8 pt-2">
-      <ModalHeader title="WiFi Məlumatı" close={close} />
+      <ModalHeader title={t.modal.wifiInfo} close={close} />
       <div className="mt-4 px-5">
         <WifiNetworkPicker addToast={addToast} />
       </div>
@@ -211,13 +213,14 @@ function WifiNetworkPicker({
   const [activeIdx, setActiveIdx] = useState(0);
   const [copiedField, setCopiedField] = useState<"name" | "pass" | null>(null);
   const net = RESTAURANT_INFO.wifiNetworks[activeIdx];
+  const t = useT();
 
   const copyField = (field: "name" | "pass") => {
     const val = field === "name" ? net.ssid : net.pass;
     navigator.clipboard.writeText(val).catch(() => {});
     setCopiedField(field);
     addToast(
-      field === "name" ? "Şəbəkə adı kopyalandı!" : "Şifrə kopyalandı!",
+      field === "name" ? t.modal.networkCopied : t.modal.passwordCopied,
       "success",
     );
     setTimeout(() => setCopiedField(null), 2000);
@@ -266,7 +269,7 @@ function WifiNetworkPicker({
                 <QRPlaceholder label={net.ssid} />
               </div>
               <p className="text-text-tertiary text-[12px]">
-                Scan QR or manually copy the password
+                {t.modal.scanQr}
               </p>
             </div>
           )}
@@ -274,13 +277,13 @@ function WifiNetworkPicker({
           {/* Field rows */}
           <div className="space-y-2">
             <WifiFieldRow
-              label="Name"
+              label={t.modal.name}
               value={net.ssid}
               copied={copiedField === "name"}
               onCopy={() => copyField("name")}
             />
             <WifiFieldRow
-              label="Password"
+              label={t.modal.password}
               value={net.pass}
               copied={copiedField === "pass"}
               onCopy={() => copyField("pass")}
@@ -329,6 +332,7 @@ function WifiFieldRow({
 /* ─── Language ─── */
 function LangSheet({ close }: { close: () => void }) {
   const { language, setLanguage } = useUIStore();
+  const t = useT();
 
   const pick = (code: Language) => {
     setLanguage(code);
@@ -337,7 +341,7 @@ function LangSheet({ close }: { close: () => void }) {
 
   return (
     <div className="px-5 pb-8 pt-2">
-      <ModalHeader title="Dil seçimi / Language" close={close} />
+      <ModalHeader title={t.modal.languageTitle} close={close} />
       <div className="mt-4 space-y-2">
         {LANGUAGES.map((lang) => {
           const active = language === lang.code;
@@ -370,6 +374,7 @@ function LangSheet({ close }: { close: () => void }) {
 /* ─── Hours ─── */
 function HoursSheet({ close }: { close: () => void }) {
   const today = new Date().getDay();
+  const t = useT();
   const HOURS = [
     { day: "Bazar ertəsi", time: "10:00 – 22:00", idx: 1 },
     { day: "Çərşənbə axşamı", time: "10:00 – 22:00", idx: 2 },
@@ -382,7 +387,7 @@ function HoursSheet({ close }: { close: () => void }) {
 
   return (
     <div className="px-5 pb-8 pt-2">
-      <ModalHeader title="İş Saatları" close={close} />
+      <ModalHeader title={t.modal.hours} close={close} />
       <div className="mt-4 space-y-1">
         {HOURS.map((h) => {
           const isToday = h.idx === today;
@@ -399,7 +404,7 @@ function HoursSheet({ close }: { close: () => void }) {
                   {h.day}
                   {isToday && (
                     <span className="ml-1.5 text-[11px] font-bold bg-primary text-white rounded-full px-2 py-0.5">
-                      Bu gün
+                      {t.modal.today}
                     </span>
                   )}
                 </span>
@@ -426,19 +431,29 @@ function ColorSheet({
   addToast: (m: string, t?: "success" | "error" | "info") => void;
 }) {
   const [selected, setSelected] = useState("light");
+  const t = useT();
+  const colorModes = COLOR_MODES.map((mode) => ({
+    ...mode,
+    label:
+      mode.id === "light"
+        ? t.modal.light
+        : mode.id === "dark"
+          ? t.modal.dark
+          : t.modal.system,
+  }));
 
   const pick = (id: string) => {
     setSelected(id);
-    const mode = COLOR_MODES.find((m) => m.id === id);
-    addToast(`Görünüş: ${mode?.label}`, "info");
+    const mode = colorModes.find((m) => m.id === id);
+    addToast(`${t.modal.appearanceChanged}: ${mode?.label}`, "info");
     setTimeout(close, 500);
   };
 
   return (
     <div className="px-5 pb-8 pt-2">
-      <ModalHeader title="Görünüş" close={close} />
+      <ModalHeader title={t.modal.appearance} close={close} />
       <div className="mt-4 flex gap-3">
-        {COLOR_MODES.map((m) => {
+        {colorModes.map((m) => {
           const Icon = m.icon;
           const active = selected === m.id;
           return (
@@ -517,6 +532,7 @@ function FeedbackContent({
   close: () => void;
   addToast: (m: string, t?: "success" | "error" | "info") => void;
 }) {
+  const t = useT();
   const [step, setStep] = useState<"main" | "waiter">("main");
   const [selectedWaiter, setSelectedWaiter] = useState<
     (typeof WAITERS)[0] | null
@@ -529,11 +545,11 @@ function FeedbackContent({
 
   const handleSend = () => {
     if (mealRating === 0 || serviceRating === 0) {
-      addToast("Zəhmət olmasa hər iki bölməni qiymətləndirin", "error");
+      addToast(t.modal.rateBoth, "error");
       return;
     }
     setSent(true);
-    addToast("Rəyiniz üçün təşəkkür edirik!", "success");
+    addToast(t.modal.feedbackThanks, "success");
     setTimeout(close, 1800);
   };
 
@@ -549,10 +565,10 @@ function FeedbackContent({
           <CheckCircle2 size={40} className="text-success" />
         </motion.div>
         <p className="font-outfit text-xl font-bold text-text-primary text-center">
-          Təşəkkür edirik!
+          {t.modal.thanks}
         </p>
         <p className="text-text-secondary text-[13px] text-center">
-          Rəyiniz qeydə alındı
+          {t.modal.feedbackSaved}
         </p>
       </div>
     );
@@ -570,7 +586,7 @@ function FeedbackContent({
             <ChevronLeft size={16} className="text-text-primary" />
           </motion.button>
           <h3 className="font-outfit text-[15px] font-bold text-text-primary">
-            Ofisiant seçin
+            {t.modal.chooseWaiter}
           </h3>
         </div>
         <div className="px-5 mt-4 space-y-2">
@@ -616,7 +632,7 @@ function FeedbackContent({
               <X size={16} className="text-text-tertiary" />
             </div>
             <span className="text-[14px] font-medium text-text-secondary text-left">
-              Ofisiant seçmə
+              {t.modal.noWaiter}
             </span>
           </motion.button>
         </div>
@@ -641,22 +657,22 @@ function FeedbackContent({
         </div>
         <div className="flex-1 text-left">
           <p className="text-text-primary text-[14px] font-semibold">
-            {selectedWaiter ? selectedWaiter.name : "Ofisiant seçin"}
+            {selectedWaiter ? selectedWaiter.name : t.modal.chooseWaiter}
           </p>
           <p className="text-text-tertiary text-[12px] mt-0.5">
-            Xüsusi rəy üçün
+            {t.modal.privateFeedback}
           </p>
         </div>
         <span className="text-primary text-[13px] font-bold shrink-0">
-          {selectedWaiter ? "Dəyiş" : "Seç"}
+          {selectedWaiter ? t.modal.change : t.modal.choose}
         </span>
         <ChevronRight size={14} className="text-text-tertiary shrink-0" />
       </motion.button>
 
       {/* Ratings */}
-      <StarRow label="Yemək" value={mealRating} onChange={setMealRating} />
+      <StarRow label={t.modal.meal} value={mealRating} onChange={setMealRating} />
       <StarRow
-        label="Xidmət"
+        label={t.modal.service}
         value={serviceRating}
         onChange={setServiceRating}
       />
@@ -665,7 +681,7 @@ function FeedbackContent({
       <div className="relative">
         <textarea
           rows={3}
-          placeholder="Qeyd (isteğe bağlı)..."
+          placeholder={t.modal.optionalNote}
           value={note}
           maxLength={MAX_NOTE}
           onChange={(e) => setNote(e.target.value)}
@@ -684,7 +700,7 @@ function FeedbackContent({
         style={{ background: "linear-gradient(135deg, #00c2e8, #00c2a8)" }}
       >
         <Send size={16} />
-        Göndər
+        {t.common.send}
       </motion.button>
     </div>
   );
@@ -698,9 +714,11 @@ function FeedbackSheet({
   close: () => void;
   addToast: (m: string, t?: "success" | "error" | "info") => void;
 }) {
+  const t = useT();
+
   return (
     <div className="pb-2">
-      <ModalHeader title="Rəy bildir" close={close} />
+      <ModalHeader title={t.modal.feedback} close={close} />
       <FeedbackContent close={close} addToast={addToast} />
     </div>
   );
@@ -777,7 +795,7 @@ function WaiterCallSheet({ close, t }: { close: () => void; t: Translations }) {
               style={{ background: "linear-gradient(135deg,#00c2e8,#00c2a8)" }}
             >
               <Bell size={15} />
-              Müraciətlərə bax
+              {t.modal.viewRequests}
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.97 }}
@@ -801,7 +819,7 @@ function WaiterCallSheet({ close, t }: { close: () => void; t: Translations }) {
           {t.waiter.subtitle}
           {tableNumber > 0 && (
             <span className="ml-1.5 text-text-tertiary">
-              · Masa #{tableNumber}
+              · {t.modal.table} #{tableNumber}
             </span>
           )}
         </p>
@@ -812,7 +830,7 @@ function WaiterCallSheet({ close, t }: { close: () => void; t: Translations }) {
             className="flex items-center gap-1 text-[12px] font-bold text-primary bg-primary-light rounded-full px-2.5 py-1 shrink-0 ml-2"
           >
             <Bell size={11} />
-            {requests.length} müraciət
+            {requests.length} {t.modal.request}
             <ChevronRight size={11} />
           </motion.button>
         )}

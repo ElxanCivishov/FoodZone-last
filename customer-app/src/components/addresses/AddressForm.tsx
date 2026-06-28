@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, Crosshair, X } from "lucide-react";
 import { useState } from "react";
 import { Address, SPRING, TYPE_ICONS, TYPE_OPTS } from "./addressTypes";
+import { useT } from "@/hooks/useT";
 
 interface AddressFormProps {
   onSave: (addr: Omit<Address, "id">) => void;
@@ -10,6 +11,7 @@ interface AddressFormProps {
 }
 
 export default function AddressForm({ onSave, onClose }: AddressFormProps) {
+  const t = useT();
   const [form, setForm] = useState({
     street: "",
     apt: "",
@@ -21,16 +23,21 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.street.trim()) e.street = "Küçə ünvanı tələb olunur";
-    if (!form.city.trim()) e.city = "Şəhər tələb olunur";
+    if (!form.street.trim()) e.street = t.address.streetRequired;
+    if (!form.city.trim()) e.city = t.address.cityRequired;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleSave = () => {
     if (!validate()) return;
-    const label = TYPE_OPTS.find((t) => t.id === form.type)?.label ?? "Yeni";
-    const detail = `${form.city}${form.apt ? `, mənzil ${form.apt}` : ""}`;
+    const label =
+      form.type === "home"
+        ? t.address.home
+        : form.type === "work"
+          ? t.address.work
+          : t.address.other;
+    const detail = `${form.city}${form.apt ? `, ${t.address.apartmentPrefix} ${form.apt}` : ""}`;
     onSave({ type: form.type, label, address: form.street, detail });
   };
 
@@ -46,7 +53,7 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
         {/* Form header */}
         <div className="flex items-center justify-between">
           <p className="font-outfit text-[15px] font-bold text-text-primary">
-            Yeni ünvan
+            {t.address.newAddress}
           </p>
           <motion.button
             whileTap={{ scale: 0.88 }}
@@ -63,16 +70,16 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
         {/* Type selector */}
         <div>
           <p className="text-[12px] font-semibold text-text-secondary mb-2">
-            Ünvan növü
+            {t.address.type}
           </p>
           <div className="flex gap-2">
-            {TYPE_OPTS.map((t) => {
-              const Icon = TYPE_ICONS[t.id];
-              const active = form.type === t.id;
+            {TYPE_OPTS.map((opt) => {
+              const Icon = TYPE_ICONS[opt.id];
+              const active = form.type === opt.id;
               return (
                 <button
-                  key={t.id}
-                  onClick={() => setForm((f) => ({ ...f, type: t.id }))}
+                  key={opt.id}
+                  onClick={() => setForm((f) => ({ ...f, type: opt.id }))}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-[12px] font-semibold transition-all ${
                     active
                       ? "border-primary bg-primary-light text-primary"
@@ -80,7 +87,11 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
                   }`}
                 >
                   <Icon size={13} />
-                  {t.label}
+                  {opt.id === "home"
+                    ? t.address.home
+                    : opt.id === "work"
+                      ? t.address.work
+                      : t.address.other}
                 </button>
               );
             })}
@@ -91,7 +102,7 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <p className="text-[12px] font-semibold text-text-secondary">
-              Küçə / Ünvan *
+              {t.address.street}
             </p>
             <motion.button
               whileTap={{ scale: 0.9 }}
@@ -101,13 +112,13 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
             >
               <Crosshair size={11} className="text-primary" />
               <span className="text-[11px] font-bold text-primary">
-                Xəritədən seç
+                {t.address.pickFromMap}
               </span>
             </motion.button>
           </div>
           <input
             type="text"
-            placeholder="Küçə adı və nömrəsi"
+            placeholder={t.address.streetPlaceholder}
             value={form.street}
             onChange={(e) => {
               setForm((f) => ({ ...f, street: e.target.value }));
@@ -128,11 +139,11 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-[12px] font-semibold text-text-secondary mb-1.5">
-              Mənzil / Ofis
+              {t.address.apartment}
             </p>
             <input
               type="text"
-              placeholder="Mənzil №"
+              placeholder={t.address.apartmentPlaceholder}
               value={form.apt}
               onChange={(e) =>
                 setForm((f) => ({ ...f, apt: e.target.value }))
@@ -142,11 +153,11 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
           </div>
           <div>
             <p className="text-[12px] font-semibold text-text-secondary mb-1.5">
-              Şəhər *
+              {t.address.city}
             </p>
             <input
               type="text"
-              placeholder="Şəhər"
+              placeholder={t.address.cityPlaceholder}
               value={form.city}
               onChange={(e) => {
                 setForm((f) => ({ ...f, city: e.target.value }));
@@ -172,7 +183,7 @@ export default function AddressForm({ onSave, onClose }: AddressFormProps) {
           style={{ background: "linear-gradient(135deg, #00c2e8, #00c2a8)" }}
         >
           <Check size={16} />
-          Ünvanı saxla
+          {t.address.save}
         </motion.button>
       </motion.div>
 

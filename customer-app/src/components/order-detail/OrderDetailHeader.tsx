@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronLeft, ShoppingBag, Truck, UtensilsCrossed } from "lucide-react";
 import type { OrderType } from "@/types";
+import { useT } from "@/hooks/useT";
 
 export default function OrderDetailHeader({
   orderId,
@@ -13,8 +14,10 @@ export default function OrderDetailHeader({
   orderType: OrderType;
   onBack: () => void;
 }) {
+  const t = useT();
+
   return (
-    <div className="bg-white dark:bg-[#1a1a2e] px-4 pt-12 pb-4 border-b border-border-light flex items-center gap-3">
+    <div className="bg-white dark:bg-[#1a1a2e] px-4 py-4 border-b border-border-light flex items-center gap-3">
       <motion.button
         whileTap={{ scale: 0.88 }}
         onClick={onBack}
@@ -24,7 +27,7 @@ export default function OrderDetailHeader({
       </motion.button>
       <div className="flex-1">
         <h1 className="font-outfit text-[20px] font-bold text-text-primary">
-          Sifariş #{orderId.slice(-6)}
+          {t.order.orderNo}{orderId.slice(-6)}
         </h1>
         <p className="text-text-secondary text-[13px]">{createdAt}</p>
       </div>

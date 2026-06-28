@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, CreditCard, Lock, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react';
 import { useUIStore, useOrderStore } from '@/store';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
@@ -14,8 +15,9 @@ function formatExpiry(v: string) {
 }
 
 export default function PaymentScreen() {
-  const { goBack, setScreen, addToast } = useUIStore();
+  const { goBack, setScreen } = useUIStore();
   const { currentOrder, payOrder } = useOrderStore();
+  const t = useT();
 
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry]         = useState('');
@@ -27,10 +29,10 @@ export default function PaymentScreen() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (cardNumber.replace(/\s/g, '').length < 16) e.card   = 'Kart nömrəsi 16 rəqəm olmalıdır';
-    if (expiry.length < 5)                          e.expiry = 'Tarix MM/YY formatında';
-    if (cvv.length < 3)                             e.cvv    = 'CVV 3 rəqəm';
-    if (!name.trim())                               e.name   = 'Kart sahibinin adı';
+    if (cardNumber.replace(/\s/g, '').length < 16) e.card   = t.checkout.cardNumberError;
+    if (expiry.length < 5)                          e.expiry = t.checkout.expiryError;
+    if (cvv.length < 3)                             e.cvv    = t.checkout.cvvError;
+    if (!name.trim())                               e.name   = t.checkout.cardNameError;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -66,12 +68,12 @@ export default function PaymentScreen() {
           <ChevronLeft size={20} className="text-text-primary" />
         </motion.button>
         <div className="flex-1">
-          <h2 className="font-outfit text-[17px] font-bold text-text-primary">Kart ilə Ödəniş</h2>
-          <p className="text-[12px] text-text-secondary">SSL şifrələnmiş bağlantı</p>
+          <h2 className="font-outfit text-[17px] font-bold text-text-primary">{t.checkout.cardPayment}</h2>
+          <p className="text-[12px] text-text-secondary">{t.checkout.sslConnection}</p>
         </div>
         <div className="flex items-center gap-1">
           <Lock size={13} className="text-success" />
-          <span className="text-[11px] font-semibold text-success">Güvənli</span>
+          <span className="text-[11px] font-semibold text-success">{t.checkout.secure}</span>
         </div>
       </div>
 
@@ -85,10 +87,10 @@ export default function PaymentScreen() {
           style={{ background: 'linear-gradient(135deg, #00c2e8, #667eea)' }}
         >
           <div>
-            <p className="text-[12px] text-white/70 font-medium">Ödəniləcək məbləğ</p>
-            <p className="font-outfit text-[32px] font-bold mt-0.5">{amount} <span className="text-[16px]">AZN</span></p>
+            <p className="text-[12px] text-white/70 font-medium">{t.checkout.amountDue}</p>
+            <p className="font-outfit text-[32px] font-bold mt-0.5">{amount} <span className="text-[16px]">{t.common.currency}</span></p>
             {currentOrder && (
-              <p className="text-[11px] text-white/60 mt-1">Sifariş #{currentOrder.id.slice(-6)}</p>
+              <p className="text-[11px] text-white/60 mt-1">{t.checkout.orderPrefix}{currentOrder.id.slice(-6)}</p>
             )}
           </div>
           <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
@@ -104,7 +106,7 @@ export default function PaymentScreen() {
           className="bg-white dark:bg-[#1a1a2e] rounded-2xl p-4 border border-border-light shadow-xs space-y-4"
         >
           {/* Card number */}
-          <Field label="Kart nömrəsi" error={errors.card}>
+          <Field label={t.checkout.cardNumber} error={errors.card}>
             <div className="relative">
               <input
                 type="text"
@@ -123,7 +125,7 @@ export default function PaymentScreen() {
 
           {/* Expiry + CVV */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Son istifadə tarixi" error={errors.expiry}>
+            <Field label={t.checkout.expiryFull} error={errors.expiry}>
               <input
                 type="text"
                 inputMode="numeric"
@@ -153,10 +155,10 @@ export default function PaymentScreen() {
           </div>
 
           {/* Cardholder name */}
-          <Field label="Kart sahibinin adı" error={errors.name}>
+          <Field label={t.checkout.cardName} error={errors.name}>
             <input
               type="text"
-              placeholder="AD SOYAD"
+              placeholder={t.checkout.cardHolderPreview}
               value={name}
               onChange={(e) => {
                 setName(e.target.value.toUpperCase());
@@ -175,7 +177,7 @@ export default function PaymentScreen() {
           className="flex items-center gap-2 px-1"
         >
           <ShieldCheck size={14} className="text-text-tertiary shrink-0" />
-          <p className="text-[11px] text-text-tertiary">Kart məlumatlarınız şifrələnərək ötürülür və saxlanılmır</p>
+          <p className="text-[11px] text-text-tertiary">{t.checkout.securityNote}</p>
         </motion.div>
       </div>
 
@@ -189,7 +191,7 @@ export default function PaymentScreen() {
               animate={{ opacity: 1, scale: 1 }}
               className="w-full py-4 rounded-xl bg-success flex items-center justify-center gap-2 text-white text-[15px] font-semibold"
             >
-              <CheckCircle2 size={20} /> Ödəniş tamamlandı!
+              <CheckCircle2 size={20} /> {t.checkout.paymentCompleted}
             </motion.div>
           ) : (
             <motion.button
@@ -205,7 +207,7 @@ export default function PaymentScreen() {
               ) : (
                 <>
                   <Lock size={16} />
-                  {amount} AZN ödə
+                  {amount} {t.common.currency} {t.checkout.payAmount}
                 </>
               )}
             </motion.button>

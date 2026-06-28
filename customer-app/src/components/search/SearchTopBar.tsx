@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
+import { useT } from "@/hooks/useT";
 
 interface SearchTopBarProps {
   query: string;
@@ -20,6 +21,8 @@ export default function SearchTopBar({
   onFocus,
   onCancelSearch,
 }: SearchTopBarProps) {
+  const t = useT();
+
   return (
     <div className="px-4 pb-3">
       <div className="flex items-center gap-2">
@@ -42,7 +45,7 @@ export default function SearchTopBar({
           <input
             ref={inputRef}
             type="text"
-            placeholder="Yemək axtar…"
+            placeholder={t.home.searchPlaceholder}
             value={query}
             autoFocus={autoFocus}
             onChange={(e) => onQueryChange(e.target.value)}
@@ -80,7 +83,7 @@ export default function SearchTopBar({
               onClick={onCancelSearch}
               className="text-primary text-[14px] font-semibold shrink-0"
             >
-              Ləğv
+              {t.search.cancel}
             </motion.button>
           )}
         </AnimatePresence>

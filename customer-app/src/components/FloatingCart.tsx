@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, X } from 'lucide-react';
 import { useUIStore, useCartStore } from '@/store';
+import { useT } from '@/hooks/useT';
 
 const HIDDEN = ['splash', 'checkout', 'tracking', 'login', 'register', 'admin'];
 
@@ -10,6 +11,7 @@ export default function FloatingCart() {
   const itemCount = useCartStore((s) => s.getItemCount());
   const total = useCartStore((s) => s.getTotal());
   const prevCountRef = useRef(itemCount);
+  const t = useT();
 
   // Re-show whenever a new item is added
   useEffect(() => {
@@ -39,11 +41,11 @@ export default function FloatingCart() {
               <span className="font-outfit font-bold text-[14px]">{itemCount}</span>
             </div>
             <div className="flex-1 text-left">
-              <p className="text-white font-semibold text-[14px] leading-none">Səbəti görüntülə</p>
-              <p className="text-white/70 text-[11px] mt-0.5">{itemCount} məhsul</p>
+              <p className="text-white font-semibold text-[14px] leading-none">{t.cart.viewCart}</p>
+              <p className="text-white/70 text-[11px] mt-0.5">{itemCount} {t.cart.item}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="font-outfit font-bold text-[15px]">{total.toFixed(2)} AZN</span>
+              <span className="font-outfit font-bold text-[15px]">{total.toFixed(2)} {t.common.currency}</span>
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
                 <ArrowRight size={14} />
               </div>

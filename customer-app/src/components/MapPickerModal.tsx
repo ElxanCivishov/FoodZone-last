@@ -5,6 +5,7 @@ import type L from 'leaflet';
 import { motion } from 'framer-motion';
 import { MapPin, X, Navigation, Check, Loader2 } from 'lucide-react';
 import { SPRING } from '@/utils/motion';
+import { useT } from '@/hooks/useT';
 
 const BAKU: [number, number] = [40.4093, 49.8671];
 
@@ -58,6 +59,7 @@ function MoveEndHandler({ onMove }: { onMove: (lat: number, lng: number) => void
 }
 
 export default function MapPickerModal({ open, onClose, onConfirm, initialCenter }: Props) {
+  const t = useT();
   const mapRef = useRef<L.Map | null>(null);
   const [picked, setPicked] = useState<PickedLocation | null>(null);
   const [geocoding, setGeocoding] = useState(false);
@@ -114,8 +116,8 @@ export default function MapPickerModal({ open, onClose, onConfirm, initialCenter
           <X size={18} className="text-text-primary" />
         </motion.button>
         <div className="flex-1">
-          <h2 className="font-outfit text-[17px] font-bold text-text-primary">Xəritədən seç</h2>
-          <p className="text-text-tertiary text-[11px]">Xəritəni sürüşdür, mərkəzdəki nöqtəni yerləşdir</p>
+          <h2 className="font-outfit text-[17px] font-bold text-text-primary">{t.map.title}</h2>
+          <p className="text-text-tertiary text-[11px]">{t.map.subtitle}</p>
         </div>
         <motion.button
           whileTap={{ scale: 0.88 }}
@@ -163,7 +165,7 @@ export default function MapPickerModal({ open, onClose, onConfirm, initialCenter
         {geocoding && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[401] bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow flex items-center gap-1.5">
             <Loader2 size={12} className="text-primary animate-spin" />
-            <span className="text-[11px] font-medium text-text-secondary">Ünvan tapılır…</span>
+            <span className="text-[11px] font-medium text-text-secondary">{t.map.findingAddress}</span>
           </div>
         )}
       </div>
@@ -176,10 +178,10 @@ export default function MapPickerModal({ open, onClose, onConfirm, initialCenter
           </div>
           <p className="text-[13px] text-text-primary leading-relaxed line-clamp-2 flex-1">
             {geocoding
-              ? <span className="text-text-tertiary">Ünvan axtarılır…</span>
+              ? <span className="text-text-tertiary">{t.map.searchingAddress}</span>
               : picked?.address
                 ? picked.address
-                : <span className="text-text-tertiary">Xəritəni hərəkət etdirin</span>}
+                : <span className="text-text-tertiary">{t.map.moveMap}</span>}
           </p>
         </div>
         <motion.button
@@ -190,7 +192,7 @@ export default function MapPickerModal({ open, onClose, onConfirm, initialCenter
           style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
         >
           <Check size={16} />
-          Bu yeri seç
+          {t.map.selectPlace}
         </motion.button>
       </div>
     </motion.div>,

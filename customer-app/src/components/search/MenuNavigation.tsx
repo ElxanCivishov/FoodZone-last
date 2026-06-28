@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 import { GROUP_ICONS } from "./constants";
 
 import { SPRING } from "@/utils/motion";
+import { useT } from "@/hooks/useT";
 
 interface MenuNavigationProps {
   activeGroupId: string;
@@ -25,6 +26,8 @@ export default function MenuNavigation({
   onSubChange,
   onMenuOpen,
 }: MenuNavigationProps) {
+  const t = useT();
+
   return (
     <div className="shrink-0 bg-canvas z-10 border-b border-primary">
       {/* Level 1 — Burger + Group tabs */}
@@ -103,7 +106,7 @@ export default function MenuNavigation({
       {/* Product count */}
       <div className="px-4 pt-1 pb-2">
         <p className="text-[12px] text-text-tertiary font-medium">
-          {totalVisible} məhsul
+          {totalVisible} {t.common.item}
         </p>
       </div>
     </div>

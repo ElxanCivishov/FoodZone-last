@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Moon } from "lucide-react";
 import { SPRING } from "./constants";
 import Toggle from "./Toggle";
+import { useT } from "@/hooks/useT";
 
 export default function AppearanceCard({
   isDark,
@@ -14,9 +15,11 @@ export default function AppearanceCard({
   isDark: boolean;
   onToggle: () => void;
 }) {
+  const t = useT();
+
   return (
     <div>
-      <SectionLabel>Görünüş</SectionLabel>
+      <SectionLabel>{t.settings.appearance}</SectionLabel>
       <CardShell shadow>
         <motion.div
           initial={{ opacity: 0, x: -12 }}
@@ -25,8 +28,8 @@ export default function AppearanceCard({
         >
           <SettingsRow
             icon={<IconDot><Moon size={16} className="text-primary" /></IconDot>}
-            label="Qaranlıq rejim"
-            sub="Göz yorğunluğunu azaldır"
+            label={t.settings.darkMode}
+            sub={t.settings.darkModeSub}
             right={<Toggle on={isDark} onToggle={onToggle} />}
           />
         </motion.div>

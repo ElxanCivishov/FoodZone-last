@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 import { SPRING } from "./constants";
 import Toggle from "./Toggle";
+import { useT } from "@/hooks/useT";
 
 export default function EmailCard({
   checked,
@@ -14,9 +15,11 @@ export default function EmailCard({
   checked: boolean;
   onToggle: () => void;
 }) {
+  const t = useT();
+
   return (
     <div>
-      <SectionLabel>E-poçt</SectionLabel>
+      <SectionLabel>{t.auth.email}</SectionLabel>
       <CardShell shadow>
         <motion.div
           initial={{ opacity: 0, x: -12 }}
@@ -25,8 +28,8 @@ export default function EmailCard({
         >
           <SettingsRow
             icon={<IconDot><Mail size={16} className="text-primary" /></IconDot>}
-            label="E-poçt bildirişləri"
-            sub="Həftəlik xülasə"
+            label={t.settings.emailNotifications}
+            sub={t.settings.weeklySummary}
             right={<Toggle on={checked} onToggle={onToggle} />}
           />
         </motion.div>

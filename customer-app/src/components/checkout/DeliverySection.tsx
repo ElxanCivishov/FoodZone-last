@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Section } from "./CheckoutSection";
 import { ADDR_ICONS, DEMO_ADDRESSES } from "./checkoutTypes";
+import { useT } from "@/hooks/useT";
 
 interface DeliverySectionProps {
   isLoggedIn: boolean;
@@ -25,9 +26,11 @@ export default function DeliverySection({
   onLogin,
   onManageAddresses,
 }: DeliverySectionProps) {
+  const t = useT();
+
   return (
     <Section
-      title="Çatdırılma ünvanı"
+      title={t.checkout.deliveryAddress}
       icon={<MapPin size={16} className="text-primary" />}
     >
       {!isLoggedIn ? (
@@ -39,10 +42,10 @@ export default function DeliverySection({
           <AlertCircle size={16} className="text-warning shrink-0" />
           <div className="flex-1 text-left">
             <p className="text-[13px] font-semibold text-warning">
-              Hesabınıza daxil olun
+              {t.checkout.loginRequiredTitle}
             </p>
             <p className="text-[11px] text-warning/70">
-              Çatdırılma üçün giriş tələb olunur
+              {t.checkout.loginRequiredNote}
             </p>
           </div>
           <LogIn size={15} className="text-warning shrink-0" />
@@ -106,10 +109,10 @@ export default function DeliverySection({
             </div>
             <div className="flex-1 text-left">
               <p className="text-[13px] font-semibold text-primary">
-                Ünvan əlavə et / dəyişdir
+                {t.checkout.addOrChangeAddress}
               </p>
               <p className="text-[11px] text-text-tertiary">
-                Ünvanlarım səhifəsinə keçin
+                {t.checkout.goToAddresses}
               </p>
             </div>
             <ChevronRight size={15} className="text-primary shrink-0" />

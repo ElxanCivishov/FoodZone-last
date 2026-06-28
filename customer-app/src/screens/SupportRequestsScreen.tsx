@@ -6,23 +6,24 @@ import {
 import { useUIStore } from '@/store';
 import { useSupportRequestStore } from '@/store';
 import type { SupportTopic, SupportStatus } from '@/store';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
-const STATUS_META: Record<SupportStatus, { label: string; icon: typeof Clock; color: string; bg: string }> = {
-  sent:      { label: 'Göndərildi',  icon: CheckCircle2, color: 'text-primary',  bg: 'bg-primary-light' },
-  in_review: { label: 'Baxılır',     icon: Hourglass,    color: 'text-warning',  bg: 'bg-warning/10' },
-  resolved:  { label: 'Həll edildi', icon: CheckCircle2, color: 'text-success',  bg: 'bg-success/10' },
+const STATUS_META: Record<SupportStatus, { icon: typeof Clock; color: string; bg: string }> = {
+  sent:      { icon: CheckCircle2, color: 'text-primary',  bg: 'bg-primary-light' },
+  in_review: { icon: Hourglass,    color: 'text-warning',  bg: 'bg-warning/10' },
+  resolved:  { icon: CheckCircle2, color: 'text-success',  bg: 'bg-success/10' },
 };
 
-const TOPIC_META: Record<SupportTopic, { label: string; icon: typeof MessageSquare; color: string; bg: string }> = {
-  order:   { label: 'Sifariş problemi', icon: MessageSquare, color: 'text-primary',        bg: 'bg-primary-light' },
-  payment: { label: 'Ödəniş məsələsi', icon: CreditCard,    color: 'text-success',        bg: 'bg-success/10' },
-  waiter:  { label: 'Xidmət şikayəti', icon: AlertCircle,   color: 'text-warning',        bg: 'bg-warning/10' },
-  other:   { label: 'Digər',           icon: HelpCircle,    color: 'text-text-secondary', bg: 'bg-surface-elevated' },
+const TOPIC_META: Record<SupportTopic, { icon: typeof MessageSquare; color: string; bg: string }> = {
+  order:   { icon: MessageSquare, color: 'text-primary',        bg: 'bg-primary-light' },
+  payment: { icon: CreditCard,    color: 'text-success',        bg: 'bg-success/10' },
+  waiter:  { icon: AlertCircle,   color: 'text-warning',        bg: 'bg-warning/10' },
+  other:   { icon: HelpCircle,    color: 'text-text-secondary', bg: 'bg-surface-elevated' },
 };
 
-function formatTime(iso: string) {
+function formatTime(iso: string, todayLabel: string, yesterdayLabel: string) {
   const d = new Date(iso);
   const today = new Date();
   const yesterday = new Date(today);
@@ -30,12 +31,13 @@ function formatTime(iso: string) {
 
   const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 
-  if (d.toDateString() === today.toDateString()) return `Bu gün · ${timeStr}`;
-  if (d.toDateString() === yesterday.toDateString()) return `Dünən · ${timeStr}`;
+  if (d.toDateString() === today.toDateString()) return `${todayLabel} · ${timeStr}`;
+  if (d.toDateString() === yesterday.toDateString()) return `${yesterdayLabel} · ${timeStr}`;
   return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')} · ${timeStr}`;
 }
 
 export default function SupportRequestsScreen() {
+  const t = useT();
   const { goBack, setScreen } = useUIStore();
   const { requests } = useSupportRequestStore();
 
@@ -62,9 +64,9 @@ export default function SupportRequestsScreen() {
             <ChevronLeft size={20} className="text-white" />
           </motion.button>
           <div>
-            <h1 className="font-outfit text-xl font-bold text-white">Dəstək Müraciətlərim</h1>
+            <h1 className="font-outfit text-xl font-bold text-white">{t.support.myRequests}</h1>
             <p className="text-white/70 text-[12px] mt-0.5">
-              {requests.length > 0 ? `${requests.length} müraciət` : 'Müraciət yoxdur'}
+              {requests.length > 0 ? `${requests.length} ${t.support.request}` : t.support.noRequests}
             </p>
           </div>
         </div>
@@ -86,9 +88,9 @@ export default function SupportRequestsScreen() {
               >
                 <MessageSquare size={32} className="text-white" />
               </div>
-              <p className="font-outfit text-lg font-bold text-text-primary">Müraciət yoxdur</p>
+              <p className="font-outfit text-lg font-bold text-text-primary">{t.support.noRequests}</p>
               <p className="text-text-secondary text-[13px] max-w-[220px]">
-                Problem və ya sualınız üçün dəstək formasından müraciət göndərin
+                {t.support.noRequestsNote}
               </p>
               <motion.button
                 whileTap={{ scale: 0.96 }}
@@ -97,7 +99,7 @@ export default function SupportRequestsScreen() {
                 style={{ background: 'linear-gradient(135deg,#667eea,#764ba2)' }}
               >
                 <MessageSquare size={16} />
-                Müraciət göndər
+                {t.support.sendRequest}
               </motion.button>
             </motion.div>
           ) : (
@@ -123,10 +125,16 @@ export default function SupportRequestsScreen() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-[14px] font-semibold text-text-primary">{topic.label}</p>
+                          <p className="text-[14px] font-semibold text-text-primary">{t.support.topics[req.topic]}</p>
                           <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full shrink-0 ${status.bg}`}>
                             <StatusIcon size={11} className={status.color} />
-                            <span className={`text-[11px] font-bold ${status.color}`}>{status.label}</span>
+                            <span className={`text-[11px] font-bold ${status.color}`}>
+                              {req.status === 'sent'
+                                ? t.support.sent
+                                : req.status === 'in_review'
+                                  ? t.support.inReview
+                                  : t.support.resolved}
+                            </span>
                           </div>
                         </div>
 
@@ -136,7 +144,7 @@ export default function SupportRequestsScreen() {
 
                         <div className="flex items-center gap-1 mt-2">
                           <Clock size={11} className="text-text-tertiary" />
-                          <span className="text-text-tertiary text-[11px]">{formatTime(req.createdAt)}</span>
+                          <span className="text-text-tertiary text-[11px]">{formatTime(req.createdAt, t.modal.today, t.common.yesterday)}</span>
                         </div>
                       </div>
                     </div>
@@ -154,7 +162,7 @@ export default function SupportRequestsScreen() {
                 style={{ background: 'linear-gradient(135deg,#667eea,#764ba2)' }}
               >
                 <MessageSquare size={16} />
-                Yeni müraciət
+                {t.support.newRequest}
               </motion.button>
             </div>
           )}

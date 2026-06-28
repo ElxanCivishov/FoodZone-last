@@ -1,24 +1,22 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Info, Percent, ShoppingBag, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/hooks/useT";
 
 const PROMOS = [
   {
     id: 1,
-    title: "Xoş gəldiniz!",
-    sub: "Bugünün ən yaxşı menyusu",
+    titleKey: "welcome",
     grad: "linear-gradient(135deg,#667eea,#764ba2)",
   },
   {
     id: 2,
-    title: "Ödənişsiz çatdırılma",
-    sub: "25 AZN-dən yuxarı sifarişlərə",
+    titleKey: "freeDelivery",
     grad: "linear-gradient(135deg,#00b4d8,#0077b6)",
   },
   {
     id: 3,
-    title: "Yeni Setlər",
-    sub: "Xüsusi kombinasiyalar hazırdır",
+    titleKey: "newSets",
     grad: "linear-gradient(135deg,#f093fb,#f5576c)",
   },
 ];
@@ -45,6 +43,7 @@ function MetaBadge({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 export default function PromoBanner() {
   const [promoIdx, setPromoIdx] = useState(0);
+  const t = useT();
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(
     undefined,
   );
@@ -66,6 +65,21 @@ export default function PromoBanner() {
     setPromoIdx(idx);
     resetTimer();
   };
+
+  const promoText = {
+    welcome: {
+      title: t.home.promoWelcomeTitle,
+      sub: t.home.promoWelcomeSub,
+    },
+    freeDelivery: {
+      title: t.home.promoDeliveryTitle,
+      sub: t.home.promoDeliverySub,
+    },
+    newSets: {
+      title: t.home.promoSetsTitle,
+      sub: t.home.promoSetsSub,
+    },
+  }[PROMOS[promoIdx].titleKey as "welcome" | "freeDelivery" | "newSets"];
 
   return (
     <motion.div
@@ -108,12 +122,12 @@ export default function PromoBanner() {
 
           <div className="relative z-10 flex items-start justify-between">
             <div>
-              <p className="text-white/75 text-[12px]">{INFO.cuisine}</p>
+              <p className="text-white/75 text-[12px]">{t.home.cuisine}</p>
               <h1 className="text-white font-outfit text-xl font-bold mt-0.5">
-                {PROMOS[promoIdx].title}
+                {promoText.title}
               </h1>
               <p className="text-white/80 text-[13px] mt-0.5">
-                {PROMOS[promoIdx].sub}
+                {promoText.sub}
               </p>
             </div>
             <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1">
@@ -130,7 +144,7 @@ export default function PromoBanner() {
           <div className="relative z-10 flex items-center gap-2 flex-wrap">
             <MetaBadge
               icon={<Clock size={11} />}
-              text={`${INFO.minTime}-${INFO.maxTime} dəq`}
+              text={`${INFO.minTime}-${INFO.maxTime} ${t.common.minutes}`}
             />
             <MetaBadge
               icon={<ShoppingBag size={11} />}
@@ -138,11 +152,11 @@ export default function PromoBanner() {
             />
             <MetaBadge
               icon={<Info size={11} />}
-              text={`${INFO.deliveryFee} AZN çatdırılma`}
+              text={`${INFO.deliveryFee} ${t.common.currency} ${t.home.delivery}`}
             />
             <MetaBadge
               icon={<Percent size={11} />}
-              text={`${INFO.serviceFee}% servis`}
+              text={`${INFO.serviceFee}% ${t.home.service}`}
             />
           </div>
         </motion.div>

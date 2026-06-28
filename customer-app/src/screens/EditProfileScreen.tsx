@@ -4,6 +4,7 @@ import { ChevronLeft, User, Mail, Save } from 'lucide-react';
 import { useUIStore } from '@/store';
 import PhoneInput, { DEFAULT_COUNTRY } from '@/components/PhoneInput';
 import type { Country } from '@/components/PhoneInput';
+import { useT } from '@/hooks/useT';
 
 const SPRING = { type: 'spring' as const, stiffness: 340, damping: 28 };
 
@@ -12,6 +13,7 @@ function initials(name: string) {
 }
 
 export default function EditProfileScreen() {
+  const t = useT();
   const { goBack, userInfo, setUserInfo, addToast } = useUIStore();
 
   const [form, setForm] = useState({
@@ -28,9 +30,9 @@ export default function EditProfileScreen() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim())  e.name  = 'Ad tələb olunur';
-    if (!form.phone.trim()) e.phone = 'Telefon tələb olunur';
-    if (!form.email.trim()) e.email = 'E-poçt tələb olunur';
+    if (!form.name.trim())  e.name  = t.editProfile.nameRequired;
+    if (!form.phone.trim()) e.phone = t.editProfile.phoneRequired;
+    if (!form.email.trim()) e.email = t.editProfile.emailRequired;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -39,7 +41,7 @@ export default function EditProfileScreen() {
     if (!validate()) return;
     const fullPhone = form.phone ? `${phoneCountry.prefix} ${form.phone}` : '';
     setUserInfo({ name: form.name, phone: fullPhone, email: form.email });
-    addToast('Profil yeniləndi!', 'success');
+    addToast(t.editProfile.updated, 'success');
     goBack();
   };
 
@@ -67,8 +69,8 @@ export default function EditProfileScreen() {
             <ChevronLeft size={20} className="text-white" />
           </motion.button>
           <div>
-            <h1 className="font-outfit text-[19px] font-bold text-white">Profili redaktə et</h1>
-            <p className="text-white/50 text-[12px] mt-0.5">Məlumatlarınızı yeniləyin</p>
+            <h1 className="font-outfit text-[19px] font-bold text-white">{t.editProfile.title}</h1>
+            <p className="text-white/50 text-[12px] mt-0.5">{t.editProfile.subtitle}</p>
           </div>
         </div>
 
@@ -90,12 +92,12 @@ export default function EditProfileScreen() {
 
         {/* Name */}
         <div>
-          <label className="block text-[12px] font-semibold text-text-secondary mb-1.5">Ad Soyad *</label>
+          <label className="block text-[12px] font-semibold text-text-secondary mb-1.5">{t.auth.fullName} *</label>
           <div className="relative">
             <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
               type="text"
-              placeholder="Adınızı daxil edin"
+              placeholder={t.auth.fullNamePlaceholder}
               value={form.name}
               onChange={update('name')}
               className={`w-full pl-11 pr-4 h-12 rounded-xl border text-[14px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary transition-colors ${
@@ -108,7 +110,7 @@ export default function EditProfileScreen() {
 
         {/* Phone */}
         <div>
-          <label className="block text-[12px] font-semibold text-text-secondary mb-1.5">Telefon *</label>
+          <label className="block text-[12px] font-semibold text-text-secondary mb-1.5">{t.auth.phone} *</label>
           <PhoneInput
             value={form.phone}
             country={phoneCountry}
@@ -120,7 +122,7 @@ export default function EditProfileScreen() {
 
         {/* Email */}
         <div>
-          <label className="block text-[12px] font-semibold text-text-secondary mb-1.5">E-poçt *</label>
+          <label className="block text-[12px] font-semibold text-text-secondary mb-1.5">{t.auth.email} *</label>
           <div className="relative">
             <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input
@@ -144,7 +146,7 @@ export default function EditProfileScreen() {
           style={{ background: 'linear-gradient(135deg,#00c2e8,#00c2a8)' }}
         >
           <Save size={15} />
-          Yadda saxla
+          {t.common.save}
         </motion.button>
 
       </div>
